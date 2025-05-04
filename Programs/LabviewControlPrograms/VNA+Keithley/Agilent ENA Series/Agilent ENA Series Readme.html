@@ -1,0 +1,144 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>   
+  <title>Agilent ENA Series Instrument Driver Readme</title>
+</head>
+<body>
+<h2>Agilent ENA Series Instrument Driver Readme</h2>
+<para>To rate this instrument driver, go to the driver download page on the <a  href="http://www.ni.com/idnet">Instrument Driver Network</a>.</para>
+<h4>1. Overview</h4>
+<para>Instrument Driver Technology: LabVIEW Plug and Play (project-style)
+<br>Manufacturer: Agilent
+<br>Supported Language(s): LabVIEW
+<br>Supported Model(s): E5061A, E5062A, E5063A, E5061B, E5070B, E5071B, E5071C, E5072A, E5080A, E5080B 
+<br>Model(s) Tested: E5071B, E5071C, E5061B, E5072A, E5080A (tested by KT)
+<br>Interface(s): GPIB, Ethernet, USB
+<br>Firmware Revision(s) Tested: A.08.00/A.01.10/A.01.03/Z.14.12.85
+<br>
+<br>Certified: Yes
+<br>NI Supported: Yes
+<br>Source Code Available: Yes
+<br>
+<br>Driver Revision: 2.4
+<br>Original Release Date: 3/2005
+<br>Current Revision Date: 07/19/2021</para>
+
+<h4>2. Required Software</h4>
+<para>Some software components need to be installed before using this instrument driver. The minimum versions of these components are listed below, and can be downloaded from the Download Site.
+<br><br>VISA 5.0 or later 
+<br><br>Refer to the <i>LabVIEW Help</i> for more information about software requirements. You access the <i>LabVIEW Help</i> by selecting <i>Help&raquo;Search the LabVIEW Help</i>.</para>
+
+<h4>3. Known Issues</h4><para><br>
+
+
+To report issues or provide feedback about this instrument driver,  <a href="http://www.ni.com/en-us/support.html">please contact technical support</a>.</para></font><br>
+
+
+<br>Many VIs do not contain a "%".; (period decimal selector) token to format the string containing a fractional number output. 
+<br>File Manager.vi - If we try to delete directory in instrument its not possible.
+<br>Store.vi - Saving of entire instrument state isn't possible too. We think this problems are firmware bugs.
+<br>Application Example.vi - May not work when previously performed calibrations did not finish successfully. Same task performed using agena Interactive Application Example.vi should work.
+<br>Agilent ENA Series Configure Calibration.vi- Error occurred for some user in countries that do not use decimal point separator. 
+To solve this problem, change the configuration(tools -> options..-> front panel -> de-select "use localized decimal point".)<br>
+<br>REV 2.3 the models E5063A and E5080A were not tested by National Instruments; the driver might lacks ranges for them.  However, Keysight did the testing for these models.
+<br>The E5080A is supported through the E5071C code emulation mode. You must enable the E5071C code emulator from the instrument front panel by pressing System -> System Setting -> Code Emulation -> 5071.
+<br><para></para>
+
+<h4>4. Revision History</h4>
+<para>The latest version of this and other LabVIEW and LabWindows/CVI instrument drivers can be downloaded at the <a  href="http://www.ni.com/idnet">Instrument Driver Network</a>.<br>
+<br>REV 1.0, 05/03/01, <br>Modified by: P. Kominek<br>
+<br>REV 1.1, 06/04/04, <br>Modified by: M. Hruby<br>
+- agena Initialize.vi - fixed attribute settings<br> - agena Configure Channel And Trace.vi - fixed incorrect command: UMAG -> IMAG<br>
+- agena Configure Display Layout.vi - fixed graph layout list commands<br> - agena Configure Calibration.vi - appended missing semicolon in command<br>
+- agena Configure Analysis.vi - added missing command for control "Partial Range Analysis State (F:Disable)"<br>
+- agena Configure Sweep Stimulus.vi - added control 'Signal Output (T: On)'<br> - agena Initialize.vi - added E506x models to the ID Query<br><br>New VI's:<br> - agena Set Marker Position.vi<br>
+<br>REV 1.2, 06/20/06, <br>Modified by: M. Hruby<br>
+- added fully support for Agilent E5061A/E5062A ENA Series<br>
+- agena Configure Limit Test.vi - Added new control "Limit Line Clip"<br> - agena Configure Marker Search.vi - added support for the multi peak search<br>
+- agena Execute Ecal.vi - added support for enhanced response<br> - agena Configure Calibration.vi - added support for enhanced response<br>
+- agena Configure Power.vi - removed portion of command for E5061A/E5062A<br>
+Fixed connector pane:<br>
+- agena Calculate Receiver Calibration Coefficients.vi<br> - agena Configure Balance Unbalance Conversion.vi<br>
+- agena Configure Scale.vi<br> - agena Configure Time Domain Display Range.vi<br>
+- agena Marker Search.vi<br> - agena Measure Scalar-Mixer Calibration Data.vi<br> - agena Set Marker Position.vi<br>
+- agena Configure Analysis.vi <br> - agena Configure Power.vi  <br>
+New VI's:<br>
+- agena Math Marker Data.vi<br> - agena Configure Marker Function.vi<br> - agena Marker Notch Search Result.vi<br>
+- agena Configure Notch Search.vi<br> - agena Recall Channel Coefficient.vi<br> - agena Store Channel Coefficient.vi<br> - agena Security Level.vi<br>
+<br>REV 1.3, 03/28/07, <br>Modified by: Edward Zhang<br>
+- added support for Agilent E5071C ENA Series<br> - agena Configure Channel and Trace.vi - added support for AUX1 and AUX2<br>
+- agena Configure Calibration Kit.vi - added support for Unknown Thru<br> - agena Configure Electrical Calibration.vi - added new control "Unknown Thru"<br>
+- agena Send Trigger.vi - added check for OPC<br> - agena Measure Calibration Data.vi - added check for OPC<br>
+<br>New VI's:<br>
+- agena Configure AUX Measurement.vi<br> - agena Configure External Trigger.vi<br> - agena Configure Adapter Removal.vi<br> - agena Wait For Operation Complete.vi<br>
+<br>REV 1.3.1, 12/04/2007, <br> Modified by: Phil Nwoha, Austin, TX.<br>- Modified "Configure Channel and Trace" VI by rearranging order in which commands are sent to instrument.<br>
+<br>REV 1.3.2, 03/11/2008, <br>Modified by: Berk Ozdogan, Austin, TX.<br>
+- Application Limit Test Example is added to the examples.<br> - The description of Limit Fail VI is corrected.<br>
+- Limit Line Display label is corrected in Configure Limit Test VI.<br> - Spelling errors in Measure Power Calibration Data, Measure Calibration Data VI are corrected.<br>
+- Interactive Application Example and Configuration Application Example front panel spelling errors are corrected.<br>
+- Configure 4-Port Network (De-)Embedding VI spelling errors are corrected.<br> - Configure Time Domain Transform spelling errors are corrected.<br>
+<br>REV 2.0, 09/25/2009.<br> Modified by:Alvin Tang, Austin, TX.<br>
+-Original release for project-style Driver created based on version 1.3.2 of agena driver.<br>
+<br>REV 2.0.1, 01/12/2010.<br>-Modified Configure Marker - corrected command that sets the stimulus value of the marker/reference marker.<br>  From %.;:CALC%ld:MARK%ld %s;  to :CALC%ld:MARK%ld:X %lf <br>
+<br>REV 2.1, 07/12/2010. <br>Modified by:Lei Liu, Shanghai, China.<br>- Add support to E5061B. <br>
+- Configure Adapter Rotate.vi <br>		- Configure Auto Port Extension Frequency.vi <br>
+- Configure Auto Port Extension.vi <br>		- Configure Electrical Calibration Detect.vi <br>
+- Configure Port Extension Characteristics.vi <br>		- Configure Fault Location Display Range.vi <br>
+- Configure Fault Location Gating Distance.vi <br>		- Configure Fault Location Reflection Type.vi <br>
+- Configure Fault Location Transform.vi <br>		- Configure Bandwidth Limit Test.vi <br>
+- Configure Ripple Limit Test.vi <br>			- Configure Ripple Limit Test Table.vi <br>
+- Disable Marker.vi <br>		- Configure DC Bias.vi <br>		- Configure DC Measurement.vi <br>
+- Clear DC Measurement Data.vi <br>	- Configure Gain Phase Measurement.vi <br>	- Configure Gain Phase Port Power.vi <br>
+- Configure Auto IF Bandwidth.vi <br>	- Configure SRL Connector Port.vi <br>	- Configure SRL Measurement.vi <br>
+- Configure Transform Function.vi <br> - Enable Trigger Averaging.vi <br>	- Configure Trace Track Mode.vi <br>
+- Configure Time Domain Reflection Type.vi <br>	- Configure Trigger Scope.vi <br>	<br>
+REV 2.1.1, 04/07/2011. <br>Modified by: NI, Austin, TX.<br>-Configure Sweep.vi: Added semicolon after the following command:SENS%ld:SWE:ASP %s; to correct the syntax error being generated.<br><br>
+REV 2.1.2, 06/30/2011. <br>Modified by: NI, Austin, TX.<br>- Configure Fixture Simulator.vi: Modified Balance Device Type text ring control to include  Balance 2-port option (BAL for the 5071C model).<br>
+<br>REV 2.2.0 02/28/2014.<br>Modified by: Stephen Schwahn, Austin, TX.<br>- Added support for the E5072A.<br>
+- Configure Balance Unbalance Conversion.vi<br>
+- Configure Fixture Simulator.vi<br>
+- Configure 4-port Network (De-)Embedding.vi<br>
+- Configure Network De-embedding.vi<br>
+- Configure Matching Circuit Embedding.vi<br>
+- Configure Port Impedance Conversion.vi<br>
+- Configure Channel And Trace.vi<br>
+- Configure Absolute Measurement.vi<br>
+- Recall.vi<br>
+- Store.vi<br>
+- Configure Adapter Removal.vi<br>
+- Configure Adapter Rotate.vi<br>
+- Execute ECal.vi<br>
+- Configure Calibration.vi<br>
+- Configure Port Extension Characteristics.vi<br>
+- Configure Receiver Calibration.vi<br>
+- Calculate Receiver Calibration Coefficients.vi<br>
+- Configure Frequency Offset.vi<br>
+- Configure Power Calibration.vi<br>
+- Measure Power Calibration Data.vi<br>
+- Configure Loss Compensation Table.vi<br>
+- Write Calibration Data Array.vi<br>
+- Read Calibration Data Array.vi<br>
+ <br>Added the following VIs:<br>
+- Copy Equation Data to MEM.vi<br>
+- Configure Receiver Information.vi<br>
+- Configure Port Power.vi<br>
+- Configure IF Ranging Port.vi<br>
+- Configure Receiver Leveling Sweep.vi<br>
+- Configure Receiver Leveling Sweep Safe Mode.vi<br>
+- Configure Power Attenuation.vi<br>
+<br>REV 2.2.1, 02/16/2015<br>
+Modified by: NI<br>Initialize - Updated to include Keysight Technologies along with Agilent as a Manufacturer<br>
+<br>REV 2.3, 09/27/17<br>Modified by: Jun Zhang, Shanghai.<br>
+- User Data updated to include E5063A - string array constant indexes for E5071C and E5072A changed to 6 and 7 previously 5 and 6.<br>
+- Initialize updated to include E5063A and E5080A<br>
+- The E5080A model is supported through Emulation Mode as noted above under Known Issues.
+- Notes added to warn that some VIs and controls are not supported by E5063A and/or E5080A.<br>
+- Added Read X-Axis Data Measurement Points<br>
+- Added Example Agilent ENA Series Thru Response Calibration
+<br>Modified<br> 
+- Copy Equation Data to MEM - corrected SCPI command :CALC1:MATH:MEM  (previously :CALC1:MATH:EMEM)<br>
+- Security Level - corrected SCPI command parameter to NONE (previously string array constant option 0 included NON)<br>
+<br>REV 2.4, 07/19/21<br>Modified by: Ranjan Kumar, NI, Bangalore.<br>
+- The ENA5080B model is supported through Emulation Mode
+</body>
+</html>

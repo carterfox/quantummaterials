@@ -1,0 +1,8 @@
+Gate  No.	Time [ms]	Counts
+0	100	0
+1	200	0
+2	300	0
+3	400	0
+4	500	0
+Mean	Std. Dev.
+0.000	0.000

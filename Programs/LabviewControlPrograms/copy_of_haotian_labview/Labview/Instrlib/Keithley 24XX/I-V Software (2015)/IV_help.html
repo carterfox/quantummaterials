@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Help -- IV Software</title>
+<style>
+.warning {box-shadow: 0px 2px 4px 0px rgba(64, 0, 0, 0.6), 0px 2px 10px 0px rgba(64, 0, 0, 0.3); margin: 0px 60px 0px 60px; }
+.warning {border: 1px solid #AAA;background-color: #FFF0F0;padding: 10px;margin-top: 1em;clear: both;}
+.tipinfo {border: 1px solid #AAA;background-color: #F0F0F0;padding: 10px;clear: both;box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.3), 0px 2px 10px 0px rgba(0, 0, 0, 0.3); margin: 0px 0px 0px 0px; margin-top: 10px; margin-bottom:30px;}
+
+table.seriestable {width: 100%; border: 1px solid #444; background-color: #F0F0F0; padding: 10px; text-align: center; border-collapse: collapse}
+table.seriestable td {border-left: 1px solid #444; border-right: 1px solid #444; }
+
+.tabletop{ font-size: 16px; font-weight:bold; border-collapse: collapse; border: 1px solid #444; margin-top: 4px; margin-bottom: 4px;}
+
+table.examplecode, table.examplecode tr, table.examplecode td {border: 1px solid #000; border-collapse:collapse; max-width:100%; padding:4px}
+
+
+img {max-width:100%}
+
+.imageContainer {
+    text-align: center;
+	margin-bottom: 40px;
+}
+.imageContainer img {
+    display: block;
+	border: 1px solid #AAA;
+}
+.imageContainer div {
+    position: relative;
+    display: inline-block;
+    zoom: 1;
+	max-width:100%;
+	box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.3), 0px 2px 10px 0px rgba(0, 0, 0, 0.3);
+}
+.imageContainer span {
+    position: absolute;
+    left: 0;
+    width: 100%;
+	font-style: italic;
+	clear:both;
+}
+
+
+div.subsection { margin-left: 15px;}
+div.indent {margin:2px 0px 2px 10px; }
+
+html,body{font-family:Verdana,sans-serif;font-size:14px;line-height:1.5}
+h1,h2,h3,h4,h5,h6{font-family:"Segoe UI",Arial,sans-serif;font-weight:400;margin:10px 0}
+h1 a,h2 a,h3 a,h4 a,h5 a,h6 a{font-weight:inherit}
+h1{font-size:36px;margin-top:4px}h2{font-size:30px;margin-top:30px;}h3{font-size:24px}h4{font-size:20px}h5{font-size:18px}h6{font-size:16px}
+li {margin-bottom: 6px;}
+
+*{box-sizing:border-box;}
+.row:after{content:"";display:table;clear:both;}
+.col{float:left;width:100%;}
+.content{max-width:900px;margin:auto;}
+.rest{overflow:hidden;}
+.light-grey{color:#000;background-color:#f1f1f1; }
+.white{color:#000;background-color:#FFF;}
+
+
+#main {
+  padding: 16px;
+}
+
+#leftmenu h2 {
+  font-size:22px;
+  padding-left:5px;
+  margin:2px 0;
+}
+#leftmenu ul.l1 {
+  list-style-type:none;
+  padding-left: 5px;
+  padding-top: 0px;
+}
+#leftmenu ul.l2 {
+  list-style-type:none;
+  padding-left: 15px;
+  padding-top: 0px;
+}
+#leftmenu ul.l1 li {
+  margin-bottom: 0px;
+  }
+#leftmenu a, a:visited {
+  display:block;
+  text-decoration:none;
+  padding:2px 2px 2px 2px;
+  color:blue;
+  /* font-size:14px; */
+}
+#leftmenu a:hover {
+  background-color:#dddddd;
+  color:#000000;
+}
+#leftmenu a.active {
+  background-color:#dddddd;
+  color:#000000;
+  background-color:#cccccc;
+  color:#000000;
+  background-color:#73AD21;
+  color:#ffffff;  
+}
+#leftmenu {
+  width:230px;
+  display:block;
+  padding-top:1px;
+}
+
+#leftmenuinner {
+  position:fixed;
+  top:0;
+  padding-top:0px;
+  padding-bottom:0;    
+  height:100%;
+  width:16.66666%;
+  width:230px;
+  background-color:transparent;
+}
+#leftmenuinnerinner {
+  height:100%;
+  width:100%;
+  overflow-y:hidden;
+  padding-top:10px;
+  padding-right:16px;
+  padding-left:0px;
+}
+#leftmenuinnerinner:hover {
+    overflow-y:scroll;
+	padding-right:0px;
+}
+
+@media only screen and (max-width: 850px) {
+.tabletop{ font-size: 13px; }
+html,body{font-size:12px;}
+h1{font-size:30px}h2{font-size:24px;margin-top:24px;}h3{font-size:20px}h4{font-size:18px}h5{font-size:16px}h6{font-size:14px}
+#leftmenu h2 { font-size:18px; }
+#leftmenu { width:200px }
+#leftmenuinner { width: 200px; }
+#main {padding:10px;}
+}
+
+@media only screen and (max-width: 750px) {
+.aux {display:none}
+}
+
+@media only screen and (max-width: 600px) {
+#leftmenu { width:100%; height:auto }
+#leftmenuinner { position:static; width:100%; height:auto; }
+#leftmenuinnerinner {height:auto; }
+#leftmenuinnerinner:hover{ overflow-y:hidden;  }
+.rest {width: 100%; clear:both;}
+#main {padding:6px;}
+table {width:100%;}
+.aux {display:block;}
+}
+
+@media only screen and (max-width: 480px) {
+.aux {display:none}
+}
+
+
+</style>
+</head>
+
+<body>
+
+<div id="wholepage" class="row">
+
+<div id="leftmenu" class="col">
+<div id="leftmenuinner" style="padding-top: 0px;">
+<div id="leftmenuinnerinner" class="light-grey" >
+
+
+<h2>Contents</h2>
+<ul class="l1">
+<li> <a href="#top"    >^</a></li>
+<li> <a href="#desc"   >Description</a></li>
+<li> <a href="#warn"   >Safety disclaimer</a></li>
+<li> <a href="#require">Requirements</a></li>
+<li> <a href="#install">Installation and setup</a></li>
+
+<li> <a href="#using"  >Performing measurements</a></li>
+<ul class="l2"><li><a href="#sweeps">Sweeps</a></li>
+    <li><a href="#DC"    >DC (continuous) mode</a></li>
+	<li><a href="#custom">Custom commands</a></li>
+	<li><a href="#saving">Exporting/importing data </a></li>
+	<li><a href="#graphmds">Graphing data </a></li></ul>
+
+<li> <a href="#analysis"> Data analysis </a></li>
+<ul class="l2"><li> <a href="#da_res"  > Resistance </a></li>
+    <li> <a href="#da_4pt"  > 4-point probe </a></li>
+    <li> <a href="#da_pv"   > Solar cell </a> </li>
+	<li> <a href="#da_diode"> Diode </a> </li>
+	<li> <a href="#da_time" > Power/charge integration </a></li> </ul>
+	
+<li><a href="#settings">Options and features</a></li>
+<ul class="l2">
+    <li><a href="#opt_rs232">RS-232 </a></li>
+    <li><a href="#autorange">Auto-range </a></li>
+	<li><a href="#cyclic">Cyclic sweeps </a></li>
+	<li><a href="#contactcheck" >Contact check </a></li>
+    <li><a href="#timing" >Timing and averages</a> </li>
+    <li><a href="#presets">Presets </a></li>
+	<li><a href="#fkeys"  >Keyboard shortcuts </a></li>
+	<li><a href="#advcmd" >Advanced instrument commands</a></li>
+	<li><a href="#dtadesc">Data description field </a></li></ul>
+
+<li><a href="#troubleshoot">Troubleshooting and tips</a></li>
+<ul class="l2"><li><a href="#ts_comms">Instrument communications</a></li>
+    <li><a href="#ts_compl">Compliance with larger devices</a></li>
+	<li><a href="#iodebug" >Custom commands </a></li>
+</ul>
+<li> <a href="#license"> License & other issues </a></li>
+<ul class="l2"> <li> <a href="#contact"> Contact </a></li>
+     <li> <a href="#support"> Support </a></li></ul>
+</ul>
+
+
+</div>
+</div>
+</div>
+
+<div class="rest">
+<div class="row white">
+<div id="main" class="col content">
+
+
+<table cellpadding=10px id="top"><tr>
+<td class="aux" style="vertical-align:top; padding-left:0px; padding-top:24px"><img src="helpimg/probestation.png" style="border: 1px solid #BBF"></td>
+<td style="vertical-align:top">
+<h1 style="margin-top:0px">I-V Software</h1>
+<h4> Michael D. Kelzenberg </h4>
+<h5> (c) 2015.  All rights reserved.</h5>
+
+<h5>Software web page:<br><a href="http://www.kelzenberg.net/software/IV">http://www.kelzenberg.net/software/IV</a></h5>
+
+</td>
+</tr></table>
+
+
+
+<table style="border: 1px solid black; width: 75%; width-max:400px; margin:auto"><tr><td colspan=2 style="border-bottom: 1px solid black" ><center><b>Instrument manuals</b></center></td></tr>
+<tr><td><center><a href="data/236_900_01E.pdf">23X-series<br><img src="helpimg/pdf48ico.png"></a></center></td>
+<td><center><a href="data/keithley_2400_sourcemeter_full.pdf">24XX-series<br><img src="helpimg/pdf48ico.png"></a></center></td></tr>
+</table>
+
+
+<h2 id="desc">Description</h2>
+<div class="section">
+<p>This software works with Keithley 23X and 24XX series source meter units (SMUs) to perform common types of current-voltage characterization of two-terminal devices.  It is designed to assist with the typical measurements performed at a probe station in an R&ampD environment.  </p>
+
+<p><b>Applications:</b>
+<ul>
+<li> <b>Bulk semiconductors and contacts:</b>  4-point probes, transfer length method, hall effect, ...</li>
+<li> <b>Photovoltaics [solar cells]:</b> Efficiency, <em>V</em><sub>OC</sub>, <em>J</em>/<em>I</em><sub>SC</sub>, <em>FF</em> (fill factor), <em>J</em>/<em>I</em><sub>0</sub> (dark current), <em>n</em> (ideality factor), <em>R</em><sub>OC</sub> (equiv. series resistance @ <em>V</em><sub>OC</sub>), <em>R</em><sub>SC</sub> (equiv. shunt resistance @ <em>V</em><sub>SC</sub>)</li>
+<li> <b>Other diodes [p-n or Schottky]:</b> <em>I</em><sub>S</sub>, <em>n</em>, <em>R</em><sub>S</sub>, <em>V</em><sub>BR</sub>, <em>I</em><sub>REV</sub></li>
+<li> <b>Triodes [transistors]</b> (w/ external bias/gate/excitation supply):  Transconductance, DC gain, Early voltage, output resistance, <em>V</em><sub>TH</sub>, beta, or activation energy (w/ temperature stage), ... </li>
+<li> <b>Thermoelectrics:</b> Thermocouples, Peltier coolers, thermoelectric generators, ... </li>
+<li> <b>Discrete components:</b> cable/conductor/trace resistance, inductor series resistance, dielectric leakage/charging, ...</li>
+<li> <b>Electrochemistry:</b> electrodes, (photo)electrochemial cells, batteries, ...</li>
+<li> <b>Other DC loads:</b>  LEDs, motors, resistors, lamps, relays, solenoids, etc... </li>
+</ul>
+</p>
+</div>
+
+
+<h2 id="warn">Safety disclaimer</h2>
+<div class="section">
+<div class="warning">
+<span style="color:#DD2222"><center><h3>Warning</h3></center></span>
+<b><p>Operating the equipment discussed herein, with or without the use of the I-V Software, might expose you or others to electrical hazards that can result in injury or death, and might also result in damage to the equipment, destruction of connected devices, or fire.  </p>
+<!--<p>Remember that hazards are even greater when performing measurements with unshielded or non-interlocked test fixtures (e.g., manual probe stations), when leaving energized equipment unattended, and when measuring devices capable of storing or producing energy, including inductors, capacitors, batteries, or solar cells.</p>-->
+<p>Neither these instructions, nor any other part of the I-V Software, identify all hazards that may be present.  The software is provided AS-IS with absolutely no warranty, and may function unpredictably or unreliably, or even in ways contradictory to documentation or prior behavior.  </p>
+<p>You, the user(s) of this software, are solely responsible for the safety of people and equipment while using this software.</p></b>
+</div>
+<p>In addition to the general warnings and safety considerations, please consider the following:
+<ul><li> Read and understand the manual for the SMU you are using.</li>
+    <li> Be careful when measuring inductors and capacitors.  Do not attempt to rapidly change an inductor's current or a capacitor's voltage; the resulting voltage or current spikes can damage the SMU or other equipment, and possibly harm you.  Pay particular attention to the SMU's output-off state setting (ZERO or GUARD recommended), and consider adding a spark gap (or solid-state TVS) to protect the instrument.</li>
+	<li> Be careful when using "source I, measure V" modes.  Unintended open circuits (e.g., faulty contacts) can result in the maximum compliance voltage (or possibly more) present at device terminals.</li>
+	<li> Be careful when using 4-point (kelvin connected) measurement techniques.  Resistive (or faulty) contacts can result in dramatically higher voltages present at the "source" terminals than you are measuring or expecting.</li>
+	<li> Be careful when charging/discharging batteries, and <b>read the specific warnings and instructions</b> in the instrument's manual regarding these applications.  In particular, failure to set the instrument's compliance and output-off state as instructed can result in damage to the SMU and the battery.</li>
+    <li> Be especially careful with high voltage, sharp probe tips, unshielded/non-interlocked test assemblies, and unattended energized equipment. </li></ul>	
+</p>
+<!--<div class="imageContainer"><div><img src="helpimg/237disp.png"><span>Safety first!</span></div></div>-->
+</div>
+
+
+<h2 id="require">Requirements</h2>
+<div class="section">
+<p>This software is provided as a win32 binary, and should be capable of running on most PCs running Windows XP through Windows 10.  Source code and binaries for other platforms are not available.  Additional requirements include:
+<ul>
+<li>One of the following supported Keithley SMUs:
+<ul><li>236, 237, or 238 (all tested).</li><li>2400, 2410, 2420, 2425, or 2440 (2420 tested).</li><li>The 2430 SMU should be supported in non-pulsed mode; set SMU type to 2425 (not tested).</li><li>The 2401 low-voltage model should work; set SMU type to 2400 and don't use the 200V range (not tested).</li><li>Newer generation SMUs (e.g., 2600-series) might work using 2400-series emulation (not tested).</li></ul></li>
+<li>A supported GPIB or RS232 (serial) adapter for your PC.  23X-series instruments support GPIB only; 24XX-series instruments support GPIB or RS232.
+<ul><li> Known compatible GPIB adapters include those made by National Instruments such as the USB-GPIB-HS.  The Agilent 82357B adapter has also been used successfully.  Non-NI adapters may require additional software drivers or configuration steps.</li>
+<li>Nearly any RS232 adapter should work; I have tested operation with motherboard-integrated, PCI, and USB interfaces.  Regardless of type, you will need to find and install the appropriate drivers.</li></ul></li>
+<li>NI LabVIEW runtime engine.  This software was built and tested using the 2014 LabVIEW 32-bit runtime engine, available <a href="http://www.ni.com/download/labview-run-time-engine-2014/4887/en/">here</a>.</li>
+<li>NI 488.2 drivers and runtime libraries.  This software was built and tested with NI 488.2 version 14.0, available <a href="http://www.ni.com/download/ni-488.2-14.0/4802/en/">here</a>.  </li>
+<li>NI Serial drivers and runtime libraries.  This software was built and tested with NI Serial version 14.0, available <a href="http://www.ni.com/download/ni-serial-14.0/4814/en/">here</a>. </li>
+<li>NI VISA drivers and runtime libraries.  This software was built and tested with NI VISA version 14.0.1, available <a href="http://www.ni.com/download/ni-visa-run-time-engine-14.0.1/5024/en/">here</a>.</li>
+</ul>
+If you are using GPIB or RS232 only, you might be able to skip installation of some of the drivers above (not tested).  The "full" installer for this software includes the above libraries.  The "stand-alone" installer includes only the I-V software and requires that the above libraries be installed separately.
+</p>
+</div>
+
+<h2 id="install"> Installation and setup </h2>
+<div class="section">
+<p>Start by installing the drivers and runtime libraries required by this software and your GPIB/RS232 interface.  Then, connect the GPIB/RS232 adapter and verify its proper function (e.g., using your computer's device manager or the NI-MAX software).  Finally, connect the communications interface to the SMU and power it on.  Take note of the communications settings displayed on the SMU during the power-on sequence--it will show either its GPIB address, or that it is configured for RS232.</p>
+
+<table class="seriestable"><tr class="tabletop"><td colspan=2 style="width:100%">Default GPIB address</td></tr>
+<tr class="tabletop"><td>23X</td><td>24XX</td></tr>
+<tr><td>16</td><td>24</td></tr>
+</table>
+
+<p>If you need help determining which GPIB adapter or COM port should be used, open the NI-MAX software (included with 488.2 and/or VISA).  For GPIB interfaces, you can use "scan for instruments" to find the SMU directly.  For RS232, the instrument won't appear directly in NI-MAX, but if you are uncertain, you can try communicating with the instrument on available COM ports until you find it.</p>
+
+<p>Upon launching, the I-V software will attempt communicating with the instrument.  If the address and instrument type haven't yet been configured, an error will occur.  Go to the "Instrument settings" tab and enter the correct instrument type and address.  If errors continue, or if the software becomes unresponsive, see <a href="#ts_comms">troubleshooting</a>.</p>
+
+<div class="imageContainer">
+<div><img src="helpimg/instrsettings.png"><span>Initial setup:  Enter the instrument address first, then select the SMU type.</span></div>
+</div>
+<br>
+<div class="tipinfo"><h3 id="opt_rs232">Option: RS232</h3>
+<div class="subsection">
+<p>24XX series instruments support RS232 serial communications.  To use RS232:
+<ul><li>Press the front panel MENU button and navigate to the COMMUNICATION submenu.  (Press LOCAL if needed to enable front panel buttons). </li>
+    <li>Select RS-232.  The instrument will reboot if switching from GPIB mode.</li>
+	<li>Re-navigate to the COMMUNICATION -> RS-232 submenu,</li>
+	<li>Set BAUD to 9600.*</li>
+	<li>Set BITS to 8.</li>
+	<li>Set PARITY to NONE.</li>
+	<li>Set TERMINATOR to LF. </li>
+	<li>Set FLOW CTRL to NONE. </li>
+	<li>Enter the RS232 interface address into the I-V software (e.g., "COM1")**</li>
+</ul>
+<div>* Only 9600 baud is supported.  I've had poor luck using faster baud rates with these instruments.</div>
+<div style="margin-top: 8px">** The address format MUST start with "COM" to be recognized as RS232 by the I-V software. </div>
+</p>
+</div>
+
+</div>
+
+
+
+</div>
+
+
+<h2 id="using"> Performing measurements </h2>
+<div class="section">
+<p> The software supports (3) common types of <b>sweep</b> measurements as well as <b>DC (continuous)</b> operation and <b>custom (manual) commands</b>. </p>
+
+<div class="imageContainer"><div><img src="helpimg/sspv.png"><span>Screenshot of software showing measurements of a 1N4148 diode</span></div></div>
+
+
+<h3 id="sweeps"> Sweeps </h3>
+<div class="subsection">
+<p>  The first two sweep modes, <b>V-I sweep</b> and <b>I-V sweep</b> are continuous, linear-stair sweeps, and are similar in operation:
+<ul><li>Enter values for the sweep start and sweep stop</li>
+    <li>Enter the number of points for the sweep, or alternately, click on the sweep step indicator to open a dialog box in which the desired step value can be entered.</li>
+	<li>Enter the compliance setting, which is a limit value to prevent excessive current (or voltage) from being applied to the device under test.</li>
+	<li>Select the sense mode:
+	<ul><li>2-pt (local sense) uses basic two-wire connections to the device under test</li>
+	    <li>4-pt (remote sense) uses separate source and sense wires to the device under test.  Also known as <a href="https://en.wikipedia.org/wiki/Four-terminal_sensing">kelvin connections</a>.</li>
+	</ul></li>
+	<li> The instrument's selected voltage and current ranges will be displayed.  Unless auto-range is selected, sweeps will be performed using the fixed sense range shown.</li>
+	<li> Press the "Execute" button to begin the sweep.  The sweep progress will be shown on the SMU display, but the I-V software will be unresponsive while the sweep is running.  The graph will be updated upon completion of the sweep.  For particularly long sweeps, you may need to adjust the <a href="#timing">sweep timeout</a>. </li>
+</ul></p>
+<p>The third sweep mode, <b>Diode sweep</b>, is similar to the I-V sweep mode, except it performs a continuous, logarithmic-stair sweep.  This is useful for measuring the exponential I-V behavior of diodes.  Select the current range using the sliders.  The polarity of the current can be positive or negative; however, the sweep always progresses from the smaller  current magnitude to the larger current magnitude.</p>
+
+<p>All sweep modes produce data sets that include voltage, current, time, and instrument-specific flags (e.g., compliance).  The time values are reported by the SMU, which has an internal clock that is reset at the beginning of each sweep.  By default, 24XX instruments report the <em>measured</em> (actual) source value, even if the instrument is in compliance.  23X-series instruments, however, report the <em>commanded</em> source value, which is not equal to the actual source value in cases of compliance.  </p>
+
+<div class="tipinfo">
+<h4 id="autorange"> Option: Auto-range </h4>
+<div class="subsection">
+<p> If selected, auto-range will instruct the instrument to automatically switch to the lowest available measurement range at each point of the sweep.  This process is performed by the instrument, not the I-V software.  Auto-range permits greater dynamic range in measurements.  However, it can cause variations in sweep rates (high-sensitivity ranges have longer measurement delay), and it does not work well with certain devices or noisy configurations.  Generally, auto-range is useful in improving measurement sensitivity.  However, if a sweep returns puzzling results, or takes dramatically longer than intended, turn off auto-range as one of the first troubleshooting steps.  Do not use auto-range in applications where constant dV/dt (or dI/dt) is desired during the sweep.</p>
+<div class="imageContainer"><div><img src="helpimg/autorange.png"><span>Comparison of diode V-I sweeps using fixed 10 mA range (left) and auto range with 100 mA compliance (right).</span></div></div>
+</div>
+</div>
+
+<div class="tipinfo">
+<h4 id="cyclic"> Option: Cyclic sweeps </h4>
+<div class="subsection">
+<p> If selected, this option will append a second sweep sequence from the <em>ending</em> value back to the <em>starting</em> value.  This back-and-forth sweeping can be repeated several times.  The bias will be uninterrupted at either endpoint of the sweep.  This is useful for measuring hysteretic I-V behavior, such as that of <a href="https://en.wikipedia.org/wiki/Cyclic_voltammetry">electrochemical electrodes</a>, or that associated with <a href="https://en.wikipedia.org/wiki/Ferroelectricity">ferroelectric devices.</a></p>
+<p> Another useful application of cyclic sweeping is to verify the validity of certain challenging sweeps in which hysteresis is <em>not</em> expected, but might occur due to poor measurement setup.  Common examples include <b>semiconductor devices with poor contacts</b>, in which resistive or one-directional contacts prevent the applied bias from reaching the device at certain voltages, or <b> high-voltage insulators</b> in which slow dielectric charging processes (charge trapping) give rise to non-linear time-varying leakage currents.  In such cases, a cyclic sweep should be performed to confirm agreement between the forward and backward sweep directions.  The appearance of hysteresis would then reveal a problem with the measurement setup, which might be resolved by slower sweep rates, four-wire contacts, or properly guarded test apparatus.  </p>
+</div>
+</div>
+
+</div>
+
+
+<h3 id="DC"> DC (continuous) mode </h3>
+<div class="subsection">
+<p> Unlike sweep measurements, <b>DC (continuous)</b> measurements operate indefinitely at a fixed voltage or current.  Measurements are read continuously from the instrument, and are displayed on the graph in real-time.  </p>
+
+<p> To start operation in DC mode, first select the source mode (voltage or current) and the sense mode (2-pt or 4-pt).  Then, enter the source value and compliance value, and select any other desired options.  Press "Operate" to begin the measurement.  The bias will be applied to the device under test, and measurements will be recorded continuously.  Data will be plotted as a time series on the graph.  Integrated charge and energy will be reported in the analysis results area (see <a href="#da_time">power/charge integration</a>).</p>
+
+<div class="subsection"><p><b>Note:</b> To prevent software lag, only the most recent 1000 data points are displayed on the graph during DC-mode operation.  Earlier data points are retained in memory, and will be available for plotting and exporting after ending the measurement sequence.  The upper limit on the number of data points depends on computer speed and memory, and on other limits imposed by LabVIEW or 32-bit memory address space.  Modern computers can easily record ~100,000 data points, I have not yet found reason to record larger data sets.  Therefore, there has been no attempt to optimize the code for larger data sets.  It is likely that, after a large number of points have been recorded, the rate of measurements will decrease as the computer becomes fully burdened with storing measurements in memory.</p></div>
+
+<p>Press "Operate" again to terminate measurements and remove the device bias.</p>
+
+<p> When DC mode is operating, you can change the source current or voltage value as well as the compliance value.  The changes will be reflected immediately on the instrument.  Auto-ranging, integration time, averaging, and sweep delay can also be changed on the fly.</p> 
+
+<p> The time between measurements is determined by the software "sweep delay" setting, as well as instrument settings including the selected sensitivity range, integration period, and number of averages.  Due to variations in communication and software execution speed, measurements do not occur at precisely timed intervals.  Unlike sweep measurements, the time data values are not based on the instrument's internal timer; rather, they are based on a software timer.  The accuracy of these time values is not specified.  Thus, the time data might include a slight long-term drift that might vary from one computer to the next.  Also, each data point's time value might differ slightly from the actual time of measurement due to variations in software execution order and speed.  In practice, I have found the time values to be sufficiently accurate for all applications encountered to date.</p>
+
+<div class="subsection"><p><b>Note:</b> With GPIB, measurement rates can exceed 10 per second.  The RS232 I/O codes are much slower, and the maximum read rate is approximately 2-3 per second.  </p></div>
+
+<div class="imageContainer" style="margin-top: 20px; margin-bottom: 100px;"><div><img src="helpimg/timevarying.png"><span>Time-varying current in a forward-biased p-n junction diode, measured in a drafty room.  The changes in current are primarily due to temperature fluctuations.</span></div>
+</div>
+
+<div class="tipinfo"><h4 id="contactcheck">Option: Contact threshold</h4>
+<div class="subsection">
+<p> To assist with probing sensitive or fragile devices, this feature provides instant visual or audible feedback when contact has been made.  To use: configure DC voltage source operation at a safe voltage such as 1V, with a reasonable current compliance such as 2 mA; then start DC-mode operation.  With the probe(s) out of contact, the device current will be ~0 A.  Set the contact threshold to 0.001 (A), and enable audible ("beep") and/or visual ("flash screen") contact indication.  Then, approach the device with the probe(s).  Contact feedback will occur once the measured device current reaches 1 mA. </p>
+
+<p>It may be helpful to first touch the probes together to verify wiring and instrument setup.</p>
+
+<p>The appropriate values for bias and contact threshold will depend on the I-V behavior of the device under test.</p>
+
+<p> When sourcing current and measuring voltage, the contact threshold specifies a voltage <em>below</em> which contact occurs.  Make sure to use a safe voltage compliance if such usage might expose the operator to live probe voltages--and never intentionally touch probes, conductors, or devices while the SMU is ON.  </p>
+
+<p><b>Beep</b> means that the computer will play the default Windows notification sound, and that the SMU will beep (24XX series only).</p>
+
+<p><b>Flash screen</b> means that the software window background will turn bright red.</p>
+
+<div class="imageContainer" style="margin-top: 20px; margin-bottom: 60px;"><div><img src="helpimg/dc_cont.png"><span>Screenshot showing DC-mode control options with contact indication.</span></div>
+</div>
+
+</div>
+</div>
+
+</div>
+
+<h3 id="custom"> Custom commands </h3>
+<div class="subsection">
+<p>The <em>custom commands</em> sweep allows you to manually specify commands to perform sweep types that are otherwise not supported in this software.  Three text fields are provided for commands, the <b>sweep config</b> command, the <b>on/trigger/read</b> command, and the <b>off</b> command.  These commands are combined with <a href="#advcmd"> advanced instrument setting </a> commands.  When a custom sweep is executed, the following commands are sent to the instrument:
+<ol><li><b>RESET command</b> (J0XO0X for 23X; *RST for 24XX)</li>
+    <li><b>Adv. init commands</b>, <em> if enabled </em></li>
+	<li><b>Custom sweep config commands</b></li>
+	<li><b>Adv. pre-sweep commands</b>, <em> if enabled </em></li>
+	<li><b>Custom on/trigger/read commands</b></li>
+	<p style="margin: 6px;">At this point, the data is read from the instrument.  Optionally, the software will wait for GPIB SRQ before initiating the read.  In general, 23X-series instruments should use the wait-for-SRQ read method, whereas 24XX-series instruments can be configured either way.</p>
+	<li><b>Custom off command</b></li>
+	<li><b>Adv. post-sweep commands</b>, <em> if enabled</em></li>
+</ol>
+</p>
+<p>In this mode, except for the initial RESET command, no other commands are automatically generated by the software.  So, none of the instrument timing settings from the <a href="#timing">timing and averages</a> tab will be transmitted to the instrument.  To assist in verifying (or debugging) a custom command sweep, turn on the "debug" option under <a href="#advcmd">advanced instrument settings</a>.</p>
+<p>After the sweep data has been returned, the software will parse the data and display it on the graph.  The software can only process ASCII-formatted data, so the custom commands must instruct the instrument to return data in ASCII format.  The preferred format commands are:</p>
+<ul><li><b>23X-series:</b> G13,1,2X</li>
+    <li><b>24XX-series:</b>  :FORM ASC;:FORM:ELEM VOLT,CURR,TIME,STAT</li></ul>
+<p>
+<table class="examplecode">
+<tr><td colspan=2><b>Example:</b> these commands should perform a pulsed voltage sweep on a 2430 SMU.  This program comes from the instrument manual, Table 5-2: Basic pulse programming example.</td></tr>
+<tr><td>Custom sweep config commands</td><td>
+:SOUR:FUNC:SHAP PULS;<br>
+:SOUR:PULS:WIDT 0.002;<br>
+:SOUR:PULS:DEL 0.003;<br>
+:SENS:VOLT:NPLC 0.08;<br>
+:TRIG:COUN 25;<br>
+:SOUR:FUNC VOLT;<br>
+:SOUR:VOLT:MODE FIXED;<br>
+:SOUR:VOLT:RANG 20;<br>
+:SOUR:VOLT:LEV 10;<br>
+:SENS:CURR:PROT 10E-3;<br>
+:SENS:FUNC "CURR";<br>
+:SENS:CURR:RANG 10E-3;<br>
+:FORM ASC;<br>
+:FORM:ELEM VOLT,CURR,TIME,STAT;</td></tr>
+<tr><td>Custom sweep on/trigger/read command</td><td>:READ?</td></tr>
+<tr><td>Wait for SRQ to read?</td><td>FALSE</td></tr>
+<tr><td>Custom off command</td><td><em>(none)</em></td></tr>
+</table>
+</p>
+
+</div>
+
+<h3 id="saving"> Exporting/importing data </h3>
+<div class="subsection">
+<p>There are several ways to export data from the I-V software:
+<ul><li><b>Save data.</b>  This button will open a file dialog to save the I-V data.  The file format is tab-separated ASCII (suitable for opening in a spreadsheet program such as Excel).  Saved files also contain additional segments including the analysis settings &amp results, and the <a href="#dtadesc"> data description </a> field (if present).  </li>
+    <li><b>Copy data.</b>  This button copies the data to the clipboard in tab-separated ASCII format, suitable for pasting into most data processing or spreadsheet software.  If selected, the analysis results (if displayed) are also included.</li>
+	<li><b>Copy graph</b> (as bitmap).  To copy the graph as an image, exactly as it is displayed on screen, right-click on the graph area and select "Copy data."  The graph will be copied as a bitmap image.</li>
+	<li><b>Export graph</b> (as image or data table).  To export the graph in a different image format, or to directly export the data plotted, right-click on the graph area and select the "Export" submenu.  With this approach it is possible to export the graph in vector graphics format (emf or eps). </li>
+</ul>
+</p>
+
+<p>To load prior trace data, use the "Load Data" button.  The data file format much match that of files saved by this software, i.e., tab-separated ASCII with appropriate headers and/or metadata.  If trying to import data from other sources, open a previously saved file in a text editor to view the file format.
+</p>
+
+</div>
+
+<h3 id="graphmds"> Graphing data </h3>
+<div class="subsection">
+<p>The software provides numerous options to plot the measured data.  Controls for zooming, panning, lin/log scale, and data selection are provided.  The graph mode selector provides the following options:
+<ul><li>Current vs. Voltage </li>
+    <li>Voltage vs. Current </li>
+	<li>Current vs. Time</li>
+	<li>Voltage vs. Time</li>
+	<li>Power vs. Time (calculated for each data point as P=IV)</li>
+	<li>Resistance vs. Time (calculated for each data point as R=V/I)</li>
+</ul>
+</p>
+<div class="imageContainer" style="margin-top: 20px; margin-bottom: 60px;"><div><img src="helpimg/graphhelp.png"><span>Illustration of graph controls.</span></div>
+</div>
+
+
+
+</div>
+
+
+</div>
+
+
+<h2 id="analysis"> Data analysis </h2>
+<div class="section">
+
+<h3 id="da_res"> Resistance </h3>
+<div class="subsection">
+<p>A single (V,I) data point conveys the resistance (R=V/I) of a resistor, but it is often of interest to measure the average resistance over a number of bias values, or to measure the incremental (small-signal) resistance (R=dV/dI) of non-linear semiconductor devices such as diodes (series resistance) and transistors (output resistance).  The resistance fit performs a linear fit to a selected region of I-V data, and is useful for these applications.  Drag the graph cursors to indicate the start and stop of the fit range.  The default type of fit is a linear regression fit.</p>
+
+<p>Options:
+<ul><li>Hold <b>shift</b> while pressing the resistance analysis button to perform a simple, 2-point fit to the two cursors (instead of a regression fit).</li>
+    <li><b>Double-click</b> the resistance fit button to automatically select the fit range.  The software will select the largest span of data points for which valid (i.e., non-compliance) measurements are present.  This is generally useful for linear resistive devices, and is especially useful when using 23X-series instruments, which lack source read-back capability.  </li></ul>
+</p>
+
+<p>
+<table class="examplecode"><tr><td colspan=2><b>Resistance analysis outputs </b></td></tr>
+<tr><td>R</td><td>Resistance (Ohms); slope of fit line on I-V plot</td></tr>
+<tr><td>FitMSE</td><td>Mean square error of regression fit  <br>(NaN for non-regression fit.)</td></tr>
+<tr><td>Isc</td><td>Current intercept of fit line <br> ("short circuit current")</td></tr>
+<tr><td>Voc</td><td>Voltage intercept of fit line <br> ("open circuit voltage; early voltage")</td></tr>
+<tr><td>FitRngV<br>FitRngI</td><td>Fit range, start and endpoints</td></tr>
+<tr><td>R'</td><td>Resistance per area (Ohms/cm2)*</td></tr>
+<tr><td>A</td><td>Device area (record of parameter)*</td></tr>
+</table>
+* Validity of these values depends on validity of the device area parameter.
+</p>
+
+</div>
+
+<h3 id="da_4pt"> 4-point probe </h3>
+<div class="subsection">
+<p>The 4-point probe is the standard instrument for quickly measuring wafer resistivity, or checking the sheet resistance of an epi or diffused layer.  The probe comprises a <a href="https://en.wikipedia.org/wiki/Electrode_array">Wenner electrode array</a> with four colinear equally spaced electrodes.  This configuration is illustrated below, along with the relevant equations.  A brief discussion of the theory can be found <a href="http://fabweb.ece.illinois.edu/gt/equations/fpp.aspx">here</a>, or in any microelectronics fabrication textbook or website.  However, note that terminology and symbol usage vary between authors; make sure to understand the purpose of the lateral correction factor <em>C</em> as used in this software.</p>
+
+<div class="imageContainer"><div><img src="helpimg/4pt_illus.png"><span>4-point probe illustration and equations.</span></div></div>
+
+<p>This software uses the general equations for sheet resistance and resistivity shown above (labeled "otherwise").  This resistivity equation already includes the first-order wafer thickness correction factor.  The parameter <em>C</em> is a <em>lateral correction factor</em>, and comes into play when the lateral extent of the conductor (<em>D</em>) does not satisfy <em>D</em> &gt&gt <em>s</em>.  This occurs with small wafers, or with small diffusion test areas on a process wafer.  The value of <em>C</em> has been analyzed extensively for various test geometries (the "Haldor-Topsoe geometric factors"); as of this writing, two online resources can be found <a href="http://www.four-point-probes.com/haldor-topsoe-geometric-factors-in-four-point-resistivity-measurement/">here</a> and  <a href="http://www.cleanroom.byu.edu/fourpointprobe.parts/GeometricFactorsManual.pdf">here</a>.  </p>
+
+</p> <b> Usually, <em>D</em> &gt&gt <em>s</em>, and the lateral correction factor is <em>C</em> = 1.0.</b>  For a circular wafer, in the limiting case of <em>D</em> = 3<em>s</em>, <em>C</em> = 0.5.  This is not a lower limit, however; non-circular conductors, or probes placed near the edge of the conductor, can have even lower values for <em>C</em>.</p>
+
+<p> Most semiconductors have well-established relationships between resistivity and dopant concentrations; as of this writing, a useful online calculator for silicon can be found <a href="http://www.solecon.com/sra/rho2ccal.htm">here</a>. </p>
+
+
+<p>Options/tips:
+<ul><li>Hold <b>shift</b> while pressing the 4-probe analysis button to perform a simple, 2-point fit to the two cursors (instead of a regression fit).</li>
+    <li><b>Double-click</b> the 4-probe fit button to automatically select the fit range.  The software will select the largest span of data points for which valid (i.e., non-compliance) measurements are present.  This is particularly useful for 4-probe measurements with 23X-series instruments.  </li>
+	<li>When first finding the appropriate voltage/current sweep settings, it is useful to make use of the F3/F4, F9/F10, F1, and F2 <a href="#fkeys"> function keys</a>.</li></ul>
+</p>
+
+<p>
+<table class="examplecode"><tr><td colspan=2><b>4-probe analysis outputs </b></td></tr>
+<tr><td>Rs</td><td>Sheet resistance (Ohms/square)</td></tr>
+<tr><td>Rho</td><td>Resistivity (Ohm-cm); valid only if <em>t</em> is known</td></tr>
+<tr><td>R<br>FitMSE<br>Isc<br>Voc<br>FitRng</td><td>Parameters from resistance analysis (see above)</td></tr>
+<tr><td>s</td><td>4-probe spacing (um) (record of parameter)</td></tr>
+<tr><td>t</td><td>Sample thickness (um) (record of parameter) </td></tr>
+<tr><td>C</td><td>4-probe lateral correction factor (record of parameter)</td></tr>
+</table>
+</p>
+
+</div>
+
+<h3 id="da_pv"> Solar cell </h3>
+<div class="subsection">
+<p>The solar cell analysis automatically extracts the open-circuit voltage, short-circuit current, fill factor, and other parameters related to photovoltaic behavior.  Efficiency is calculated based on the provided values for the device area and incident power density.  The analysis works regardless of the polarity of the photovoltaic device, i.e., results are extracted from either quadrant IV ("conventional" polarity) or quadrant II ("reverse" polarity).</p>
+
+<p>Options/tips:
+<ul>
+    <li><b>Double-click</b> the solar cell analysis button to automatically scale the graph on the region of photovoltaic power generation.  A graph cursor will indicate the point of maximum power.  </li>
+	<li>The software can try to detect suspicious PV analysis results, by looking for non-monotonic fluctuations in photocurrent.  The "flicker" parameter sets this threshold.  </li>
+	<li>The analysis will also extract the local slope (resistance) of the I-V curve at the open-circuit and short-circuit points.  These values can be useful in identifying major problems with shunt and series resistance; however, unless the I-V data is "clean and smooth", these extracted values tend to reflect measurement artifacts.  The "slope neighborhood" field sets the number of points over which each slope is calculated.  </li> </ul>
+</p>
+<p>
+<table class="examplecode"><tr><td colspan=2><b>Solar cell analysis outputs </b></td></tr>
+<tr><td>EFF</td><td>Efficiency (%)*</td></tr>
+<tr><td>FF</td><td>Fill factor (%)</td></tr>
+<tr><td>Voc</td><td>Open-circuit voltage (mV)</td></tr>
+<tr><td>Jsc</td><td>Short-circuit current density (mA/cm2)*</td></tr>
+<tr><td>Vmax</td><td>Maximum power point voltage (mV)</td></tr>
+<tr><td>Jmax</td><td>Maximum power point current density (mA/cm2)*</td></tr>
+<tr><td>Isc</td><td>Short circuit current (A)</td></tr>
+<tr><td>Rsc</td><td>Short-circuit resistance dV/dI (Ohms)</td></tr>
+<tr><td>Roc</td><td>Open-circuit resistance dV/dI (Ohms)</td></tr>
+<tr><td>A</td><td>Device area (cm2) (record of parameter)*</td></tr>
+<tr><td>Incd. Pwr</td><td>Incident power density (mW/cm2) (record of parameter)*</td></tr>
+</table>
+* Validity of these values depends on validity of the device area and incident power density parameters.
+</p>
+
+
+</div>
+
+<h3 id="da_diode"> Diode </h3>
+<div class="subsection">
+<p>The diode analysis fits the exponential current-voltage behavior of a semiconductor p-n or Schottky junction diode.  The result is a linear fit on a semilog plot, allowing extraction of diode parameters including ideality factor <em>n</em> and saturation current <em>I</em><sub>0</sub>.  To use, position the graph cursors to select the region of exponential I-V behavior, i.e., the knee of the I-V curve.  Then press the diode analysis button and view the fit on a semilog plot.  </p>
+
+<p>Options/tips:
+<ul>
+    <li>Normally, ideality factor is extracted assuming a junction temperature of 300K.  If the device is at a different temperature, press <b>shift</b> while pressing the diode analysis button.  This will bring up a dialog box to input the device temperature.  </li>
+</ul>
+</p>
+<p>
+<table class="examplecode"><tr><td colspan=2><b>Diode analysis outputs </b></td></tr>
+<tr><td>n</td><td>Diode ideality factor</td></tr>
+<tr><td>J0</td><td>Diode dark/saturation current density (A/cm2)*</td></tr>
+<tr><td>I0</td><td>Diode dark/saturation current (A) </td></tr>
+<tr><td>FitSlope</td><td>The slope of the linear fit line on the semilog plot</td></tr>
+<tr><td>FitMSE</td><td>The mean-square-error of the linear fit</td></tr>
+<tr><td>FitRngV</td><td>The start and end of the fit interval (voltages)</td></tr>
+<tr><td>A</td><td>Junction area (cm2) (record of parameter)*</td></tr>
+</table>
+* Validity of these values depends on the validity of the device area parameter.
+</p>
+
+</div>
+
+<h3 id="da_time"> Power/charge integration </h3>
+<div class="subsection">
+<p>When performing DC measurements, or viewing I-V data plotted in "Current vs. time" or "Voltage vs. time" modes, the software can integrate the power and charge dissipated (or generated) by the device under test.  This occurs automatically during DC measurements.  To display integrated power/charge after a measurement is complete, switch to "Current vs. Time" or "Voltage vs. time" graph modes, then drag the cursors to define the start and stop of the integration period.  Results will be displayed automatically.</p>
+
+<p> As discussed in the description of DC-mode measurements, software timing issues might introduce slight errors in total power and charge calculations.  These errors should be negligible in all but the most demanding applications.  </p>
+
+<p> Sometimes, the integrated power or charge values will report 'NaN' (not a number).  This means that the selected time interval contains invalid measurement points, or measurement points from which power (or charge) cannot be determined.  The most frequent cause is that the instrument reported compliance for one or more measurements.  The 23X-series source meters lack source-readback capability, thus when compliance occurs, the actual power delivered to the device cannot be determined.  </p>
+
+<table class="examplecode"><tr><td colspan=2><b>Power/charge integration outputs </b></td></tr>
+<tr><td>T</td><td>Duration of selected time interval (s)</td></tr>
+<tr><td>S</td><td>Integrated energy (W-hr)</td></tr>
+<tr><td>Q</td><td>Integrated charge (A-hr) </td></tr>
+<tr><td>P_avg</td><td>Time--averaged power over selected interval (W)</td></tr>
+<tr><td>I_Avg</td><td>Time-averaged current over selected interval (A)</td></tr>
+<tr><td>T1</td><td>Start time of time interval (s)</td></tr>
+<tr><td>T2</td><td>End time of time interval (s)</td></tr>
+</table>
+
+</div>
+
+
+<h2 id="settings">Options and features </h2>
+<div class="section">
+<p></p>
+
+<h3 id="timing"> Timing and averages </h3>
+<div class="subsection">
+<div class="imageContainer"><div><img src="helpimg/timingopts.png"><span>Timing and averaging options</span></div></div>
+<p>
+<ul>
+  <li><b>Sweep delay</b> specifies the delay between voltage or current steps in a sweep, and is programmed to the SMU prior to sweep start.  Specifically, this setting controls the delay between changing the bias level and beginning the reading(s).  Depending on instrument configuration, this delay is usually added to or merged with a default delay for each measurement range.  During DC-mode measurements, the sweep delay determines the approximate minimum delay between successive measurements, and is not transmitted to the SMU as part of the measurement process.</li>
+  <li><b>Integration period</b> controls analog integration on the SMU.  Available integration periods are instrument-dependent.</li>
+  <li><b>Averages</b> controls digital integration on the SMU.  For each data point, the SMU performs the specified number of readings and returns the average as the result.</li> 
+  <li><b>Config delay</b> is a software setting that specifies the approximate time delay between preparing the SMU for a sweep, and commanding the start of the sweep.  The primary use of this feature is to allow time for an interlocked/triggered excitation source to stabilize before starting the sweep -- such as a solar simulator that opens its shutter during the sweep.  Sweeps with many commands or data points might take longer for the instrument to receive and process, and the actual delay between the end of configuration and the beginning of the sweep might be reduced.  Note that during DC-mode operation, the SMU bias is applied without any delay; in this case only the first measurement is delayed.</li>
+  <li><b>Sweep timeout</b> is a software setting that specifies the amount of time to wait for the sweep results to be returned by the instrument.  In the event that a communication or configuration error occurs, this timeout should prevent the software from remaining unresponsive indefinitely.  However, if very long sweeps are being performed, a correspondingly longer sweep timeout is required; otherwise the software will timeout without reading the sweep results.</li>
+</ul>
+
+</p>
+
+</div>
+
+<h3 id="presets"> Presets </h3>
+<div class="subsection">
+<div class="imageContainer"><div><img src="helpimg/presetsindicator.png"><span>Preset indicators</span></div></div>
+<p>Presets provide a way of storing and recalling commonly used sweeps, analysis options, export actions, and graph zoom settings.  They are accessed using keyboard shortcuts.</p>
+
+<p><b>Measurement presets:</b>  There are four measurement preset banks, F5-F8.  Each preset can be associated with a sweep or DC-mode measurement configuration.  Sweep configuration presets can also be associated with an analysis action (resistance, 4-probe, solar cell, or diode) and an export action (save data or copy data).  </p>
+<p>To program a preset (e.g. F5), first configure and perform the desired measurement.  If desired, configure and perform the desired analysis, and/or copy or save the data.  Press the &ltctrl&gt - F5 keys to store the preset.  The F5 indicator will flash on screen.  The preset will be associated with whichever sweep type is shown on the screen (including all settings for that sweep type), the most recently performed analysis type and options (if performed), and the most recently performed export action (save or copy, if either).</p>
+<p>To recall the presets measurement and analysis settings, press the F5 key.</p>
+<p>To recall the preset, perform the measurement, perform the analysis, and export the data, double-tap the F5 key.</p>
+
+<p><b>Graph view presets:</b>  There are two graph view preset banks, F11 and F12.  The presets store the graph's zoom, display mode, and axis mapping settings.  To program a preset, press the &ltctrl&gt-F11 keys.  To recall the graph view settings, press the F11 key.</p>  
+
+</div>
+
+<h3 id="fkeys"> Keyboard shortcuts </h3>
+<div class="subsection">
+
+<p>
+<table class="examplecode"><tr><td colspan=2><b>Keyboard shortcuts </b></td></tr>
+<tr><td>` (~&nbspkey)</td><td>Auto-scale the graph</td></tr>
+<tr><td>F1</td><td>Execute the selected sweep, or start/stop DC-mode operation</td></tr>
+<tr><td>F2</td><td>Perform 4-probe analysis</td></tr>
+<tr><td>F3</td><td>Decrease the source sweep range or value</td></tr>
+<tr><td>F4</td><td>Increase the source sweep range or value</td></tr>
+<tr><td>F5<br>F6<br>F7<br>F8</td><td>Measurement presets keys:<br>
+     <div class="indent">Single press: Recall preset settings</div>
+     <div class="indent">Double press: Recall and perform preset settings</div>
+	 <div class="indent">&ltctrl&gt-press: Store preset settings</div>
+	 </td></tr>
+<tr><td>F9</td><td>Decrease the compliance value</td></tr>
+<tr><td>F10</td><td>Increase the compliance value</td></tr>
+<tr><td>F11<br>F12</td><td>Graph zoom preset keys:<br>
+      <div class="indent">Single press: Recall graph zoom preset</div>
+	  <div class="indent">&ltctrl&gt-press: Store graph zoom preset</div>
+	  </td></tr>
+<tr><td>Shift</td><td>Modify behavior of certain functions:<br>
+     <div class="indent"> Operate/execute buttons: prevent graph auto-scale at end of measurement</div>
+	 <div class="indent"> Resistance, 4-probe analysis buttons: Perform simple (non-regression) fit</div>
+	 <div class="indent"> Diode analysis button: Use non-default temperature for analysis</div></td></tr>
+</table>
+</p>
+
+</div>
+
+<h3 id="advcmd"> Advanced instrument commands </h3>
+<div class="subsection">
+
+<div class="imageContainer"><div><img src="helpimg/advcmd.png"><span>Example instrument commands</span></div></div>
+
+<p>Advanced instrument commands enable custom instrument commands to be integrated within the software's sweep (and DC-mode) routines.  Example capabilities include triggering other instruments, custom interlocks, front/rear terminal selection, enabling/disabling source read-back, ...</p>
+<p>For example, with a 2420 instrument in a solar cell testing laboratory, I used the commands shown above to provide an audible beep at the start and end of each sweep, and to control the shutter on the solar simulator.  For shutter control, we fashioned a cable assembly to connect the relevant pins of the digital output connector on the 2420, to the TTL input pins on our solar simulator's shutter.</p>
+<p>Each command group will only be sent to the instrument if the adjacent checkbox is checked.</p>
+
+<div class="tipinfo"><h4 id="iodebug">Option: I/O debug window</h4>
+<div class="subsection">
+<p>For assistance when developing command strings for advanced instrument settings or custom sweeps, open the I/O debug window by enabling the "Debug mode" option under the "Advanced" tab.  This window shows all commands that are sent to the instrument, and is helpful for identifying syntax errors or invalid command sequences.  This window opens automatically upon I/O errors.</p>
+
+<div class="imageContainer" style="margin-top: 20px; margin-bottom: 30px;"><div><img src="helpimg/iodebug.png"><span>I/O debug window</span></div>
+</div>
+
+</div>
+</div>
+
+</div>
+
+<h3 id="dtadesc"> Data description field </h3>
+<div class="subsection">
+<p>When saving measurement data, it is usually a good idea to include notes describing the device measured and the measurement conditions.  To assist with this process, a data description field is provided under the "Data" tab.  Selecting "Auto-clear description" will clear the description field with each new measurement, and selecting "Prompt for info with save" will ensure that an updated description is provided with each file saved.  To disable this feature, leave the Description field blank and clear the "Prompt for info..." checkbox.  </p>
+
+</div>
+
+
+
+</div>
+
+
+<h2 id="troubleshoot"> Troubleshooting and tips </h2>
+<div class="section">
+<p></p>
+
+<h3 id="ts_comms"> Instrument communications </h3>
+<div class="subsection">
+<p>The I-V software immediately tries to communicate with the instrument upon being launched.  If the instrument type or address are incorrectly configured, this will result in a communication error.  Normally this is not a problem, but under certain hardware configurations it is possible that this will cause the software to hang or become unresponsive, making it impossible to change the instrument address setting to the correct value.  </p>
+<p>If this occurs, find the "IV.ini" file in your system temporary directory, which for windows 7 is:
+<ul style="list-style-type:none"><li>C:\Users\&ltusername&gt\AppData\Local\Temp</li></ul>
+Open this file and, under the [SMU] heading, enter the correct value for the instrument type and address, such as "236" and "16".  Save this file, then re-load the I-V software.</p>
+<p> If the file does not exist, create it and enter the following three lines:
+<ul style="list-style-type:none"><li>[SMU]<br>GPIB="16"<br>DEV="236"<li></ul>
+Even if you are using a 24XX instrument with RS232, enter the address after "GPIB=", e.g., 
+<ul style="list-style-type:none"><li>[SMU]<br>GPIB="COM3"<br>DEV="2400"<li></ul>
+</p>
+
+</div>
+
+<h3 id="ts_compl"> Compliance with larger devices </h3>
+<div class="subsection">
+<p>When measuring larger solar cells (&gt ~ cm<sup>2</sup>), sometimes confusing behavior can occur.  Symptoms include erratic I-V data, and illumination of the "COMPL" indicator on the SMU with or without the compliance flag being reported in the measurement data.  This is because of the large capacitance of such devices, which causes the SMU to enter compliance when the bias voltage is changed, even if the steady-state device current is well below the compliance value.  Sometimes this can lead to oscillations that prevent reaching steady state.  One solution is to add some resistance in series with the SOURCE HI terminal and use 4-wire sensing to remove the effect of this resistor from the measurement data.  The resistance required depends on the device and instrument range settings, but I've used values ranging from 1 - 100 Ohms.  More information can be found in the <a href="#top">SMU manual</a>.</p>
+
+</div>
+
+
+
+
+</div>
+
+
+
+<h2 id="license"> Licensing & other issues</h2>
+<div class="section">
+<p> This software is <b>freeware, for non-commercial use only.</b>  For commercial use, please contact me. </p>
+
+<p> The Freeware Software License can be found <a href="LICENSE.rtf">here</a>.  You may use this software for free, for non-commercial purposes only, on as many computers as you want, for as long as you see fit; however, you may not sell this software, include it in a product, or offer it for download on your web site.  </p>
+
+<p> If you find this software to be especially useful, please write me a note to let me know, or acknowledge it in your paper or thesis.  Alternately, you may mail me one million dollars in small, unmarked bills. Your support will be greatly appreciated.</p>
+
+
+<h3 id="contact"> Contact </h3>
+<div class="subsection">
+<p>Michael Kelzenberg<br>
+<a href="mailto:mike@kelzenberg.net">mike@kelzenberg.net</a>
+<!--<img src="helpimg/mkeml.png"></p>-->
+</div>
+
+<h3 id="support"> Support </h3>
+<div class="subsection" style="margin-bottom: 40px">
+<p>This software is provided for free.  Technical support is not generally available; however, feel free to contact me with bug reports or ideas.  </p>
+</div>
+</div>
+<hr>
+<p><center><em>(c) 2015, Michael Kelzenberg.  All rights reserved.  </em></center></p>
+
+</div>
+</div>
+</div>
+
+
+</div>
+
+</body>
+</html> 
