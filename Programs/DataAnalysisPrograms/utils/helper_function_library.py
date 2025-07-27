@@ -13,6 +13,11 @@ import numpy as np; import glob; import time; from tqdm import tqdm
 
 #%% miscellaneous plotting and helpful functions  
 
+
+def test():
+    print('here')
+    return None
+
 def init_plot_params():
     mpl.rcParams.update(mpl.rcParamsDefault)
     fontsize = 18

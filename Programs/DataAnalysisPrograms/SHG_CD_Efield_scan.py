@@ -14,32 +14,34 @@ import astropy.units as unit
 import helper_function_library as hf
 hf.init_plot_params()
 
+num_gates = 20
 path = '/Users/carterfox/Library/CloudStorage/GoogleDrive-cdfox@wisc.edu/.shortcut-targets-by-id/1-8q9lGFnGNt4mDzcxXwdk43m1aVWT66q/XiaoWang_Group_data_2024on/'
-path = path+'StackingTransitions/NbOI2/Lvgroup/Efield-samples-for-optics/SHG/CD-Efield/'
+path = path+'StackingTransitions/NbOI2/Lvgroup/Efield-samples-for-optics/90deg_3L3L/SHG/CD-Efield/'
 
-f1_c1 = hf.get_CD_data(path+'../CD/flake1_circ131..txt')
-f1_c2 = hf.get_CD_data(path+'../CD/flake1_circ221.txt')
-s_c1 = hf.get_CD_data(path+'../CD/stacked1_circ131..txt')
-s_c2 = hf.get_CD_data(path+'../CD/stacked1_circ221..txt')
-f1_CD, f1_CD_err = hf.CD(f1_c1[0],f1_c2[0],f1_c1[1],f1_c2[1])
-s_CD, s_CD_err = hf.CD(s_c1[0],s_c2[0],s_c1[1],s_c2[1])
+# f1_c1 = hf.get_CD_data(path+'../CD/flake1_circ131..txt')
+# f1_c2 = hf.get_CD_data(path+'../CD/flake1_circ221.txt')
+# s_c1 = hf.get_CD_data(path+'../CD/stacked1_circ131..txt')
+# s_c2 = hf.get_CD_data(path+'../CD/stacked1_circ221..txt')
+# f1_CD, f1_CD_err = hf.CD(f1_c1[0],f1_c2[0],f1_c1[1],f1_c2[1])
+# s_CD, s_CD_err = hf.CD(s_c1[0],s_c2[0],s_c1[1],s_c2[1])
 
-flake1_c1 = np.array([526.941,707.882, 796.4705])
-flake1_c2 = np.array([579.1176,724.29,847.94117])
-flake1_c1_std = np.array([24.3935,  31.948271,  30.85662])
-flake1_c2_std = np.array([23.730, 25.87,39.5])
-f1_quickscan_CD, f1_quickscan_CD_err = hf.CD(flake1_c1,flake1_c2,flake1_c1_std,flake1_c2_std)
+# flake1_c1 = np.array([526.941,707.882, 796.4705])
+# flake1_c2 = np.array([579.1176,724.29,847.94117])
+# flake1_c1_std = np.array([24.3935,  31.948271,  30.85662])
+# flake1_c2_std = np.array([23.730, 25.87,39.5])
+# f1_quickscan_CD, f1_quickscan_CD_err = hf.CD(flake1_c1,flake1_c2,flake1_c1_std,flake1_c2_std)
 
 # file = path+'stacked_scan7_EfieldSHG-CD_close_to_elec.txt'
 # file = path+'stacked_scan8_EfieldSHG-CD_middle_of_elec.txt'
 # file = path+'stacked_scan9_EfieldSHG-CD_3V_from_middle_of_elec.txt'
-file = path+'stacked_scan10_EfieldSHG-CD_6V_from_middle_of_elec.txt'
-# file = path+'stacked_scan11_EfieldSHG-CD_11V_from_middle_of_elec.txt'
-scannum = 10
+# file = path+'stacked_scan10_EfieldSHG-CD_6V_from_middle_of_elec.txt'
+file = path+'stacked_scan11_EfieldSHG-CD_11V_from_middle_of_elec.txt'
+scannum = 11
 data = np.loadtxt(file,comments='#')
 
 v = data[:,1]
-cd_info, c1, c2, c1_std, c2_std = hf.CD(data[:,2],data[:,3],data[:,4],data[:,5]), data[:,2],data[:,3],data[:,4],data[:,5]
+c1_std, c2_std = data[:,4]/np.sqrt(num_gates),data[:,5]/np.sqrt(num_gates),
+cd_info, c1, c2, c1_std, c2_std = hf.CD(data[:,2],data[:,3],c1_std, c2_std), data[:,2],data[:,3],c1_std, c2_std
 cd, cd_std = cd_info
 cd = cd-cd[0]
 
@@ -89,7 +91,7 @@ ax0.set_xlabel(r'$E_{||}$ (kV/cm)')
 ax0.set_ylabel('$\Delta$CD (%)')
 # plt.ylabel('Current (nA)',fontsize=18)|
 # ax0.legend(loc='upper left')
-ax0.set_ylim(-15,29)
+ax0.set_ylim(-13,27)
 ax0.set_xlim(-210,210)
 hf.plot_arrow_legend(ax0, x1=-100,y1=15,label='$E_{||}$')
 plt.savefig(path+'Esweep_SHG-CD_normed_scan'+str(scannum)+'.png',bbox_inches='tight',dpi=500)

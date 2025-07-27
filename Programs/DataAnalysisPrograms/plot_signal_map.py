@@ -9,7 +9,14 @@ plotting for signal mapping
 import numpy as np
 import matplotlib.pylab as plt
 import matplotlib.cm as cm
+import matplotlib as mpl
 from matplotlib import transforms
+from matplotlib_scalebar.scalebar import ScaleBar
+import helper_function_library as hf
+from scipy import interpolate
+hf.init_plot_params()
+
+plt.rcParams["figure.constrained_layout.use"] = False
 
 
 # path = '/Users/carterfox/Library/CloudStorage/GoogleDrive-cdfox@wisc.edu/.shortcut-targets-by-id/1-8q9lGFnGNt4mDzcxXwdk43m1aVWT66q/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/HQGraphene Crystals/10-11/chip4/T-S_TL/MOKE_RMCD/december2023/'
@@ -23,7 +30,7 @@ temp = '1.7K'
 # file_path = path+'mapping_0T_after_m2p1T.txt'
 # file_path = path+'mapping_fine_0T_after_m2T.txt'
 file_path = path+'mapping_0T_after_m2T.txt'
-# file_path = path+'mapping_fine_0T_after_2T.txt'
+# file_path = path+'mapping_m2p1T.txt'
 # file_path = path+'mapping -1p2T.txt'
 
 field = '0T after -2T'
@@ -52,7 +59,8 @@ nrows, ncols = num_x_points, num_y_points
 plt.ylabel(r'Axis 2 ($\mu$m )',fontsize=14)
 plt.xlabel(r'Axis 1 ($\mu$m)',fontsize=14)
 um_per_volt = 0.2
-ticks=10
+ticks=5
+scale = um_per_volt*yvoltages[1]-yvoltages[0]
 xyticks = np.linspace(np.min(yvoltages)-0.5,np.max(yvoltages)-0.5,num_y_points)
 # plt.yticks(np.linspace(-0.5,num_y_points-0.5,8),np.round(np.linspace(np.max(yvoltages),np.min(yvoltages),8)*um_per_volt,2))
 # plt.xticks(np.linspace(-0.5,num_x_points-0.5,8),np.round(np.linspace(np.min(xvoltages),np.max(xvoltages),8)*um_per_volt,2))
@@ -93,13 +101,15 @@ if any(plot_type == theta_dr):
     
 try:
     plt.figure(figsize=(7,5))
-    plt.ylabel(r'Axis 2 ($\mu$m)',fontsize=14),plt.xlabel(r'Axis 1 ($\mu$m)',fontsize=14)
+    # plt.ylabel(r'Axis 2 ($\mu$m)',fontsize=14),plt.xlabel(r'Axis 1 ($\mu$m)',fontsize=14)
+    # plt.ylabel(r'$\mu$m'),plt.xlabel(r'$\mu$m')
     plt.xticks(np.linspace(0,num_y_points-1,ticks),np.round(np.linspace(np.min(yvoltages),np.max(yvoltages),ticks)*um_per_volt,2))
     plt.yticks(np.linspace(0,num_y_points-1,ticks),np.round(np.linspace(np.min(xvoltages),np.max(xvoltages),ticks)*um_per_volt,2))
     grid = plot_type.reshape((nrows, ncols))
-    
-    im=plt.imshow(grid, cmap=cm.jet)
-    plt.title(sample+'     '+temp)
+    grid = np.rot90(grid)
+    grid = np.rot90(grid)
+    im=plt.imshow(grid, cmap=cm.viridis)
+    # plt.title(sample+'     '+temp)
     cbar=plt.colorbar(im)
     #6, 11.2, 16
     #2.5, 6.2, 11
@@ -110,7 +120,7 @@ try:
     
 except:
     plt.figure(figsize=(6,5))
-    plt.scatter(yvoltages,-xvoltages,s=50,marker='s',c=plot_type,cmap=cm.jet)
+    plt.scatter(yvoltages,-xvoltages,s=50,marker='s',c=plot_type,cmap=cm.viridis)
     cbar=plt.colorbar()
     # plt.clim(0,4)
     # plt.xlim(0,30),plt.ylim(-30,0)  
@@ -120,20 +130,22 @@ except:
     
 cbar.set_label(clabel,fontsize=18)
 # plt.legend(loc='lower left')
-plt.clim(0,3)
+# plt.clim(.2,3)
+# plt.xlim(2,24),plt.ylim(27,1)
 # plt.scatter(13,0,c='r')# (13,39) #axis2, max_axis1-axis1
-plt.tight_layout()
+
 # cbarmax = str(cbarmax).replace('.','p')
-plt.title(sample+'     '+temp+'     '+field)
+# plt.title(sample+'     '+temp+'     '+field)
 temp = temp.replace('.','p')
 field = field.replace(' ','')
 field = field.replace('.','p')
 sample = sample.replace(' ','_')
 sample = sample.replace('.','p')
+plt.xticks([]),plt.yticks([])
+scalebar = ScaleBar(scale,"um",box_alpha=0,color='white',location='lower left' )
+plt.gca().add_artist(scalebar)
 
-
-
-plt.savefig(path+'rmcd_plot_'+sample+'_'+plot_typelabel+'_'+field,bbox_inches='tight',dpi=500)
+plt.savefig(path+'map1')
 plt.show()
 
 

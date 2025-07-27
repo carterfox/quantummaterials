@@ -1,0 +1,70 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<!-- Find and Replace all instances of 'Driver Identifer' with the Agilent PNA Series of your instrument driver 
+
+     Remove this note once this is complete. --><!-- Replace all the instructions that appear within the <font color="red"> tags with information about your instrument driver.  Make sure to delete the <font color="red"> tags as you fill in each line. Remove this note once this is complete.-->
+  <title>Instrument Driver Readme</title>
+</head>
+<body>
+<pre>
+<font face="Times New Roman" size="3">
+<h2>Agilent PNA Series Instrument Driver Readme</h2>
+<para>To rate this driver, go to the driver download page on the <a href="http://www.ni.com/idnet">Instrument Driver Network</a>.</para>
+
+<h4>1. Overview</h4>
+Instrument Driver Technology: LabVIEW Plug and Play (project-style)
+Manufacturer: Agilent Technologies
+Supported Language(s): LabVIEW
+Supported Model(s): E8356A, E8357A, E8358A, E8361A, E8362A/B, E8363A/B, E8364A/B, E8801A, E8802A, E8803A N3381A, N3382A, N3383A, N5250A, N5230A 
+Model(s) Tested: E8358A
+Interface(s): GPIB
+Firmware Revision Tested: A.03.23
+Certified: Yes
+NI Supported: Yes
+Source Code Available: Yes
+Driver Revision: 2.1.3
+Original Release Date: 11/2003
+Current Revision Date: 2/16/2015
+
+<h4>2. Required Software</h4>
+Some software components need to be installed before using this instrument driver. The minimum versions of these components are listed below, and can be downloaded from the Download Site.
+VISA 5.0 or later
+For more details, refer to the <i>LabVIEW Help</i> under <i>Help &raquo; VI, Function, &amp; How-To Help</i>.
+
+<h4>3. Known Issues</h4>
+
+
+To report issues or provide feedback about this instrument driver,  <a href="http://www.ni.com/en-us/support.html">please contact technical support</a>.
+
+
+<h4>4. Revision History</h4>
+<para>The latest version of this and other LabVIEW and LabWindows/CVI instrument drivers can be downloaded at the <a href="http://www.ni.com/idnet">Instrument Driver Network</a>.
+
+Revision 2.0, 07/2005Modified by: Matt Gibson, Austin, TX. Original release for project-style created from v1.1.2 of plug and play agpna driver.
+Revision 2.1, 09/2006 Modified by: Lukas Hynek, ELCOM - Added support for Agilent N5230A in the AGPNA Initialize.vi
+- Modified commands order in the AGPNA Trigger Channel Settings.vi
+- Modified help in these VIs:
+      - AGPNA Configure Freq Start Stop.vi      - AGPNA Configure Freq Center Span.vi
+      - AGPNA Configure Freq CW.vi 				- AGPNA Configure Bandwidth.vi
+      - AGPNA Configure Single Freq Segment.vi	- AGPNA Configure Freq Segment All.vi
+      - AGPNA Set Trigger Sweep Signal.vi		- AGPNA Marker Select Domain.vi
+      - AGPNA Marker Set Domain Range.vi		- AGPNA Configure Correction Port Ext.vi
+      - AGPNA Configure Guided Calibration Connector.vi
+      - AGPNA Configure Guided Calibration Kit.vi	- AGPNA Query Y Axis Scale.vi
+      - AGPNA Enable Display.vi					- AGPNA Config And Read Data Application Example.vi 
+      - AGPNA Configure Sweep.vi				- AGPNA Configure Marker Peak Values.vi
+      - AGPNA Configure Correction.vi			- AGPNA Query Guided Calibration Kit.vi     
+- Added new values to control in these VIs:
+      - AGPNA Configure Marker.vi				- AGPNA Marker Search.vi
+      - AGPNA Enable Marker Tracking.vi			- AGPNA Select Calibration Method.vi
+      - AGPNA Configure Display Trace Format.vi	- AGPNA Get Trace Statistics.vi       
+
+Revision 2.1.1, 11/2007 Modified by: Phil Nwoha, Austin, TX. -Replaced "Reset" VI with "Initialize" VI in the "Config And Read Data" Example VI.
+Revision 2.1.2 12/2007 Modified by: Phil Nwoha, Austin, TX. 	- Added "Close" VI to "Agilent PNA Series Config And Read Data" Example VI. - Added "Error Query" VI to all VIs except Example VIs.
+REV 2.1.3, 02/16/2015 Modified by: NI Initialize - Updated to include Keysight Technologies along with Agilent as a Manufacturer
+
+</font>
+</pre>
+</body>
+</html>

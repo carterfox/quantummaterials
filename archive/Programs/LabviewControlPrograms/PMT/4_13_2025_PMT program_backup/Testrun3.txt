@@ -1,0 +1,23 @@
+Angle (deg)	0
+Gate  No.	Time [ms]	Counts
+0	100	0
+1	200	0
+2	300	0
+3	400	0
+4	500	1
+Mean	Std. Dev.
+0.200	0.447
+Angle (deg)	10
+Gate  No.	Time [ms]	Counts
+0	100	0
+1	200	1
+2	300	0
+3	400	0
+4	500	0
+Mean	Std. Dev.
+0.200	0.447
+Angle Itr.	Counts Mean	
+0.000	0.200
+10.000	0.200
+Mean	Std. Dev.
+0.200	0.000

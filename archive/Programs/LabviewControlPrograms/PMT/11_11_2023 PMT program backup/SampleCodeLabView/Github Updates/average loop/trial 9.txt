@@ -1,0 +1,56 @@
+Angle (deg)	0
+Gate  No.	Time [ms]	Counts
+0	50	4748
+1	100	4708
+2	150	4750
+3	200	4610
+4	250	4719
+5	300	4660
+6	350	4750
+7	400	4634
+8	450	4696
+9	500	4685
+Mean	Std. Dev.
+4696.000	49.291
+Angle (deg)	1
+Gate  No.	Time [ms]	Counts
+0	50	4578
+1	100	4745
+2	150	4703
+3	200	4492
+4	250	4717
+5	300	4646
+6	350	4720
+7	400	4788
+8	450	4722
+9	500	4822
+Mean	Std. Dev.
+4693.300	98.008
+Angle (deg)	2
+Gate  No.	Time [ms]	Counts
+0	50	4550
+1	100	4640
+2	150	4718
+3	200	3802
+4	250	394
+5	300	8
+6	350	5
+7	400	1
+8	450	3
+9	500	2
+Mean	Std. Dev.
+1812.300	2267.104
+Angle Itr.	Counts Mean	
+0.000	4696.000
+1.000	4693.300
+2.000	1812.300
+Mean	Std. Dev.
+3733.867	1664.126
+Angle Itr.	Counts Mean	Std. Dev.
+0.000	2346.500	3318.452
+1.000	906.000	1281.277
+2.000	0.000	0.000
+Angle Itr.	Counts Mean	
+Mean	Std. Dev.
+NaN	-0.000
+Angle Itr.	Counts Mean	Std. Dev.

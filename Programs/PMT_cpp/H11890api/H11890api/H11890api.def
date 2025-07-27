@@ -1,0 +1,19 @@
+LIBRARY "H11890api.dll"
+EXPORTS
+	H11890Close			@1
+	H11890CloseDevices	@2
+	H11890CountStart	@3
+	H11890CountStop		@4
+	H11890Open			@5
+	H11890OpenDevices	@6
+	H11890ReadData		@7
+	H11890ReadHV		@8
+	H11890ReadIT		@9
+	H11890ReadInf		@10
+	H11890ReadRN		@11
+	H11890SetHV			@12
+	H11890SetIT			@13
+	H11890SetInf		@14
+	H11890SetRN			@15
+	H11890ReadInfEx		@16
+	H11890SetInfEx		@17

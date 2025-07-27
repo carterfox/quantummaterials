@@ -12,14 +12,14 @@ APS Nano XRD data analysis
 #%% only need to run this cell once, unless you want to change scan and/or roi
 import numpy as np
 import matplotlib.pylab as plt
-from helper_function_library import XRD_ScanAnalyzer, init_plot_params
+from helper_function_library import XRD_ScanAnalyzer, init_plot_params, test
 init_plot_params()
 #sample and path information. the path directory must have 'h5' and 'mda' subfolders with the data files
 path = '/Users/carterfox/Library/CloudStorage/GoogleDrive-cdfox@wisc.edu/'+ \
     '.shortcut-targets-by-id/1-8q9lGFnGNt4mDzcxXwdk43m1aVWT66q/'+ \
     'XiaoWang_Group_data_2024on/StackingTransitions/NbOI2/NanoXRD-NbOI2/stress_map_making/'
 
-scannum = 357
+# scannum = 357
 reflection = '(1,-1,0)'
 
 # sample = r'$180^\circ$ Thick Bottom'
@@ -30,8 +30,8 @@ sample = r'$180^\circ$ Thick Top'
 x_start, x_end = 840, 880
 y_start, y_end = 680 ,725 
 
-scan = XRD_ScanAnalyzer(path,sample,reflection,scannum)
-scan.set_roi(x_start, x_end, y_start, y_end)
+# scan = XRD_ScanAnalyzer(path,sample,reflection,scannum)
+# scan.set_roi(x_start, x_end, y_start, y_end)
 
 
 # %%
