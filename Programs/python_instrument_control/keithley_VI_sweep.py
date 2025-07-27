@@ -11,8 +11,7 @@ sweep bottom gate voltage and measure top Gr resistance
 
 import numpy as np
 import os
-from pymeasure.instruments.keithley import Keithley2400
-from pymeasure.instruments.keithley import Keithley2450
+from pymeasure.instruments.keithley import Keithley2400,Keithley2450
 from time import sleep 
 import time
 
