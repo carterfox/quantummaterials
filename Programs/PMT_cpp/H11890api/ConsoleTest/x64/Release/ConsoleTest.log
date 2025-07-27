@@ -1,3 +1,0 @@
-﻿  pch.cpp
-  ConsoleTest.cpp
-LINK : fatal error LNK1181: cannot open input file 'H11890api.lib'
