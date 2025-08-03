@@ -780,3 +780,7 @@ def tanh(x, xcenter,ycenter, tanh_amplitude, tanh_steepness):
     return  tanh_component
 
 
+class test_class:
+    def __init__(self):
+        self.test_param = 0
+        
