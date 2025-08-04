@@ -12,7 +12,7 @@ RMCD experiment
 import numpy as np
 import time
 import matplotlib.pyplot as plt
-
+import os
 
 
 def make_bfield_list(b_start,b_end,b_step):
@@ -23,23 +23,42 @@ def make_bfield_list(b_start,b_end,b_step):
 
 def read_lockin_rmcd_data(lockin):
     
-    R_cur, theta_R_cur = lockin.read_multiple(lockin.R_chan,[2,3])
-    dR_cur, theta_dR_cur = lockin.read_multiple(lockin.dR_chan,[7,8])
+    mean_R_chan, std_R_chan, mean_dR_chan, std_dR_chan = lockin.read_average_dual(params=[2,3,7,8],num_avgs=100,delay=0.02)
     
-    R_cur_mean, R_cur_std = np.mean(R_cur), np.std(R_cur)
-    dR_cur_mean, dR_cur_std = np.mean(dR_cur), np.std(dR_cur)
-    theta_R_cur_mean, theta_R_cur_std = np.mean(theta_R_cur), np.std(theta_R_cur)
-    theta_dR_cur_mean, theta_dR_cur_std = np.mean(theta_dR_cur), np.std(theta_dR_cur)
+    R_cur_mean, R_cur_std = mean_R_chan[0], std_R_chan[0]
+    dR_cur_mean, dR_cur_std = mean_dR_chan[2], std_dR_chan[2]
+    
+    theta_R_cur_mean, theta_R_cur_std = mean_R_chan[1], std_R_chan[1]
+    theta_dR_cur_mean, theta_dR_cur_std = mean_dR_chan[3], std_dR_chan[3]
 
-    return R_cur_mean, R_cur_std, dR_cur_mean, dR_cur_std, theta_R_cur_mean, theta_R_cur_std, theta_dR_cur_mean, theta_dR_cur_std
+    return R_cur_mean,R_cur_std,theta_R_cur_mean,theta_R_cur_std,dR_cur_mean,dR_cur_std,theta_dR_cur_mean,theta_dR_cur_std
 
 
-def RMCD_bfield_scan(lockin,opticool,bfield_array):
+def make_saving_file(filename):
+    
+    header = "#B(Oe) R_mean(V) R_std(V) thetaR_mean(deg) thetaR_std(deg) dR_mean(V) dR_std(V) thetadR_mean(deg) thetadR_std(deg)"
+    
+    if not os.path.exists(filename):
+        np.savetxt(filename, [], header=header)
+    else:
+        print('file already exists. making a new one with add on to name')
+        while os.path.exists(filename):            
+            filename = filename.replace(".txt", "_new.txt")
+        np.savetxt(filename, [], header=header)
+        
+
+def save_rmcd_data_row(data,file_save):
+        
+    np.savetxt(file_save, data, fmt="%.9f", mode='a')
+    
+    return None
+
+    
+
+def RMCD_bfield_scan(lockin,opticool,bfield_array,file_save):
 
     delay = 5    
-    R, theta_R, R_std, theta_R_std = [], [], [], []
-    dR, theta_dR, dR_std, theta_dR_std = [], [], [], []
-            
+    make_saving_file(file_save)
         
     for b in bfield_array:
         
@@ -48,21 +67,10 @@ def RMCD_bfield_scan(lockin,opticool,bfield_array):
         opticool.wait_for(delay, 0, opticool.field.waitfor) 
         
         data = read_lockin_rmcd_data(lockin) #THIS FUNCTION IS UNFINISHED. NEEDS TETSING
-        R_cur_mean, R_cur_std, dR_cur_mean, dR_cur_std, theta_R_cur_mean, theta_R_cur_std, theta_dR_cur_mean, theta_dR_cur_std = data
+        data_row = data.insert(0,current_field)        
+        save_rmcd_data_row(data_row,file_save)
         
-        R.append(R_cur_mean)
-        R_std.append(R_cur_std)
-        dR.append(dR_cur_mean)
-        dR_std.append(dR_cur_std)
-        theta_R.append(theta_R_cur_mean)
-        theta_R_std.append(theta_R_cur_std)
-        theta_dR.append(theta_dR_cur_mean)
-        theta_dR_std.append(theta_dR_cur_std)
-        
-    scan_data_pack = [R,R_std,dR,dR_std,theta_R,theta_R_std,theta_dR,theta_dR_std]
-        
-    return scan_data_pack
-        
+    return None
 
 
     

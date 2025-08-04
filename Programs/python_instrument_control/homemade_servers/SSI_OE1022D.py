@@ -18,10 +18,10 @@ import logging
 
 class LockInOE1022D():
     
-    def __init__(self, port, name="SSI OE1022D"):
+    def __init__(self, resource_name="ASRL12::INSTR"):
         
         rm = pyvisa.ResourceManager()
-        self.instrument = rm.open_resource(port)
+        self.instrument = rm.open_resource(resource_name)
         self.instrument.baud_rate = 9600
         self.instrument.timeout = 2000
         self.instrument.read_termination = '\r' #chatgpt suggests '\r\n'
@@ -64,6 +64,39 @@ class LockInOE1022D():
         """Read multiple parameters simultaneously"""
         param_str = ",".join(map(str, params))
         return self.query(f"SNAPD? {channel},{param_str}")
+    
+        
+    def read_average_dual(self, params=[0, 1, 2, 3], num_avgs=100, delay=0.02):
+        """
+        Read and average multiple measurements from both channels.
+        Returns:
+            - mean_R_chan, std_R_chan: mean and std for R channel parameters
+            - mean_dR_chan, std_dR_chan: mean and std for dR channel parameters 
+        """
+        data_R_chan = []
+        data_dR_chan = []
+    
+        for _ in range(num_avgs):
+            try:
+                values_R_chan = self.read_multiple(self.R_chan, params)
+                values_dR_chan = self.read_multiple(self.dR_chan, params)
+                if values_R_chan:
+                    data_R_chan.append([float(v) for v in values_R_chan.strip().split(',')])
+                if values_dR_chan:
+                    data_dR_chan.append([float(v) for v in values_dR_chan.strip().split(',')])
+            except Exception as e:
+                print(f"Error reading data: {e}")
+            time.sleep(delay)
+    
+        mean_R_chan = np.mean(data_R_chan, axis=0) if data_R_chan else None
+        std_R_chan = np.std(data_R_chan, axis=0) if data_R_chan else None
+        mean_dR_chan = np.mean(data_dR_chan, axis=0) if data_dR_chan else None
+        std_dR_chan = np.std(data_dR_chan, axis=0) if data_dR_chan else None
+    
+        return mean_R_chan, std_R_chan, mean_dR_chan, std_dR_chan
+
+
+    
     
     def reset_buffer(self,channels=[1,2]):
         for chan in channels:
