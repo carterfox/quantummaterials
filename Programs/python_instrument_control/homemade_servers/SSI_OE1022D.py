@@ -19,36 +19,22 @@ import logging
 class LockInOE1022D():
     
     def __init__(self, port, name="SSI OE1022D"):
+        
         rm = pyvisa.ResourceManager()
         self.instrument = rm.open_resource(port)
         self.instrument.baud_rate = 9600
         self.instrument.timeout = 2000
-
         self.instrument.read_termination = '\r' #chatgpt suggests '\r\n'
         self.instrument.write_termination = '\r'
-
         self.sensitivities = np.array(["1 nV/fA", "2 nV/fA", "5 nV/fA", "10 nV/fA", "20 nV/fA", "50 nV/fA", "100 nV/fA", "200 nV/fA", "500 nV/fA",
                          "1 uV/pA", "2 uV/pA", "5 uV/pA", "10 uV/pA", "20 uV/pA", "50 uV/pA", "100 uV/pA", "200 uV/pA", "500 uV/pA",
-                         "1 mV/nA", "2 mV/nA", "5 mV/nA", "10 mV/nA", "20 mV/nA", "50 mV/nA", "100 mV/nA", "200 mV/nA", "500 mV/nA",
-                         "1 V/uA"])
-        self.parameters = np.array(["X","Y","R","theta","Frequency","Xh1","Yh1","Rh1","thetah1",
-                      "Xh2","Yh2","Rh2","thetah2", "Noise","A1","A2","A3","A4","E1","E2","E3","E4"])
-        
-        self.R_chan = 1
+                         "1 mV/nA", "2 mV/nA", "5 mV/nA", "10 mV/nA", "20 mV/nA", "50 mV/nA", "100 mV/nA", "200 mV/nA", "500 mV/nA","1 V/uA"])
+        self.parameters = np.array(["X","Y","R","theta","Frequency","Xh1","Yh1","Rh1","thetah1","Xh2","Yh2","Rh2","thetah2", "Noise","A1","A2","A3","A4","E1","E2","E3","E4"])
+        self.R_chan = 1 #channels: 1 is channel A. 2 is channel B 
         self.dR_chan = 2
         self.num_avgs = 150
         
-         #channels: 1 is channel A. 2 is channel B 
-         
-    ###from chatgpt
-
-    def close(self):
-        self.instrument.close()
-
-    # --- Identification ---
-    def identify(self):
-        return self.query("*IDND?")
-
+        
     # --- Generic Commands ---
     def query(self, command):
         try:
@@ -63,7 +49,13 @@ class LockInOE1022D():
         except Exception as e:
             print(f"Write error: {e}")
 
-    # --- Data Reading ---
+    def close(self):
+        self.instrument.close()
+
+    def identify(self):
+        return self.query("*IDND?")    
+
+    # --- Data Reading and storage ---
     def read_single(self, channel=1, param=2):
         """Read a single parameter (e.g., R, X, Y, θ)"""
         return self.query(f"OUTPD? {channel},{param}")
@@ -72,7 +64,28 @@ class LockInOE1022D():
         """Read multiple parameters simultaneously"""
         param_str = ",".join(map(str, params))
         return self.query(f"SNAPD? {channel},{param_str}")
-
+    
+    def reset_buffer(self,channels=[1,2]):
+        for chan in channels:
+            self.write(f"RESTD {chan}")
+    
+    # --- Auto Configuration ---
+    def auto_gain(self, channel=1):
+        self.write(f"AGAND {channel}")
+    
+    def auto_reserve(self, channel=1):
+        self.write(f"ARSVD {channel}")
+    
+    def auto_phase(self, channel=1):
+        self.write(f"APHSD {channel}")
+        
+    def auto_phase_all(self):
+        self.write(f"APHSD {1}")
+        self.write(f"APHSD {2}")
+    
+    def auto_scale(self, channel=1):
+        self.write(f"ASCLD {channel}")
+        
     # --- Configuration ---
     def set_reference_source(self, channel=1, mode=1):
         """0=External, 1=Internal, 2=Internal Sweep"""
@@ -103,25 +116,7 @@ class LockInOE1022D():
     def set_harmonic(self, channel=1, slot=1, order=3):
         """slot: 1 or 2; order: harmonic number"""
         self.write(f"HARMD {channel},{slot},{order}")
-
-    # --- Auto Configuration ---
-    def auto_gain(self, channel=1):
-        self.write(f"AGAND {channel}")
-
-    def auto_reserve(self, channel=1):
-        self.write(f"ARSVD {channel}")
-
-    def auto_phase(self, channel=1):
-        self.write(f"APHSD {channel}")
-        
-    def auto_phase_all(self):
-        self.write(f"APHSD {1}")
-        self.write(f"APHSD {2}")
-
-    def auto_scale(self, channel=1):
-        self.write(f"ASCLD {channel}")
     
-    # --- Configuration ---
     def set_reference_source(self, channel=1, mode=1):
         """0=External, 1=Internal, 2=Internal Sweep"""
         self.write(f"FMODD {channel},{mode}")
@@ -142,39 +137,4 @@ class LockInOE1022D():
 
     def set_sync_filter(self, channel=1, enable=True):
         self.instrument.write(f"SYNCD {channel},{1 if enable else 0}")
-
-    # --- Auto Configuration ---
-    def auto_gain(self, channel=1):
-        self.instrument.write(f"AGAND {channel}")
-
-    def auto_reserve(self, channel=1):
-        self.instrument.write(f"ARSVD {channel}")
-
-    def auto_scale(self, channel=1):
-        self.instrument.write(f"ASCLD {channel}")
         
-    ### made myself
-
-    def reset_buffer(self,channels=[1,2]):
-        for chan in channels:
-            self.write(f"RESTD {chan}")
-
-
-    # def read_data(self,channel, params=["R","theta"],num_avgs=100):
-    #     data_list = []
-    #     param_list = []
-    #     command = "SNAPD? "+str(channel)
-    #     parameters = np.array(["X","Y","R","theta","Frequency","Xh1","Yh1","Rh1","thetah1",
-    #                   "Xh2","Yh2","Rh2","thetah2", "Noise","A1","A2","A3","A4","E1","E2","E3","E4"])
-    #     # print(command)
-    #     for x in params:
-    #         # print(command)
-    #         param = str(np.where(parameters==x)[0][0])
-    #         command = command+","+param
-    #         # print(command)
-    #     command = command+';'
-    #     # print(command)
-    #     for i in range(num_avgs):
-    #         data= self.instrument.query(command).split('\x00')[-1]
-    #         data_list.append(data)
-    #     return data_list

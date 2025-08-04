@@ -9,7 +9,6 @@ MultiVu PC, as it is configured for local operation.
 import os
 import time
 import matplotlib.pyplot as plt
-
 import MultiPyVu as mpv
 
 
