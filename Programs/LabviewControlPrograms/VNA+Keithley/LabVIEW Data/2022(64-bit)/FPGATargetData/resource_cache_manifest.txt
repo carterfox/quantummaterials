@@ -1,1 +1,0 @@
-C:\Program Files\National Instruments\LabVIEW 2022\Targets\NI\FPGA

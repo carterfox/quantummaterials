@@ -1,2 +1,0 @@
-PMT_plus_Keithley2450_and_2410.vi needs to be opened in labview 2022 Q3. It should have the correct sub vi's, which were obtained by downgrading the Keithley vi's to this labview version. I had to downgrade them on the D drive and copy them over since otherwise the paths are too long. I had to do this because there is no driver for the PMT that works with the newer labview unfortunately. 
-Kiethley2450_and_2410_plus_lockin.vi needs to be opened in labview 2024. Everything there is the 2024 version. 
