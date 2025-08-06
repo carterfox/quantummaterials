@@ -24,16 +24,15 @@ class LockInOE1022D():
         self.instrument = rm.open_resource(resource_name)
         self.instrument.baud_rate = 9600
         self.instrument.timeout = 2000
-        self.instrument.read_termination = '\r' #chatgpt suggests '\r\n'
+        self.instrument.read_termination = '\r' 
         self.instrument.write_termination = '\r'
-        self.sensitivities = np.array(["1 nV/fA", "2 nV/fA", "5 nV/fA", "10 nV/fA", "20 nV/fA", "50 nV/fA", "100 nV/fA", "200 nV/fA", "500 nV/fA",
-                         "1 uV/pA", "2 uV/pA", "5 uV/pA", "10 uV/pA", "20 uV/pA", "50 uV/pA", "100 uV/pA", "200 uV/pA", "500 uV/pA",
-                         "1 mV/nA", "2 mV/nA", "5 mV/nA", "10 mV/nA", "20 mV/nA", "50 mV/nA", "100 mV/nA", "200 mV/nA", "500 mV/nA","1 V/uA"])
+        self.sensitivities = np.array(["1 nV", "2 nV", "5 nV", "10 nV", "20 nV", "50 nV", "100 nV", "200 nV", "500 nV",
+                         "1 uV", "2 uV", "5 uV", "10 uV", "20 uV", "50 uV", "100 uV", "200 uV", "500 uV",
+                         "1 mV", "2 mV", "5 mV", "10 mV", "20 mV", "50 mV", "100 mV", "200 mV", "500 mV","1 V"])
         self.parameters = np.array(["X","Y","R","theta","Frequency","Xh1","Yh1","Rh1","thetah1","Xh2","Yh2","Rh2","thetah2", "Noise","A1","A2","A3","A4","E1","E2","E3","E4"])
         self.R_chan = 1 #channels: 1 is channel A. 2 is channel B 
         self.dR_chan = 2
         self.num_avgs = 150
-        
         
     # --- Generic Commands ---
     def query(self, command):
@@ -98,9 +97,6 @@ class LockInOE1022D():
         std_dR_chan = np.std(data_dR_chan, axis=0) if data_dR_chan else None
     
         return mean_R_chan, std_R_chan, mean_dR_chan, std_dR_chan
-
-
-    
     
     def reset_buffer(self,channels=[1,2]):
         for chan in channels:
@@ -134,7 +130,7 @@ class LockInOE1022D():
     def set_phase_shift(self, channel=1, degrees=0.0):
         self.write(f"PHASD {channel},{degrees}")
 
-    def set_sensitivity(self, channel=1, sensitivity="5 mV/nA"):
+    def set_sensitivity(self, channel=1, sensitivity="5 mV"):
         """Index from 0 to 27 (see manual for mapping)"""
         index = str(np.where(self.sensitivities==sensitivity)[0][0])
         self.write(f"SENSD {channel},{index}")
