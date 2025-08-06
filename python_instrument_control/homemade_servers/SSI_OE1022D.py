@@ -58,12 +58,16 @@ class LockInOE1022D():
     # --- Data Reading and storage ---
     def read_single(self, channel=1, param=2):
         """Read a single parameter (e.g., R, X, Y, θ)"""
-        return self.query(f"OUTPD? {channel},{param}")
+        raw = self.query(f"OUTPD? {channel},{param}")
+        clean = float(raw.replace('\x00','').strip())
+        return clean
 
     def read_multiple(self, channel=1, params=[0, 1, 2, 3]):
         """Read multiple parameters simultaneously"""
         param_str = ",".join(map(str, params))
-        return self.query(f"SNAPD? {channel},{param_str}")
+        raw = self.query(f"SNAPD? {channel},{param_str}")
+        clean = raw.replace('\x00','').strip()#.split(','),dtype=float)
+        return clean
     
         
     def read_average_dual(self, params=[0, 1, 2, 3], num_avgs=100, delay=0.02):

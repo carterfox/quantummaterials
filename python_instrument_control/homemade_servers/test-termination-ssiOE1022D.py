@@ -6,10 +6,10 @@ Created on Sun Aug  3 17:25:15 2025
 @author: carterfox
 """
 
-import visa
+import pyvisa
 
 def test_termination(resource_name, command='*IDN?'):
-    rm = visa.ResourceManager()
+    rm = pyvisa.ResourceManager()
     terminations = {
         'LF': '\n',
         'CR': '\r',
@@ -33,4 +33,4 @@ def test_termination(resource_name, command='*IDN?'):
             print(f"Error with {label}: {e}")
 
 # Replace 'ASRL3::INSTR' with your actual COM port resource name
-test_termination('ASRL3::INSTR')
+test_termination('ASRL4::INSTR')
