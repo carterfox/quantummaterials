@@ -1,1 +1,0 @@
-python.exe ..\cam-control\run-device-server.py
