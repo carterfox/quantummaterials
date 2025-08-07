@@ -17,7 +17,7 @@ from pymeasure.instruments.attocube import ANC300Controller
 
 
 ### functions for getting instruments
-def get_lockin(resource_name='ASRL12::INSTR', R_chan=1, dR_chan=2, num_avgs=150,sensitivities=["5 mV/nA","200 uV/pA"]):  
+def get_lockin(resource_name='ASRL12::INSTR', R_chan=1, dR_chan=2, num_avgs=150,sensitivities=["5 mV","200 uV"]):  
     lockin = SSI_OE1022D.LockInOE1022D(resource_name)
     lockin.R_chan = R_chan
     lockin.dR_chan = dR_chan
@@ -25,7 +25,7 @@ def get_lockin(resource_name='ASRL12::INSTR', R_chan=1, dR_chan=2, num_avgs=150,
     lockin.set_sensitivity(R_chan,sensitivities[0])
     lockin.set_sensitivity(dR_chan,sensitivities[1])
     lockin.set_harmonic(dR_chan, 1, 2)
-    lockin.autophase_all()
+    lockin.auto_phase_all()
     return lockin
 
 def get_opticool(opticool_ip='169.254.170.239', port=5000):
@@ -68,6 +68,8 @@ def RMCD_experiment(b_start,b_end,b_step):
 if __name__ == "__main__":
     
     sample = 'dualgate-s1'
+    # lockin = get_lockin()
+    # lockin.close()
     # data_saving_path = ''
 
     # rmcd_scan_data = RMCD_experiment(-1,1,0.1)
