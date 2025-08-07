@@ -14,6 +14,7 @@ import SSI_OE1022D
 import RMCD
 from pymeasure.instruments.keithley import Keithley2400,Keithley2450
 from pymeasure.instruments.attocube import ANC300Controller
+from qcodes_contrib_drivers.drivers.Attocube.ANC300 import ANC300
 
 
 ### functions for getting instruments
@@ -35,7 +36,6 @@ def get_opticool(opticool_ip='169.254.170.239', port=5000):
     current_field = opticool.get_field()
     return opticool, current_temp, current_field
 
-
 def get_kiethley2450(resource_name="GPIB0::1::INSTR"):
     keithley2450 = Keithley2450(resource_name)
     return keithley2450 
@@ -44,37 +44,34 @@ def get_kiethley2400(resource_name="GPIB0::16::INSTR"):
     keithley2400 = Keithley2400(resource_name)
     return keithley2400
 
+def get_ANC300(resource_name='ASRL11'):
+    ANC = ANC300(name='ANC300',address=resource_name)
+    return ANC
 
-def get_anc300(resource_name='ASRL12::INSTR'):
-    anc300 = ANC300Controller(resource_name, axisnames=['scanx', 'scany','stepperx','steppery'])
-    return anc300
-
-
-
-### functions for running experiments
-
-def RMCD_experiment(b_start,b_end,b_step):
-    
-    lockin = get_lockin()
-    opticool, current_temp, current_field = get_opticool()
-    bfield_array = RMCD.make_bfield_list(b_start, b_end, b_step)
-    
-    rmcd_scan_data = RMCD.RMCD_bfield_scan(lockin, opticool,bfield_array)
-    
-    return rmcd_scan_data
 
 
 ##run experiments here by running the file 
 if __name__ == "__main__":
     
     sample = 'dualgate-s1'
-    # lockin = get_lockin()
-    # lockin.close()
-    # data_saving_path = ''
-
-    # rmcd_scan_data = RMCD_experiment(-1,1,0.1)
+    data_saving_path = ''
     
-    #save data...
+    
+    # example RMCD experiment
+    """
+    lockin = get_lockin()
+    opticool, current_temp, current_field = get_opticool()
+    bfield_array = RMCD.make_bfield_list(-1, 1, 0.1)
+    rmcd_scan_data = RMCD.RMCD_bfield_scan(lockin, opticool,bfield_array)
+    lockin.close()
+    opticool.close()
+    """
+
+    
+
+    # ANC.close()
+
+
     
 
 

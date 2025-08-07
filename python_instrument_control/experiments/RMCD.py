@@ -16,9 +16,7 @@ import os
 
 
 def make_bfield_list(b_start,b_end,b_step):
-    
     bfield_list = np.append(np.arange(b_start,b_end+b_step,b_step),np.arange(b_end,b_start-b_step,-1*b_step))
-
     return bfield_list
 
 def read_lockin_rmcd_data(lockin):
@@ -34,21 +32,12 @@ def read_lockin_rmcd_data(lockin):
     return R_cur_mean,R_cur_std,theta_R_cur_mean,theta_R_cur_std,dR_cur_mean,dR_cur_std,theta_dR_cur_mean,theta_dR_cur_std
 
 
-def make_bfield_scan_saving_file(filename):
+def make_rmcd_saving_file(filename,experiment):
     
-    header = "#B(Oe) R_mean(V) R_std(V) thetaR_mean(deg) thetaR_std(deg) dR_mean(V) dR_std(V) thetadR_mean(deg) thetadR_std(deg)"
-    
-    if not os.path.exists(filename):
-        np.savetxt(filename, [], header=header)
-    else:
-        print('file already exists. making a new one with add on to name')
-        while os.path.exists(filename):            
-            filename = filename.replace(".txt", "_new.txt")
-        np.savetxt(filename, [], header=header)
-        
-def make_mapping_saving_file(filename):
-    
-    header = "#X(V) Y(V) R_mean(V) R_std(V) thetaR_mean(deg) thetaR_std(deg) dR_mean(V) dR_std(V) thetadR_mean(deg) thetadR_std(deg)"
+    if experiment == 'bscan'   :
+        header = "#B(Oe) R_mean(V) R_std(V) thetaR_mean(deg) thetaR_std(deg) dR_mean(V) dR_std(V) thetadR_mean(deg) thetadR_std(deg)"
+    elif experiment == 'mapping':
+        header = "#X(V) Y(V) R_mean(V) R_std(V) thetaR_mean(deg) thetaR_std(deg) dR_mean(V) dR_std(V) thetadR_mean(deg) thetadR_std(deg)"
     
     if not os.path.exists(filename):
         np.savetxt(filename, [], header=header)
@@ -57,12 +46,10 @@ def make_mapping_saving_file(filename):
         while os.path.exists(filename):            
             filename = filename.replace(".txt", "_new.txt")
         np.savetxt(filename, [], header=header)
-        
+    return None
 
 def save_rmcd_data_row(data,file_save):
-        
     np.savetxt(file_save, data, fmt="%.9f", mode='a')
-    
     return None
 
     
@@ -91,12 +78,12 @@ def RMCD_bfield_scan(lockin,opticool,bfield_array,file_save):
     """
 
     delay = 5    
-    make_bfield_scan_saving_file(file_save)
+    make_rmcd_saving_file(file_save,'bscan')
         
     for b in bfield_array:
         
         lockin.reset_buffer()
-        current_field = opticool.set_field(b, 110, opticool.field.approach_mode.linear)
+        current_field = opticool.set_field(b*10000, 110, opticool.field.approach_mode.linear)
         opticool.wait_for(delay, 0, opticool.field.waitfor) 
         
         data = read_lockin_rmcd_data(lockin) #THIS FUNCTION IS UNFINISHED. NEEDS TETSING
@@ -106,7 +93,7 @@ def RMCD_bfield_scan(lockin,opticool,bfield_array,file_save):
     return None
 
 
-def rmcd_mapping(lockin, anc300, x_start, x_end, y_start, y_end, points, returnsteps,file_save):
+def rmcd_mapping(lockin, ANC, x_start, x_end, y_start, y_end, points, returnsteps,delay,file_save):
     
     """
     Performs a raster scan over a 2D grid to collect RMCD (Reflective Magnetic Circular Dichroism) data
@@ -145,8 +132,10 @@ def rmcd_mapping(lockin, anc300, x_start, x_end, y_start, y_end, points, returns
         A 2D array of shape (points, points) containing RMCD values at each scanned (X, Y) position.
         Each value is computed as `data[4] / data[0]` from the lock-in amplifier output.
     """
+    scannerx = ANC.submodules['axis1']
+    scannery = ANC.submodules['axis2']
     
-    make_mapping_saving_file(file_save)
+    make_rmcd_saving_file(file_save,'mapping')
     
     y_points = points
     x_points = points
@@ -159,12 +148,15 @@ def rmcd_mapping(lockin, anc300, x_start, x_end, y_start, y_end, points, returns
     
     for j in range(y_points):
         y = y_start + j * stepy
+        scannery.offset(y)
 
         # Forward scan
         for i in range(x_points):
+            
             lockin.reset_buffer()
             x = x_start + i * stepx
-            print('mov')
+            scannerx.offset(x)
+            time.sleep(delay)
             data = read_lockin_rmcd_data(lockin)
             data_row = data.insert(0,y)
             data_row = data.insert(0,x)
@@ -176,8 +168,8 @@ def rmcd_mapping(lockin, anc300, x_start, x_end, y_start, y_end, points, returns
         # Return path (no data stored)
         for r in range(1, returnsteps + 1):
             x_back = x_end + r * return_step_size
-            print('move_to(x_back, y)  # Just movement, no data recorded')
-    
-        
+            scannerx.offset(x_back)
+            time.sleep(0.2)
+
     return scan_array
     
