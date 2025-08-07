@@ -9,24 +9,24 @@ from qcodes_contrib_drivers.drivers.Attocube.ANC300 import ANC300
 
 ANC = ANC300(name='ANC300',address='ASRL11')
 
-axis1 = ANC.submodules['axis1']
-axis2 = ANC.submodules['axis2']
-axis3 = ANC.submodules['axis3']
-axis4 = ANC.submodules['axis4']
+scannerx = ANC.submodules['axis1']
+scannery = ANC.submodules['axis2']
+stepperx = ANC.submodules['axis3']
+steppery = ANC.submodules['axis4']
 
-axes = [axis1,axis2,axis3,axis4]
+axes = [scannerx,scannery,stepperx,steppery]
 for ax in axes:
     ax.mode('gnd')
 # axis4.mode('gnd')
-# axis1.mode('off')
-# axis1.offset(1)
+# scannery.mode('off')
+# scannery.offset(0)
 
-axis3.mode('stp')
-axis3.move(10)
-# axis4.waitMove()
+# stepperx.mode('stp')
+# stepperx.move(-10)
+# steppery.waitMove()
 
-axes = [axis1,axis2,axis3,axis4]
-for ax in axes:
-    ax.mode('gnd')
+# axes = [scannerx,scannery,stepperx,steppery]
+# for ax in axes:
+#     ax.mode('gnd')
     
 ANC.close()
