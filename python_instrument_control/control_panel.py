@@ -11,10 +11,12 @@ import numpy as np
 import time
 import matplotlib.pyplot as plt
 import SSI_OE1022D
+import QDopticool
 import RMCD
 from pymeasure.instruments.keithley import Keithley2400,Keithley2450
 from pymeasure.instruments.attocube import ANC300Controller
 from qcodes_contrib_drivers.drivers.Attocube.ANC300 import ANC300
+import MultiPyVu as mpv
 
 
 ### functions for getting instruments
@@ -30,8 +32,7 @@ def get_lockin(resource_name='ASRL12::INSTR', R_chan=1, dR_chan=2, num_avgs=150,
     return lockin
 
 def get_opticool(opticool_ip='169.254.170.239', port=5000):
-    import MultiPyVu as mpv
-    opticool = mpv.Client(opticool_ip,port)
+    opticool = QDopticool.Opticool(opticool_ip,port)
     current_temp = opticool.get_temperature()
     current_field = opticool.get_field()
     return opticool, current_temp, current_field
@@ -55,7 +56,7 @@ if __name__ == "__main__":
     
     sample = 'dualgate-s1'
     data_saving_path = ''
-    
+
     
     # example RMCD experiment
     """

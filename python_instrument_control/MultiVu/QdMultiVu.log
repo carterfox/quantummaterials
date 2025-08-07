@@ -237,3 +237,28 @@
 2024-10-04 08:40:25,881     MultiVuServer        DEBUG    ;to ('127.0.0.1', 51275); Sending b'\x00g{"byteorder": "little", "content-type": "text/json", "content-encoding": "utf-8", "content-length": 92}{"action": "CLOSE", "query": "CLOSE", "result": "Client (\'127.0.0.1\', 51275) disconnected."}'
 2024-10-04 08:40:25,881     MultiVuClient        DEBUG    ;from ('127.0.0.1', 51275); Received request {'content': {'action': 'CLOSE', 'query': 'CLOSE', 'result': "Client ('127.0.0.1', 51275) disconnected."}}
 2024-10-04 08:40:25,881     MultiVuClient        INFO     Closing connection to ('127.0.0.1', 51275)
+2025-08-07 16:00:28.241       MultiVuServer        INFO     MultiPyVuError: No running instance of MultiVu was detected. Please
+start MultiVu and retry, or call this script using
+scaffolding (-s ppms, for example).
+2025-08-07 16:00:39.252       MultiVuClient        DEBUG    Connecting to 'localhost : 5000'...
+2025-08-07 16:00:39.801       MultiVuServer        INFO     MultiPyVuError: No running instance of MultiVu was detected. Please
+start MultiVu and retry, or call this script using
+scaffolding (-s ppms, for example).
+2025-08-07 16:01:56.110       MultiVuClient        DEBUG    Connecting to 'localhost : 5000'...
+2025-08-07 16:01:56.647       MultiVuServer        INFO     MultiPyVuError: No running instance of MultiVu was detected. Please
+start MultiVu and retry, or call this script using
+scaffolding (-s ppms, for example).
+2025-08-07 16:04:26.463       MultiVuServer        INFO     MultiPyVuError: No running instance of MultiVu was detected. Please
+start MultiVu and retry, or call this script using
+scaffolding (-s ppms, for example).
+2025-08-07 16:05:25.752       MultiVuClient        DEBUG    Connecting to '169.254.170.239 : 5000'...
+2025-08-07 16:05:25.763       MultiVuClient        DEBUG    MultiPyVu Version: 3.5.4
+2025-08-07 16:05:25.763       MultiVuClient        INFO     Starting connection to ('169.254.170.239', 5000)
+2025-08-07 16:05:25.763       MultiVuClient        DEBUG    query server: "START"
+2025-08-07 16:05:25.765       MultiVuClient        DEBUG    ;to ('169.254.170.239', 5000); Sending b'\x00i{"byteorder": "little", "message-type": ["text/json"], "message-encoding": "utf-8", "message-length": 92}{"id": "6946e386-4f32-480f-b386-39b959a11c8a", "action": "START", "query": "", "result": ""}'
+2025-08-07 16:05:25.769       MultiVuClient        DEBUG    Error receiving data: Close client
+2025-08-07 16:05:26.271       MultiVuClient        DEBUG    ;to ('169.254.170.239', 5000); Sending b'\x00i{"byteorder": "little", "message-type": ["text/json"], "message-encoding": "utf-8", "message-length": 92}{"id": "6946e386-4f32-480f-b386-39b959a11c8a", "action": "START", "query": "", "result": ""}'
+2025-08-07 16:05:26.271       MultiVuClient        DEBUG    Error receiving data: Close client
+2025-08-07 16:05:26.771       MultiVuClient        DEBUG    Exiting Client
+2025-08-07 16:05:26.771       MultiVuClient        DEBUG    Resetting client state
+2025-08-07 16:05:26.771       MultiVuClient        DEBUG    Client reset complete

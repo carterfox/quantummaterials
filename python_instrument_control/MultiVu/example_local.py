@@ -19,11 +19,11 @@ with mpv.Server():
             # Polls MultiVu for the temperature, field, and their
             # respective states
             t, t_status = client.get_temperature()
-            f, f_status = client.get_field()
+            # f, f_status = client.get_field()
 
             # Relay the information from MultiVu
             message = f'The temperature is {t}, status is {t_status}; '
-            message += f'the field is {f}, status is {f_status}. '
+            # message += f'the field is {f}, status is {f_status}. '
             print(message)
 
             # collect data at roughly 2s intervals
