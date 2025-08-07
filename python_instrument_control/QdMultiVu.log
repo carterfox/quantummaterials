@@ -1088,3 +1088,79 @@ AttributeError: 'ClientMessage' object has no attribute 'instr'
 2025-08-07 17:17:06.514       MultiVuClient        DEBUG    Resetting client message state
 2025-08-07 17:17:06.514       MultiVuClient        DEBUG    Client message reset complete
 2025-08-07 17:17:06.514       MultiVuClient        DEBUG    Client reset complete
+2025-08-07 17:23:29.122       MultiVuClient        DEBUG    Connecting to '169.254.170.239 : 5000'...
+2025-08-07 17:23:29.128       MultiVuClient        DEBUG    MultiPyVu Version: 3.5.4
+2025-08-07 17:23:29.128       MultiVuClient        INFO     Starting connection to ('169.254.170.239', 5000)
+2025-08-07 17:23:29.130       MultiVuClient        DEBUG    query server: "START"
+2025-08-07 17:23:29.130       MultiVuClient        DEBUG    ;to ('169.254.170.239', 5000); Sending b'\x00i{"byteorder": "little", "message-type": ["text/json"], "message-encoding": "utf-8", "message-length": 92}{"id": "4fac9bc1-8523-43c0-8c5c-928183d254b3", "action": "START", "query": "", "result": ""}'
+2025-08-07 17:23:29.130       MultiVuClient        DEBUG    ;from ('169.254.170.239', 5000); Received b'\x00j{"byteorder": "little", "message-type": ["text/json"], "message-encoding": "utf-8", "message-length": 121}{"id": "4fac9bc1-8523-43c0-8c5c-928183d254b3", "action": "START", "query": "", "result": "", "message_type": "confirmed"}'
+2025-08-07 17:23:29.130       MultiVuClient        DEBUG    Confirmation from server: "START"
+2025-08-07 17:23:29.178       MultiVuClient        DEBUG    ;from ('169.254.170.239', 5000); Received b'\x00j{"byteorder": "little", "message-type": ["text/json"], "message-encoding": "utf-8", "message-length": 193}{"id": "4fac9bc1-8523-43c0-8c5c-928183d254b3", "action": "START", "query": "3.5.4;t", "result": "Connected to OPTICOOL MultiVuServer at (\'169.254.233.239\', 63548)", "message_type": "completed"}'
+2025-08-07 17:23:29.178       MultiVuClient        DEBUG    ;to ('169.254.170.239', 5000); Sending b'\x00j{"byteorder": "little", "message-type": ["text/json"], "message-encoding": "utf-8", "message-length": 193}{"id": "4fac9bc1-8523-43c0-8c5c-928183d254b3", "action": "START", "query": "3.5.4;t", "result": "Connected to OPTICOOL MultiVuServer at (\'169.254.233.239\', 63548)", "message_type": "confirmed"}'
+2025-08-07 17:23:29.178       MultiVuClient        DEBUG     "START" complete: "Connected to OPTICOOL MultiVuServer at ('169.254.233.239', 63548)"
+2025-08-07 17:23:29.178       MultiVuClient        INFO     Connected to OPTICOOL MultiVuServer at ('169.254.233.239', 63548)
+2025-08-07 17:23:29.180       MultiVuClient        DEBUG    query server: "TEMP?"
+2025-08-07 17:23:29.180       MultiVuClient        DEBUG    ;to ('169.254.170.239', 5000); Sending b'\x00i{"byteorder": "little", "message-type": ["text/json"], "message-encoding": "utf-8", "message-length": 92}{"id": "f6e9c0cd-4671-43b5-9a74-405fd56e2b11", "action": "TEMP?", "query": "", "result": ""}'
+2025-08-07 17:23:29.220       MultiVuClient        DEBUG    ;from ('169.254.233.239', 63548); Received b'\x00j{"byteorder": "little", "message-type": ["text/json"], "message-encoding": "utf-8", "message-length": 121}{"id": "f6e9c0cd-4671-43b5-9a74-405fd56e2b11", "action": "TEMP?", "query": "", "result": "", "message_type": "confirmed"}'
+2025-08-07 17:23:29.220       MultiVuClient        DEBUG    Confirmation from server: "TEMP?"
+2025-08-07 17:23:29.274       MultiVuClient        DEBUG    ;from ('169.254.233.239', 63548); Received b'\x00j{"byteorder": "little", "message-type": ["text/json"], "message-encoding": "utf-8", "message-length": 149}{"id": "f6e9c0cd-4671-43b5-9a74-405fd56e2b11", "action": "TEMP?", "query": "", "result": "238.20401000976562,K,Standby", "message_type": "completed"}'
+2025-08-07 17:23:29.274       MultiVuClient        DEBUG    ;to ('169.254.170.239', 5000); Sending b'\x00j{"byteorder": "little", "message-type": ["text/json"], "message-encoding": "utf-8", "message-length": 149}{"id": "f6e9c0cd-4671-43b5-9a74-405fd56e2b11", "action": "TEMP?", "query": "", "result": "238.20401000976562,K,Standby", "message_type": "confirmed"}'
+2025-08-07 17:23:29.274       MultiVuClient        DEBUG     "TEMP?" complete: "238.20401000976562,K,Standby"
+2025-08-07 17:23:29.274       MultiVuClient        DEBUG    query server: "FIELD?"
+2025-08-07 17:23:29.274       MultiVuClient        DEBUG    ;to ('169.254.170.239', 5000); Sending b'\x00i{"byteorder": "little", "message-type": ["text/json"], "message-encoding": "utf-8", "message-length": 93}{"id": "eb7aa0e3-76cc-4d2e-855d-6cd5fe91036c", "action": "FIELD?", "query": "", "result": ""}'
+2025-08-07 17:23:29.322       MultiVuClient        DEBUG    ;from ('169.254.233.239', 63548); Received b'\x00j{"byteorder": "little", "message-type": ["text/json"], "message-encoding": "utf-8", "message-length": 122}{"id": "eb7aa0e3-76cc-4d2e-855d-6cd5fe91036c", "action": "FIELD?", "query": "", "result": "", "message_type": "confirmed"}'
+2025-08-07 17:23:29.322       MultiVuClient        DEBUG    Confirmation from server: "FIELD?"
+2025-08-07 17:23:29.369       MultiVuClient        DEBUG    ;from ('169.254.233.239', 63548); Received b'\x00j{"byteorder": "little", "message-type": ["text/json"], "message-encoding": "utf-8", "message-length": 135}{"id": "eb7aa0e3-76cc-4d2e-855d-6cd5fe91036c", "action": "FIELD?", "query": "", "result": "nan,Oe,Stable", "message_type": "completed"}'
+2025-08-07 17:23:29.369       MultiVuClient        DEBUG    ;to ('169.254.170.239', 5000); Sending b'\x00j{"byteorder": "little", "message-type": ["text/json"], "message-encoding": "utf-8", "message-length": 135}{"id": "eb7aa0e3-76cc-4d2e-855d-6cd5fe91036c", "action": "FIELD?", "query": "", "result": "nan,Oe,Stable", "message_type": "confirmed"}'
+2025-08-07 17:23:29.369       MultiVuClient        DEBUG     "FIELD?" complete: "nan,Oe,Stable"
+2025-08-07 17:23:42.263       MultiVuClient        DEBUG    Exiting Client
+2025-08-07 17:23:42.263       MultiVuClient        DEBUG    Resetting client state
+2025-08-07 17:23:42.263       MultiVuClient        DEBUG    query server: "CLOSE"
+2025-08-07 17:23:42.263       MultiVuClient        DEBUG    ;to ('169.254.170.239', 5000); Sending b'\x00i{"byteorder": "little", "message-type": ["text/json"], "message-encoding": "utf-8", "message-length": 92}{"id": "9423261e-5e6d-4c9a-8e56-4d303a2b6e58", "action": "CLOSE", "query": "", "result": ""}'
+2025-08-07 17:23:42.268       MultiVuClient        DEBUG    ;from ('169.254.233.239', 63548); Received b'\x00j{"byteorder": "little", "message-type": ["text/json"], "message-encoding": "utf-8", "message-length": 121}{"id": "9423261e-5e6d-4c9a-8e56-4d303a2b6e58", "action": "CLOSE", "query": "", "result": "", "message_type": "confirmed"}'
+2025-08-07 17:23:42.268       MultiVuClient        DEBUG    Confirmation from server: "CLOSE"
+2025-08-07 17:23:42.318       MultiVuClient        DEBUG    ;from ('169.254.233.239', 63548); Received b'\x00j{"byteorder": "little", "message-type": ["text/json"], "message-encoding": "utf-8", "message-length": 173}{"id": "9423261e-5e6d-4c9a-8e56-4d303a2b6e58", "action": "CLOSE", "query": "CLOSE", "result": "Client (\'169.254.233.239\', 63548) disconnected.", "message_type": "completed"}'
+2025-08-07 17:23:42.318       MultiVuClient        DEBUG    ;to ('169.254.170.239', 5000); Sending b'\x00j{"byteorder": "little", "message-type": ["text/json"], "message-encoding": "utf-8", "message-length": 173}{"id": "9423261e-5e6d-4c9a-8e56-4d303a2b6e58", "action": "CLOSE", "query": "CLOSE", "result": "Client (\'169.254.233.239\', 63548) disconnected.", "message_type": "confirmed"}'
+2025-08-07 17:23:42.318       MultiVuClient        INFO     Closing connection to ('169.254.233.239', 63548)
+2025-08-07 17:23:42.318       MultiVuClient        DEBUG     "CLOSE" complete: "Client ('169.254.233.239', 63548) disconnected."
+2025-08-07 17:23:42.318       MultiVuClient        DEBUG    Resetting client message state
+2025-08-07 17:23:42.318       MultiVuClient        DEBUG    Client message reset complete
+2025-08-07 17:23:42.318       MultiVuClient        DEBUG    Client reset complete
+2025-08-07 17:24:40.208       MultiVuClient        DEBUG    Connecting to '169.254.170.239 : 5000'...
+2025-08-07 17:24:40.220       MultiVuClient        DEBUG    MultiPyVu Version: 3.5.4
+2025-08-07 17:24:40.220       MultiVuClient        INFO     Starting connection to ('169.254.170.239', 5000)
+2025-08-07 17:24:40.220       MultiVuClient        DEBUG    query server: "START"
+2025-08-07 17:24:40.220       MultiVuClient        DEBUG    ;to ('169.254.170.239', 5000); Sending b'\x00i{"byteorder": "little", "message-type": ["text/json"], "message-encoding": "utf-8", "message-length": 92}{"id": "f679301c-e5bb-4a51-8a08-e896ec2b218c", "action": "START", "query": "", "result": ""}'
+2025-08-07 17:24:40.220       MultiVuClient        DEBUG    ;from ('169.254.170.239', 5000); Received b'\x00j{"byteorder": "little", "message-type": ["text/json"], "message-encoding": "utf-8", "message-length": 121}{"id": "f679301c-e5bb-4a51-8a08-e896ec2b218c", "action": "START", "query": "", "result": "", "message_type": "confirmed"}'
+2025-08-07 17:24:40.220       MultiVuClient        DEBUG    Confirmation from server: "START"
+2025-08-07 17:24:40.268       MultiVuClient        DEBUG    ;from ('169.254.170.239', 5000); Received b'\x00j{"byteorder": "little", "message-type": ["text/json"], "message-encoding": "utf-8", "message-length": 193}{"id": "f679301c-e5bb-4a51-8a08-e896ec2b218c", "action": "START", "query": "3.5.4;t", "result": "Connected to OPTICOOL MultiVuServer at (\'169.254.233.239\', 63590)", "message_type": "completed"}'
+2025-08-07 17:24:40.268       MultiVuClient        DEBUG    ;to ('169.254.170.239', 5000); Sending b'\x00j{"byteorder": "little", "message-type": ["text/json"], "message-encoding": "utf-8", "message-length": 193}{"id": "f679301c-e5bb-4a51-8a08-e896ec2b218c", "action": "START", "query": "3.5.4;t", "result": "Connected to OPTICOOL MultiVuServer at (\'169.254.233.239\', 63590)", "message_type": "confirmed"}'
+2025-08-07 17:24:40.268       MultiVuClient        DEBUG     "START" complete: "Connected to OPTICOOL MultiVuServer at ('169.254.233.239', 63590)"
+2025-08-07 17:24:40.268       MultiVuClient        INFO     Connected to OPTICOOL MultiVuServer at ('169.254.233.239', 63590)
+2025-08-07 17:24:40.270       MultiVuClient        DEBUG    query server: "TEMP?"
+2025-08-07 17:24:40.270       MultiVuClient        DEBUG    ;to ('169.254.170.239', 5000); Sending b'\x00i{"byteorder": "little", "message-type": ["text/json"], "message-encoding": "utf-8", "message-length": 92}{"id": "418199d1-794a-44a7-bf10-bf4583a1726b", "action": "TEMP?", "query": "", "result": ""}'
+2025-08-07 17:24:40.323       MultiVuClient        DEBUG    ;from ('169.254.233.239', 63590); Received b'\x00j{"byteorder": "little", "message-type": ["text/json"], "message-encoding": "utf-8", "message-length": 121}{"id": "418199d1-794a-44a7-bf10-bf4583a1726b", "action": "TEMP?", "query": "", "result": "", "message_type": "confirmed"}'
+2025-08-07 17:24:40.323       MultiVuClient        DEBUG    Confirmation from server: "TEMP?"
+2025-08-07 17:24:40.380       MultiVuClient        DEBUG    ;from ('169.254.233.239', 63590); Received b'\x00j{"byteorder": "little", "message-type": ["text/json"], "message-encoding": "utf-8", "message-length": 149}{"id": "418199d1-794a-44a7-bf10-bf4583a1726b", "action": "TEMP?", "query": "", "result": "237.96202087402344,K,Standby", "message_type": "completed"}'
+2025-08-07 17:24:40.380       MultiVuClient        DEBUG    ;to ('169.254.170.239', 5000); Sending b'\x00j{"byteorder": "little", "message-type": ["text/json"], "message-encoding": "utf-8", "message-length": 149}{"id": "418199d1-794a-44a7-bf10-bf4583a1726b", "action": "TEMP?", "query": "", "result": "237.96202087402344,K,Standby", "message_type": "confirmed"}'
+2025-08-07 17:24:40.380       MultiVuClient        DEBUG     "TEMP?" complete: "237.96202087402344,K,Standby"
+2025-08-07 17:24:40.380       MultiVuClient        DEBUG    query server: "FIELD?"
+2025-08-07 17:24:40.380       MultiVuClient        DEBUG    ;to ('169.254.170.239', 5000); Sending b'\x00i{"byteorder": "little", "message-type": ["text/json"], "message-encoding": "utf-8", "message-length": 93}{"id": "62cb665f-1021-4c60-a737-3ff47cfadddc", "action": "FIELD?", "query": "", "result": ""}'
+2025-08-07 17:24:40.428       MultiVuClient        DEBUG    ;from ('169.254.233.239', 63590); Received b'\x00j{"byteorder": "little", "message-type": ["text/json"], "message-encoding": "utf-8", "message-length": 122}{"id": "62cb665f-1021-4c60-a737-3ff47cfadddc", "action": "FIELD?", "query": "", "result": "", "message_type": "confirmed"}'
+2025-08-07 17:24:40.428       MultiVuClient        DEBUG    Confirmation from server: "FIELD?"
+2025-08-07 17:24:40.491       MultiVuClient        DEBUG    ;from ('169.254.233.239', 63590); Received b'\x00j{"byteorder": "little", "message-type": ["text/json"], "message-encoding": "utf-8", "message-length": 135}{"id": "62cb665f-1021-4c60-a737-3ff47cfadddc", "action": "FIELD?", "query": "", "result": "nan,Oe,Stable", "message_type": "completed"}'
+2025-08-07 17:24:40.491       MultiVuClient        DEBUG    ;to ('169.254.170.239', 5000); Sending b'\x00j{"byteorder": "little", "message-type": ["text/json"], "message-encoding": "utf-8", "message-length": 135}{"id": "62cb665f-1021-4c60-a737-3ff47cfadddc", "action": "FIELD?", "query": "", "result": "nan,Oe,Stable", "message_type": "confirmed"}'
+2025-08-07 17:24:40.491       MultiVuClient        DEBUG     "FIELD?" complete: "nan,Oe,Stable"
+2025-08-07 17:24:40.573       MultiVuClient        DEBUG    Exiting Client
+2025-08-07 17:24:40.573       MultiVuClient        DEBUG    Resetting client state
+2025-08-07 17:24:40.573       MultiVuClient        DEBUG    query server: "CLOSE"
+2025-08-07 17:24:40.573       MultiVuClient        DEBUG    ;to ('169.254.170.239', 5000); Sending b'\x00i{"byteorder": "little", "message-type": ["text/json"], "message-encoding": "utf-8", "message-length": 92}{"id": "7b844e40-514f-4b0e-835a-dca53405b27e", "action": "CLOSE", "query": "", "result": ""}'
+2025-08-07 17:24:40.577       MultiVuClient        DEBUG    ;from ('169.254.233.239', 63590); Received b'\x00j{"byteorder": "little", "message-type": ["text/json"], "message-encoding": "utf-8", "message-length": 121}{"id": "7b844e40-514f-4b0e-835a-dca53405b27e", "action": "CLOSE", "query": "", "result": "", "message_type": "confirmed"}'
+2025-08-07 17:24:40.577       MultiVuClient        DEBUG    Confirmation from server: "CLOSE"
+2025-08-07 17:24:40.622       MultiVuClient        DEBUG    ;from ('169.254.233.239', 63590); Received b'\x00j{"byteorder": "little", "message-type": ["text/json"], "message-encoding": "utf-8", "message-length": 173}{"id": "7b844e40-514f-4b0e-835a-dca53405b27e", "action": "CLOSE", "query": "CLOSE", "result": "Client (\'169.254.233.239\', 63590) disconnected.", "message_type": "completed"}'
+2025-08-07 17:24:40.622       MultiVuClient        DEBUG    ;to ('169.254.170.239', 5000); Sending b'\x00j{"byteorder": "little", "message-type": ["text/json"], "message-encoding": "utf-8", "message-length": 173}{"id": "7b844e40-514f-4b0e-835a-dca53405b27e", "action": "CLOSE", "query": "CLOSE", "result": "Client (\'169.254.233.239\', 63590) disconnected.", "message_type": "confirmed"}'
+2025-08-07 17:24:40.622       MultiVuClient        INFO     Closing connection to ('169.254.233.239', 63590)
+2025-08-07 17:24:40.622       MultiVuClient        DEBUG     "CLOSE" complete: "Client ('169.254.233.239', 63590) disconnected."
+2025-08-07 17:24:40.622       MultiVuClient        DEBUG    Resetting client message state
+2025-08-07 17:24:40.622       MultiVuClient        DEBUG    Client message reset complete
+2025-08-07 17:24:40.622       MultiVuClient        DEBUG    Client reset complete
