@@ -33,6 +33,7 @@ class LockInOE1022D():
         self.R_chan = 1 #channels: 1 is channel A. 2 is channel B 
         self.dR_chan = 2
         self.num_avgs = 150
+        print('Connected to OE1022D LockIn ')
         
     # --- Generic Commands ---
     def query(self, command):
@@ -49,6 +50,7 @@ class LockInOE1022D():
             print(f"Write error: {e}")
 
     def close(self):
+        print('closing OE1022D Lockin connection')
         self.instrument.close()
 
     def identify(self):

@@ -10,9 +10,13 @@ import sys
 
 class Opticool(mpv.Client):
     def __init__(self, host='169.254.170.239', port=5000):
-        super().__init__(host, port)
-        self._connected = False
-        self.connect()
+        try:
+            super().__init__(host, port)
+            self._connected = False
+            self.connect()
+        except :
+            err_msg = "Failed to connect. Make sure server is running on opticool PC. Start it in anaconda prompt with python -m MultiPyVu. Also try closing the prompt and retrying" 
+            raise ConnectionError(err_msg)
 
     def connect(self):
         if not self._connected:

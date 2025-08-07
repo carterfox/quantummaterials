@@ -57,16 +57,32 @@ if __name__ == "__main__":
     sample = 'dualgate-s1'
     data_saving_path = ''
 
+    # opticool = QDopticool.Opticool()
+
+    # T, sT = opticool.get_temperature()
+    # print(f'The temperature is {T}, status is {sT}; ')
+    # F, sF = opticool.get_field()
+    # message = f'the field is {F}, status is {sF}. '
+    # print(message)
+
+    # opticool.close()
+    # with mpv.Client('169.254.170.239', 5000) as opticool:
+    #     T, sT = opticool.get_temperature()
+    #     message = f'The temperature is {T}, status is {sT}; '
+    #     print(message)
+
     
     # example RMCD experiment
-    """
+    # """
     lockin = get_lockin()
     opticool, current_temp, current_field = get_opticool()
-    bfield_array = RMCD.make_bfield_list(-1, 1, 0.1)
-    rmcd_scan_data = RMCD.RMCD_bfield_scan(lockin, opticool,bfield_array)
+    ANC = get_ANC300()
+    # bfield_array = RMCD.make_bfield_list(-1, 1, 0.1)
+    # rmcd_scan_data = RMCD.RMCD_bfield_scan(lockin, opticool,bfield_array)
+    ANC.close()
     lockin.close()
     opticool.close()
-    """
+    # """
 
     
 
