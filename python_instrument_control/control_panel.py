@@ -29,6 +29,7 @@ def get_lockin(resource_name='ASRL12::INSTR', R_chan=1, dR_chan=2, num_avgs=150,
     lockin.set_sensitivity(dR_chan,sensitivities[1])
     lockin.set_harmonic(dR_chan, 1, 2)
     lockin.delay=0.05
+    lockin.sin_freq=100
     lockin.auto_phase_all()
     servers.append(lockin)
     return lockin
