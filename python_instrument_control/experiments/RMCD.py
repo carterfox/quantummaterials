@@ -146,6 +146,13 @@ def rmcd_mapping(lockin, ANC, x_start, x_end, y_start, y_end, points, returnstep
     scan_array = np.zeros((y_points, x_points))
     return_step_size = -(x_end - x_start) / returnsteps
     
+    
+    plt.ion()
+    fig, ax = plt.subplots()
+    im = ax.imshow(scan_array, cmap='viridis', interpolation='none')
+    plt.colorbar(im, ax=ax)
+
+    
     for j in range(y_points):
         y = y_start + j * stepy
         scannery.offset(y)
@@ -164,12 +171,21 @@ def rmcd_mapping(lockin, ANC, x_start, x_end, y_start, y_end, points, returnstep
             
             rmcd_value = data[4]/data[0]
             scan_array[j, i] = rmcd_value
+                        
+            im.set_data(scan_array)
+            im.set_clim(vmin=np.min(scan_array), vmax=np.max(scan_array))
+            plt.draw()
+
 
         # Return path (no data stored)
         for r in range(1, returnsteps + 1):
             x_back = x_end + r * return_step_size
             scannerx.offset(x_back)
             time.sleep(0.2)
+            
+        
+    plt.ioff()
+    plt.show()
 
     return scan_array
     

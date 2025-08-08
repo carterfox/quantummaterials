@@ -8,7 +8,8 @@ Created on Tue Mar 18 19:24:22 2025
 from scipy.interpolate import UnivariateSpline; from scipy.optimize import curve_fit; from scipy import ndimage
 from matplotlib_scalebar.scalebar import ScaleBar; import matplotlib.patches as mpatches
 import matplotlib.pylab as plt; import matplotlib as mpl; import matplotlib.cm as cm
-import hdf5plugin; import h5py; from readMDA import readMDA
+import hdf5plugin; import h5py; 
+from analysis.utils.readMDA import readMDA
 import numpy as np; import glob; import time; from tqdm import tqdm
 
 #%% miscellaneous plotting and helpful functions  
