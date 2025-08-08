@@ -10,18 +10,18 @@ Created on Sun Aug  3 12:32:27 2025
 import numpy as np
 import time
 import matplotlib.pyplot as plt
-import SSI_OE1022D
-import QDopticool
-import RMCD
+from homemade_servers.SSI_OE1022D import LockInOE1022D
+from homemade_servers.QDopticool import Opticool
+from experiments import RMCD, Gr_polarization_sensing
 from pymeasure.instruments.keithley import Keithley2400,Keithley2450
-from pymeasure.instruments.attocube import ANC300Controller
 from qcodes_contrib_drivers.drivers.Attocube.ANC300 import ANC300
 import MultiPyVu as mpv
+
 
 servers = []
 ### functions for getting instruments
 def get_lockin(resource_name='ASRL12::INSTR', R_chan=1, dR_chan=2, num_avgs=150,sensitivities=["5 mV","200 uV"]):  
-    lockin = SSI_OE1022D.LockInOE1022D(resource_name)
+    lockin = LockInOE1022D(resource_name)
     lockin.R_chan = R_chan
     lockin.dR_chan = dR_chan
     lockin.num_avgs = num_avgs
@@ -35,7 +35,7 @@ def get_lockin(resource_name='ASRL12::INSTR', R_chan=1, dR_chan=2, num_avgs=150,
     return lockin
 
 def get_opticool(opticool_ip='169.254.170.239', port=5000):
-    opticool = QDopticool.Opticool(opticool_ip,port)
+    opticool = Opticool(opticool_ip,port)
     current_temp = opticool.get_temperature()
     current_field = opticool.get_field()
     servers.append(opticool)

@@ -15,6 +15,7 @@ import pyvisa
 import time
 import logging
 
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 class LockInOE1022D():
     
@@ -33,24 +34,24 @@ class LockInOE1022D():
         self.R_chan = 1 #channels: 1 is channel A. 2 is channel B 
         self.dR_chan = 2
         self.num_avgs = 150
-        print('Connected to OE1022D LockIn ')
+        logging.info("Connected to OE1022D LockIn")     
         
     # --- Generic Commands ---
     def query(self, command):
         try:
             return self.instrument.query(command)
         except Exception as e:
-            print(f"Query error: {e}")
+            logging.error(f"Query error: {e}")
             return None
 
     def write(self, command):
         try:
             self.instrument.write(command)
         except Exception as e:
-            print(f"Write error: {e}")
+            logging.error(f"Write error: {e}")
 
     def close(self):
-        print('closing OE1022D Lockin connection')
+        logging.info("Disconnecting from OE1022D LockIn")
         self.instrument.close()
 
     def identify(self):
@@ -88,9 +89,8 @@ class LockInOE1022D():
                 if values_R_chan:
                     data_R_chan.append([float(v) for v in values_R_chan.strip().split(',')])
                 if values_dR_chan:
-                    data_dR_chan.append([float(v) for v in values_dR_chan.strip().split(',')])
             except Exception as e:
-                print(f"Error reading data: {e}")
+                logging.error(f"Error reading data: {e}")
             time.sleep(delay)
     
         mean_R_chan = np.mean(data_R_chan, axis=0) if data_R_chan else None
@@ -103,73 +103,86 @@ class LockInOE1022D():
     def reset_buffer(self,channels=[1,2]):
         for chan in channels:
             self.write(f"RESTD {chan}")
+            logging.info(f"Buffer reset: Channel {chan}")
     
     # --- Auto Configuration ---
-    def auto_gain(self, channel=1):
-        self.write(f"AGAND {channel}")
-    
-    def auto_reserve(self, channel=1):
-        self.write(f"ARSVD {channel}")
-    
-    def auto_phase(self, channel=1):
-        self.write(f"APHSD {channel}")
-        
-    def auto_phase_all(self):
-        self.write(f"APHSD {1}")
-        self.write(f"APHSD {2}")
     
     def auto_scale(self, channel=1):
         self.write(f"ASCLD {channel}")
+        logging.info(f"Auto scale: Channel {channel}")
+        
+    def auto_gain(self, channel=1):
+        self.write(f"AGAND {channel}")
+        logging.info(f"Auto gain: Channel {channel}")
+
+    def auto_reserve(self, channel=1):
+        self.write(f"ARSVD {channel}")
+        logging.info(f"Auto reserve: Channel {channel}")
+
+    def auto_phase(self, channel=1):
+        self.write(f"APHSD {channel}")
+        logging.info(f"Auto phase: Channel {channel}")
+
+    def auto_phase_all(self):
+        self.auto_phase(1)
+        self.auto_phase(2)
+        logging.info("Auto phase applied to both channels")
         
     # --- Configuration ---
+    
     def set_reference_source(self, channel=1, mode=1):
-        """0=External, 1=Internal, 2=Internal Sweep"""
         self.write(f"FMODD {channel},{mode}")
+        logging.info(f"Reference source set: Channel {channel}, Mode {mode}")
 
     def set_reference_frequency(self, channel=1, freq_hz=1000):
         self.write(f"FREQD {channel},{freq_hz}")
+        logging.info(f"Reference frequency set: Channel {channel}, {freq_hz} Hz")
 
     def set_phase_shift(self, channel=1, degrees=0.0):
         self.write(f"PHASD {channel},{degrees}")
+        logging.info(f"Phase shift set: Channel {channel}, {degrees}°")
 
     def set_sensitivity(self, channel=1, sensitivity="5 mV"):
         """Index from 0 to 27 (see manual for mapping)"""
-        index = str(np.where(self.sensitivities==sensitivity)[0][0])
-        self.write(f"SENSD {channel},{index}")
+        if sensitivity in self.sensitivities:
+            index = str(np.where(self.sensitivities == sensitivity)[0][0])
+            self.write(f"SENSD {channel},{index}")
+            logging.info(f"Sensitivity set: Channel {channel}, {sensitivity}")
+        else:
+            logging.warning(f"Invalid sensitivity: {sensitivity}")
 
     def set_time_constant(self, channel=1, index=13):
-        """Index from 1 to 18 (e.g., 13 = 10s)"""
         self.write(f"OFLTD {channel},{index}")
+        logging.info(f"Time constant set: Channel {channel}, Index {index}")
 
     def set_filter_slope(self, channel=1, db_per_oct=3):
-        """0=6dB, 1=12dB, 2=18dB, 3=24dB"""
         self.write(f"OFSLD {channel},{db_per_oct}")
+        logging.info(f"Filter slope set: Channel {channel}, {db_per_oct} dB/oct")
+    
 
     def set_sync_filter(self, channel=1, enable=True):
         self.write(f"SYNCD {channel},{1 if enable else 0}")
+        logging.info(f"Sync filter {'enabled' if enable else 'disabled'}: Channel {channel}")
 
     def set_harmonic(self, channel=1, slot=1, order=3):
-        """slot: 1 or 2; order: harmonic number"""
         self.write(f"HARMD {channel},{slot},{order}")
+        logging.info(f"Harmonic set: Channel {channel}, Slot {slot}, Order {order}")
+        
+    def set_sine_output(self, channel=1, amplitude_v=1.0, offset_v=0.0, waveform_type=0):
+        """
+        Configure the SINE OUT signal using SLVLD, SVLLD, and SWVTD commands.
     
-    def set_reference_source(self, channel=1, mode=1):
-        """0=External, 1=Internal, 2=Internal Sweep"""
-        self.write(f"FMODD {channel},{mode}")
-
-    def set_reference_frequency(self, channel=1, freq_hz=1000):
-        self.write(f"FREQD {channel},{freq_hz}")
-
-    def set_phase_shift(self, channel=1, degrees=0.0):
-        self.instrument.write(f"PHASD {channel},{degrees}")
-
-    def set_time_constant(self, channel=1, index=13):
-        """Index from 1 to 18 (e.g., 13 = 10s)"""
-        self.instrument.write(f"OFLTD {channel},{index}")
-
-    def set_filter_slope(self, channel=1, db_per_oct=3):
-        """0=6dB, 1=12dB, 2=18dB, 3=24dB"""
-        self.instrument.write(f"OFSLD {channel},{db_per_oct}")
-
-    def set_sync_filter(self, channel=1, enable=True):
-        self.instrument.write(f"SYNCD {channel},{1 if enable else 0}")
+        Parameters:
+            channel (int): Channel number (1 or 2)
+            amplitude_v (float): Peak amplitude in volts
+            offset_v (float): DC offset in volts
+            waveform_type (int): 0 = sine, 1 = square, 2 = triangle (if supported)
+        """
+        try:
+            self.write(f"SLVLD {channel},{amplitude_v}")
+            self.write(f"SVLLD {channel},{offset_v}")
+            self.write(f"SWVTD {channel},{waveform_type}")
+            logging.info(f"SINE OUT configured: Channel {channel}, Amplitude={amplitude_v} V, Offset={offset_v} V, Waveform={waveform_type}")
+        except Exception as e:
+            logging.error(f"Error configuring SINE OUT: {e}")
         

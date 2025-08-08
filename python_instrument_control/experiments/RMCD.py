@@ -13,13 +13,15 @@ import numpy as np
 import time
 import matplotlib.pyplot as plt
 import os
+from homemade_servers.SSI_OE1022D import LockInOE1022D
+from qcodes_contrib_drivers.drivers.Attocube.ANC300 import ANC300
 
 
 def make_bfield_list(b_start,b_end,b_step):
     bfield_list = np.append(np.arange(b_start,b_end+b_step,b_step),np.arange(b_end,b_start-b_step,-1*b_step))
     return bfield_list
 
-def read_lockin_rmcd_data(lockin):
+def read_lockin_rmcd_data(lockin: LockInOE1022D):
     
     mean_R_chan, std_R_chan, mean_dR_chan, std_dR_chan = lockin.read_average_dual(params=[2,3,7,8],num_avgs=100,delay=0.02)
     
@@ -48,13 +50,9 @@ def make_rmcd_saving_file(filename,experiment):
         np.savetxt(filename, [], header=header)
     return None
 
-def save_rmcd_data_row(data,file_save):
-    np.savetxt(file_save, data, fmt="%.9f", mode='a')
-    return None
-
     
 
-def RMCD_bfield_scan(lockin,opticool,bfield_array,file_save):
+def RMCD_bfield_scan(lockin: LockInOE1022D,opticool,bfield_array,file_save):
     
     """
     Performs a magnetic field-dependent RMCD (Reflective Magnetic Circular Dichroism) scan
@@ -88,12 +86,12 @@ def RMCD_bfield_scan(lockin,opticool,bfield_array,file_save):
         
         data = read_lockin_rmcd_data(lockin) #THIS FUNCTION IS UNFINISHED. NEEDS TETSING
         data_row = data.insert(0,current_field)        
-        save_rmcd_data_row(data_row,file_save)
+        np.savetxt(file_save, data_row, fmt="%.9f", mode='a')
         
     return None
 
 
-def rmcd_mapping(lockin, ANC, x_start, x_end, y_start, y_end, points, returnsteps,delay,file_save):
+def rmcd_mapping(lockin: LockInOE1022D, ANC: ANC300, x_start, x_end, y_start, y_end, points, returnsteps,delay,file_save):
     
     """
     Performs a raster scan over a 2D grid to collect RMCD (Reflective Magnetic Circular Dichroism) data
@@ -167,7 +165,7 @@ def rmcd_mapping(lockin, ANC, x_start, x_end, y_start, y_end, points, returnstep
             data = read_lockin_rmcd_data(lockin)
             data_row = data.insert(0,y)
             data_row = data.insert(0,x)
-            save_rmcd_data_row(data_row,file_save)
+            np.savetxt(file_save, data_row, fmt="%.9f", mode='a')
             
             rmcd_value = data[4]/data[0]
             scan_array[j, i] = rmcd_value
