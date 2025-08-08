@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 import os
 from homemade_servers.SSI_OE1022D import LockInOE1022D
 from qcodes_contrib_drivers.drivers.Attocube.ANC300 import ANC300
-
+import helper_function_library as hf
 
 def make_bfield_list(b_start,b_end,b_step):
     bfield_list = np.append(np.arange(b_start,b_end+b_step,b_step),np.arange(b_end,b_start-b_step,-1*b_step))

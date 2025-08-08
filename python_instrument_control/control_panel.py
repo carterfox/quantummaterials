@@ -16,6 +16,7 @@ from experiments import RMCD, Gr_polarization_sensing
 from pymeasure.instruments.keithley import Keithley2400,Keithley2450
 from qcodes_contrib_drivers.drivers.Attocube.ANC300 import ANC300
 import MultiPyVu as mpv
+import helper_function_library as hf
 
 
 servers = []
@@ -64,6 +65,8 @@ def close_all():
 
 ##run experiments here by running the file 
 if __name__ == "__main__":
+    
+    hf.init_plot_params()
     
     sample = 'dualgate-s1'
     data_saving_path = ''
