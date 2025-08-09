@@ -7,52 +7,17 @@ Created on Thu Dec 12 11:09:25 2024
 
 RMCD experiment 
 """
-
-
+from typing import Union
 import numpy as np
 import time
 import matplotlib.pyplot as plt
-import os
+from homemade_servers.KeithleySourceMeter import KeithleySourceMeter
 from homemade_servers.SSI_OE1022D import LockInOE1022D
+from homemade_servers.QDopticool import Opticool
 from qcodes_contrib_drivers.drivers.Attocube.ANC300 import ANC300
-import helper_function_library as hf
+import toolbelt as tb
 
-def make_bfield_list(b_start,b_end,b_step):
-    bfield_list = np.append(np.arange(b_start,b_end+b_step,b_step),np.arange(b_end,b_start-b_step,-1*b_step))
-    return bfield_list
-
-def read_lockin_rmcd_data(lockin: LockInOE1022D):
-    
-    mean_R_chan, std_R_chan, mean_dR_chan, std_dR_chan = lockin.read_average_dual(params=[2,3,7,8],num_avgs=100,delay=0.02)
-    
-    R_cur_mean, R_cur_std = mean_R_chan[0], std_R_chan[0]
-    dR_cur_mean, dR_cur_std = mean_dR_chan[2], std_dR_chan[2]
-    
-    theta_R_cur_mean, theta_R_cur_std = mean_R_chan[1], std_R_chan[1]
-    theta_dR_cur_mean, theta_dR_cur_std = mean_dR_chan[3], std_dR_chan[3]
-
-    return R_cur_mean,R_cur_std,theta_R_cur_mean,theta_R_cur_std,dR_cur_mean,dR_cur_std,theta_dR_cur_mean,theta_dR_cur_std
-
-
-def make_rmcd_saving_file(filename,experiment):
-    
-    if experiment == 'bscan'   :
-        header = "#B(Oe) R_mean(V) R_std(V) thetaR_mean(deg) thetaR_std(deg) dR_mean(V) dR_std(V) thetadR_mean(deg) thetadR_std(deg)"
-    elif experiment == 'mapping':
-        header = "#X(V) Y(V) R_mean(V) R_std(V) thetaR_mean(deg) thetaR_std(deg) dR_mean(V) dR_std(V) thetadR_mean(deg) thetadR_std(deg)"
-    
-    if not os.path.exists(filename):
-        np.savetxt(filename, [], header=header)
-    else:
-        print('file already exists. making a new one with add on to name')
-        while os.path.exists(filename):            
-            filename = filename.replace(".txt", "_new.txt")
-        np.savetxt(filename, [], header=header)
-    return None
-
-    
-
-def RMCD_bfield_scan(lockin: LockInOE1022D,opticool,bfield_array,file_save):
+def RMCD_bfield_scan(lockin: LockInOE1022D,opticool: Opticool,bfield_array,file_save):
     
     """
     Performs a magnetic field-dependent RMCD (Reflective Magnetic Circular Dichroism) scan
@@ -76,7 +41,7 @@ def RMCD_bfield_scan(lockin: LockInOE1022D,opticool,bfield_array,file_save):
     """
 
     delay = 5    
-    make_rmcd_saving_file(file_save,'bscan')
+    tb.make_rmcd_saving_file(file_save,'bscan')
         
     for b in bfield_array:
         
@@ -84,14 +49,14 @@ def RMCD_bfield_scan(lockin: LockInOE1022D,opticool,bfield_array,file_save):
         current_field = opticool.set_field(b*10000, 110, opticool.field.approach_mode.linear)
         opticool.wait_for(delay, 0, opticool.field.waitfor) 
         
-        data = read_lockin_rmcd_data(lockin) #THIS FUNCTION IS UNFINISHED. NEEDS TETSING
+        data = tb.read_lockin_rmcd_data(lockin) #THIS FUNCTION IS UNFINISHED. NEEDS TETSING
         data_row = data.insert(0,current_field)        
         np.savetxt(file_save, data_row, fmt="%.9f", mode='a')
         
     return None
 
 
-def rmcd_mapping(lockin: LockInOE1022D, ANC: ANC300, x_start, x_end, y_start, y_end, points, returnsteps,delay,file_save):
+def RMCD_mapping(lockin: LockInOE1022D, ANC: ANC300, x_start, x_end, y_start, y_end, points, returnsteps,delay,file_save):
     
     """
     Performs a raster scan over a 2D grid to collect RMCD (Reflective Magnetic Circular Dichroism) data
@@ -133,7 +98,7 @@ def rmcd_mapping(lockin: LockInOE1022D, ANC: ANC300, x_start, x_end, y_start, y_
     scannerx = ANC.submodules['axis1']
     scannery = ANC.submodules['axis2']
     
-    make_rmcd_saving_file(file_save,'mapping')
+    tb.make_rmcd_saving_file(file_save,'mapping')
     
     y_points = points
     x_points = points
@@ -162,7 +127,7 @@ def rmcd_mapping(lockin: LockInOE1022D, ANC: ANC300, x_start, x_end, y_start, y_
             x = x_start + i * stepx
             scannerx.offset(x)
             time.sleep(delay)
-            data = read_lockin_rmcd_data(lockin)
+            data = tb.read_lockin_rmcd_data(lockin)
             data_row = data.insert(0,y)
             data_row = data.insert(0,x)
             np.savetxt(file_save, data_row, fmt="%.9f", mode='a')
@@ -186,4 +151,51 @@ def rmcd_mapping(lockin: LockInOE1022D, ANC: ANC300, x_start, x_end, y_start, y_
     plt.show()
 
     return scan_array
+
+
+def RMCD_dualgate_pure_Efield_sweep(lockin: LockInOE1022D,keithley_b: KeithleySourceMeter, keithley_t: KeithleySourceMeter,
+                                    E_array,d_b,d_t,file_save):
+    
+    tb.make_rmcd_saving_file(file_save,'Esweep')
+    
+    plt.ion()
+    fig, ax = plt.subplots()
+    ax.set_xlabel('E (V/nm)')
+    ax.set_ylabel('RMCD %')
+    
+    tb.configure_keithley(keithley_b)
+    tb.configure_keithley(keithley_t)
+    
+    rmcd_list = []
+    
+    for E in E_array:
+        
+        V_b = E*d_b
+        V_t = -V_b*d_t/d_b
+        
+        keithley_b.source_voltage = V_b             # Set output voltage
+        keithley_t.source_voltage = V_t             # Set output voltage
+        time.sleep(0.3)                          # Allow output and DUT to settle
+        Vb_meas, Ib_meas = tb.measure_V_I(keithley_b)
+        Vt_meas, It_meas = tb.measure_V_I(keithley_t)
+        elec_data = [V_b,Vb_meas,V_t,Vt_meas,Ib_meas,It_meas]
+        
+        lockin.sleep(lockin.delay)
+        lockin.reset_buffer()
+        rmcd_data = tb.read_lockin_rmcd_data(lockin)
+        rmcd_list.append(rmcd_data[4]/rmcd_data[0]*100)
+        
+        data_row = elec_data + rmcd_data
+        np.savetxt(file_save, data_row, fmt="%.9f", mode='a')
+        
+        ax.plot(E_array[0:len(rmcd_list)],rmcd_list)
+        plt.draw()
+    
+    plt.ioff()
+    plt.show()
+    
+    return None
+    
+    
+    
     

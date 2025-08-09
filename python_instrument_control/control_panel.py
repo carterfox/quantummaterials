@@ -8,14 +8,12 @@ Created on Sun Aug  3 12:32:27 2025
 
 # import MultiPyVu as mpv
 import numpy as np
-import time
 import matplotlib.pyplot as plt
 from homemade_servers.SSI_OE1022D import LockInOE1022D
 from homemade_servers.QDopticool import Opticool
+from homemade_servers.KeithleySourceMeter import KeithleySourceMeter
 from experiments import RMCD, Gr_polarization_sensing
-from pymeasure.instruments.keithley import Keithley2400,Keithley2450
 from qcodes_contrib_drivers.drivers.Attocube.ANC300 import ANC300
-import MultiPyVu as mpv
 import helper_function_library as hf
 
 
@@ -42,15 +40,11 @@ def get_opticool(opticool_ip='169.254.170.239', port=5000):
     servers.append(opticool)
     return opticool, current_temp, current_field
 
-def get_kiethley2450(resource_name="GPIB0::1::INSTR"):
-    keithley2450 = Keithley2450(resource_name)
-    servers.append(keithley2450)
-    return keithley2450 
-
-def get_kiethley2400(resource_name="GPIB0::16::INSTR"):
-    keithley2400 = Keithley2400(resource_name)
-    servers.append(keithley2400)
-    return keithley2400
+def get_keithley(resource_name="GPIB0::16::INSTR",model='2450'):
+    keithley = KeithleySourceMeter(resource_name,model)
+    keithley.compliance_current = 10**(-6)
+    servers.append(keithley)
+    return keithley
 
 def get_ANC300(resource_name='ASRL11'):
     ANC = ANC300(name='ANC300',address=resource_name)
