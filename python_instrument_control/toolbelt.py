@@ -13,6 +13,7 @@ import time
 import logging
 from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 from pymeasure.instruments.keithley import Keithley2400, Keithley2450
 from homemade_servers.SSI_OE1022D import LockInOE1022D
 from typing import Union
@@ -56,8 +57,7 @@ def make_rmcd_saving_file(filename,experiment):
             filename = filename.replace(".txt", "_new.txt")
         with open(filename, 'a') as file:
             file.write(header + '\n') 
-    return None
-
+    return filename
 
 def make_Gr_resistance_saving_file(filename,Rbox,delay,freq,Vb,file='Vb'):
     
@@ -117,3 +117,29 @@ def A_over_B_error_prop(A,B,stdA,stdB):
 def line(x,m,b):
     return m*x+b
 
+
+def init_plot_params():
+    mpl.rcParams.update(mpl.rcParamsDefault)
+    fontsize = 18
+    plt.rcParams["lines.marker"] = '.'
+    plt.rcParams["lines.linewidth"] = 2
+    plt.rcParams["axes.labelpad"] = 4
+    plt.rcParams["font.size"] = fontsize
+    plt.rcParams["lines.markersize"] = 10
+    plt.rcParams["figure.figsize"] = [6,4]
+    plt.rcParams["savefig.dpi"] = 500
+    plt.rcParams["savefig.format"] = "png"  # "svg"
+    plt.rcParams["image.cmap"] = "magma"
+    plt.rcParams["figure.constrained_layout.use"] = True
+    plt.rcParams["legend.fontsize"] = 0.7 * fontsize
+    plt.rcParams["legend.handlelength"] = 0.9
+    plt.rcParams["legend.handletextpad"] = 0.5
+    plt.rcParams["xtick.direction"] = 'in'
+    plt.rcParams["ytick.direction"] = 'in'
+    plt.rcParams["savefig.bbox"] = "tight"
+    # plt.rcParams['text.usetex'] = True
+    # plt.rcParams['text.latex.preamble'] =r"\usepackage{xcolor} "
+    # plt.rcParams.update({
+    # "text.usetex": True,
+    # "font.family": "Helvetica"})
+    

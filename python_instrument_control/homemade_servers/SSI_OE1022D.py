@@ -15,7 +15,6 @@ import pyvisa
 import time
 import logging
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 class LockInOE1022D():
     
@@ -35,7 +34,6 @@ class LockInOE1022D():
         self.dR_chan = 2
         self.num_avgs = 150
         self.set_harmonic(self.dR_chan, 1, 2)
-
         logging.info("Connected to OE1022D LockIn")     
         
     # --- Generic Commands ---
@@ -53,9 +51,11 @@ class LockInOE1022D():
             logging.error(f"Write error: {e}")
 
     def close(self):
-        logging.info("Disconnecting from OE1022D LockIn")
-        self.instrument.close()
-
+        try:
+            self.instrument.close()
+            logging.info(f"Disconnected from Lockin In ")
+        except Exception as e:
+            logging.error(f"Write error: {e}")
     def identify(self):
         return self.query("*IDND?")    
 

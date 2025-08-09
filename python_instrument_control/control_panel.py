@@ -17,6 +17,9 @@ import RMCD
 import Gr_polarization_sensing
 from qcodes_contrib_drivers.drivers.Attocube.ANC300 import ANC300
 import toolbelt as tb
+import logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
 
 servers = []
 ### functions for getting instruments
@@ -56,24 +59,27 @@ def close_all():
 ##run experiments here by running the file 
 if __name__ == "__main__":
     
-    # hf.init_plot_params()
+    tb.init_plot_params()
     # print('here')
-    path_d4 = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/d4'
-    device4 = DualGate(sample_name='d4', d_b=18.45, d_t=5.67, data_path=path_d4)
+    # path_d4 = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/d4'
+    # sample = DualGate(sample_name='d4', d_b=18.45, d_t=5.67, data_path=path_d4)
     
-    lockin = get_lockin()
-    opticool, current_temp, current_field = get_opticool()
+    # lockin = get_lockin()
+    # opticool, current_temp, current_field = get_opticool()
     # ANC = get_ANC300()
-    try:
-        # opticool.set_field(-21000, 110, opticool.field.approach_mode.linear)
-        # opticool.wait_for(bitmask=opticool.field.waitfor)
-        bfield_array = tb.make_bfield_list(-21000, 21000, 1000)
-        rmcd_scan_data = RMCD.RMCD_bfield_scan(device4, lockin,opticool,bfield_array,'scan1_4L.txt')
-    # RMCD.test(device4, lockin,opticool,bfield_array,'test_scan1.txt')
-        close_all()
-    except Exception as e:
-        print(e)
-        close_all()
+    # try:
+    #     # bfield_array = tb.make_bfield_list(-21000, 21000, 1000)
+    #     # rmcd_scan_data = RMCD.RMCD_bfield_scan(device4, lockin,opticool,bfield_array,'BN-BN-Gr-Gr.txt')
+    
+    #     # RMCD.RMCD_mapping(sample, lockin, ANC, 0, 5, 0, 5, 3, 2, 1, 'testmap.txt')
+    #     lockin.delay=0.4
+    #     lockin.num_avgs=20
+    #     RMCD.RMCD_mapping(sample, lockin, ANC, x_start=0, x_end=44, points=45, file_save='map1.txt')
+    
+    # except Exception as e:
+    #     print(e)
+    # finally:
+    #     close_all()
     
 
 

@@ -19,70 +19,80 @@ from devices.dualgate import DualGate
 from qcodes_contrib_drivers.drivers.Attocube.ANC300 import ANC300
 import toolbelt as tb
 
-
-def test(sample, lockin,opticool,bfield_array,file_save):
-    field = 0.01*10000
-    current_field = opticool.set_field(field, 110, opticool.field.approach_mode.linear)
-    return None
-
 def RMCD_bfield_scan(sample, lockin: LockInOE1022D,opticool: Opticool,bfield_array,file_save):
     
     """
-    Performs a magnetic field-dependent RMCD (Reflective Magnetic Circular Dichroism) scan
-    by sweeping through a list of magnetic field values, collecting data at each point using
-    a lock-in amplifier, and saving the results to a file.
+    Perform a magnetic field scan to collect RMCD data and update a live plot.
 
-    Parameters:
+    Parameters
     ----------
-    lockin : object
-        Lock-in amplifier interface used to collect RMCD data.
-    opticool : object
-        Magnetic field controller (OptiCool) used to set and stabilize the field.
-    bfield_array : list or np.ndarray
-        Array of magnetic field values (in Tesla or Gauss, depending on system units) to scan.
+    sample : object
+        Sample object containing metadata and file path information.
+    lockin : LockInOE1022D
+        Lock-in amplifier used to collect RMCD signals.
+    opticool : Opticool
+        Magnet controller used to set and stabilize magnetic fields.
+    bfield_array : array-like
+        List or array of magnetic field values (in Gauss) to scan.
     file_save : str
-        Path to the file where scan data will be saved.
+        Filename for saving the RMCD scan data.
 
-    Returns:
+    Returns
     -------
     None
     """
 
-    saving_file = sample.data_path+'/RMCD/bfield_scan/'+file_save
-    tb.make_rmcd_saving_file(saving_file,'bscan')
+    gen_path = sample.data_path+'/RMCD/bfield_scan/'+file_save
+    saving_file = tb.make_rmcd_saving_file(gen_path,'bscan')
+    
+    tb.init_plot_params()
     plt.ion()
     fig, ax = plt.subplots()
-    line, = ax.plot([], [], 'b-')
-    ax.set_xlabel('B (T)')
-    ax.set_ylabel('RMCD %')
+    ax.set_xlabel('B (T)'), ax.set_ylabel('RMCD %')
     ax.set_xlim(min(bfield_array)/10000,max(bfield_array)/10000)
-    b_list, rmcd_list = [],[]
+    
+    b_list, rmcd_list,b_list_ascend, b_list_descend, rmcd_list_ascend,rmcd_list_descend = [],[],[],[],[],[]
     for b in bfield_array:
+        field_T = b/10000
         lockin.reset_buffer()
         opticool.set_field(b, 110, opticool.field.approach_mode.linear)
         opticool.wait_for(lockin.delay, 0, opticool.field.waitfor) 
-        current_field = opticool.get_field()[0]
-        
+
         data = tb.read_lockin_rmcd_data(lockin) #THIS FUNCTION IS UNFINISHED. NEEDS TETSING
-        rmcd = data[4]/data[0]
+        theta_dr = data[6]
+        rmcd = data[4]/data[0]*100
+        if theta_dr>0:
+            rmcd = -1*rmcd
+        
         with open(saving_file, 'a') as file:
-            file.write(str(b/10000)+' ') 
-            file.write(' '.join(str(f) for f in data) + '\n') 
+            file.write(str(field_T)+' ') 
+            file.write(' '.join(f"{d:.9f}" for d in data) + '\n') 
         # np.savetxt(saving_file, data_row, fmt="%.9f", mode='a')
-        b_list.append(b/10000)
-        rmcd_list.append(rmcd)
-        line.set_xdata(b_list)
-        line.set_ydata(rmcd_list)
-        ax.set_ylim(min(rmcd_list)*1.1, max(rmcd_list)*1.1)        
+        try:
+            if field_T>=b_list[-1]:
+                b_list_ascend.append(field_T)
+                rmcd_list_ascend.append(rmcd)
+            if field_T<=b_list[-1]:
+                b_list_descend.append(field_T)
+                rmcd_list_descend.append(rmcd)
+        except:
+            b_list_ascend.append(field_T)
+            rmcd_list_ascend.append(rmcd)
+        b_list.append(field_T)
+        ax.plot(b_list_ascend, rmcd_list_ascend, 'b-',label=r'$\rightarrow$')
+        ax.plot(b_list_descend, rmcd_list_descend, 'r-',label=r'$\leftarrow$')
+        if len(rmcd_list)>1: ax.set_ylim(min(rmcd_list)*1.1, max(rmcd_list)*1.1)        
+        ax.legend(loc='upper left')
         fig.canvas.draw()
         fig.canvas.flush_events()
-    # plt.ioff()
-    ax.plot(b_list,rmcd_list)
+    
+    plt.ioff()
     plt.show()
+    
     return None
 
 
-def RMCD_mapping(sample, lockin: LockInOE1022D, ANC: ANC300, x_start, x_end, y_start, y_end, points, returnsteps,delay,file_save):
+def RMCD_mapping(sample, lockin: LockInOE1022D, ANC: ANC300, x_start, x_end, y_start=None, y_end=None, points=5, returnsteps=30,file_save='test.txt'):
     
     """
     Performs a raster scan over a 2D grid to collect RMCD (Reflective Magnetic Circular Dichroism) data
@@ -121,17 +131,21 @@ def RMCD_mapping(sample, lockin: LockInOE1022D, ANC: ANC300, x_start, x_end, y_s
         A 2D array of shape (points, points) containing RMCD values at each scanned (X, Y) position.
         Each value is computed as `data[4] / data[0]` from the lock-in amplifier output.
     """
+    
+    if y_start == None:
+        y_start,y_end = x_start, x_end
+    
     scannerx = ANC.submodules['axis1']
     scannery = ANC.submodules['axis2']
     
-    saving_file = sample.data_path+'/RMCD/mapping/'+file_save    
-    tb.make_rmcd_saving_file(saving_file,'mapping')
+    gen_path = sample.data_path+'/RMCD/mapping/'+file_save    
+    saving_file = tb.make_rmcd_saving_file(gen_path,'mapping')
     
     y_points = points
     x_points = points
    
-    stepx = (x_end-x_start)/x_points
-    stepy = (y_end-y_start)/y_points
+    stepx = (x_end-x_start)/(x_points-1)
+    stepy = (y_end-y_start)/(y_points-1)
 
     scan_array = np.zeros((y_points, x_points))
     return_step_size = -(x_end - x_start) / returnsteps
@@ -140,40 +154,52 @@ def RMCD_mapping(sample, lockin: LockInOE1022D, ANC: ANC300, x_start, x_end, y_s
     plt.ion()
     fig, ax = plt.subplots()
     im = ax.imshow(scan_array, cmap='viridis', interpolation='none')
-    plt.colorbar(im, ax=ax)
+    cbar=plt.colorbar(im, ax=ax)
+    ax.set_xlabel('$V_x$'),ax.set_ylabel('$V_y$')
+    xticks = np.linspace(0, x_points - 1, num=5, dtype=int)  # 5 ticks evenly spaced
+    yticks = np.linspace(0, y_points - 1, num=5, dtype=int)
+    xlabels = [round(x_start + (x_points - 1 - i) * stepx, 2) for i in xticks]
+    ylabels = [round(y_start + j * stepy, 2) for j in yticks]
+    ax.set_xticks(xticks)
+    ax.set_yticks(yticks)
+    ax.set_xticklabels(xlabels)
+    ax.set_yticklabels(ylabels)
+    cbar.set_label('RMCD %')
 
     
     for j in range(y_points):
-        y = y_start + j * stepy
+        y = round(y_start + j * stepy,2)
         scannery.offset(y)
 
-        # Forward scan
         for i in range(x_points):
-            
             lockin.reset_buffer()
-            x = x_start + i * stepx
+            x = round(x_start + i * stepx,2)
             scannerx.offset(x)
-            time.sleep(delay)
+            time.sleep(lockin.delay)
             data = tb.read_lockin_rmcd_data(lockin)
-            data_row = data.insert(0,y)
-            data_row = data.insert(0,x)
-            np.savetxt(saving_file, data_row, fmt="%.9f", mode='a')
-            
-            rmcd_value = data[4]/data[0]
-            scan_array[j, i] = rmcd_value
-                        
-            im.set_data(scan_array)
-            im.set_clim(vmin=np.min(scan_array), vmax=np.max(scan_array))
-            plt.draw()
+            with open(saving_file, 'a') as file:
+                file.write(str(x)+' '+str(y)+' ') 
+                file.write(' '.join(f"{d:.9f}" for d in data) + '\n') 
 
+            rmcd_value = data[4]/data[0]
+            scan_array[j, x_points-1-i] = rmcd_value
+                        
+        im.set_data(scan_array)
+        im.set_clim(vmin=np.min(scan_array), vmax=np.max(scan_array))
+        fig.canvas.draw()
+        fig.canvas.flush_events()
 
         # Return path (no data stored)
-        for r in range(1, returnsteps + 1):
-            x_back = x_end + r * return_step_size
+        for r in range(returnsteps):
+            x_back = x_end + (r+1) * return_step_size
             scannerx.offset(x_back)
-            time.sleep(0.2)
+            time.sleep(0.1)
+    
+    for r in range(returnsteps):
+        y_back = y_end + (r+1) * return_step_size
+        scannery.offset(y_back)
+        time.sleep(0.2)
             
-        
     plt.ioff()
     plt.show()
 
@@ -184,9 +210,34 @@ def RMCD_dualgate_pure_Efield_sweep(sample: DualGate, lockin: LockInOE1022D,
                                     keithley_b: KeithleySourceMeter, keithley_t: KeithleySourceMeter,
                                     E_array,file_save):
     
+    """
+    Perform a pure out-of-plane electric field sweep using a dual-gated sample
+    and record RMCD data at each field point.
+
+    Parameters
+    ----------
+    sample : DualGate
+        Sample object containing geometry and file path info, including gate thicknesses.
+    lockin : LockInOE1022D
+        Lock-in amplifier used to collect RMCD signals.
+    keithley_b : KeithleySourceMeter
+        Source meter connected to the bottom gate.
+    keithley_t : KeithleySourceMeter
+        Source meter connected to the top gate.
+    E_array : array-like
+        List or array of electric field values (in V/nm) to apply.
+    file_save : str
+        Filename for saving the sweep data.
+
+    Returns
+    -------
+    None
+    """
+    
     saving_file = sample.data_path+'/RMCD/Esweep/'+file_save    
     tb.make_rmcd_saving_file(saving_file,'Esweep')
     
+    tb.init_plot_params()
     plt.ion()
     fig, ax = plt.subplots()
     ax.set_xlabel('E (V/nm)')
@@ -220,7 +271,8 @@ def RMCD_dualgate_pure_Efield_sweep(sample: DualGate, lockin: LockInOE1022D,
         np.savetxt(saving_file, data_row, fmt="%.9f", mode='a')
         
         ax.plot(E_array[0:len(rmcd_list)],rmcd_list)
-        plt.draw()
+        fig.canvas.draw()
+        fig.canvas.flush_events()
     
     plt.ioff()
     plt.show()

@@ -8,7 +8,7 @@ Created on Fri Aug  8 21:44:12 2025
 
 from pymeasure.adapters import VISAAdapter
 from pymeasure.instruments.keithley import Keithley2400, Keithley2450
-        
+import logging
 
 def KeithleySourceMeter(resource_name, model="2450"):
     adapter = VISAAdapter(resource_name)
