@@ -34,7 +34,7 @@ class LockInOE1022D():
         self.R_chan = 1 #channels: 1 is channel A. 2 is channel B 
         self.dR_chan = 2
         self.num_avgs = 150
-        self.set_harmonic(dR_chan, 1, 2)
+        self.set_harmonic(self.dR_chan, 1, 2)
 
         logging.info("Connected to OE1022D LockIn")     
         
@@ -88,9 +88,8 @@ class LockInOE1022D():
             try:
                 values_R_chan = self.read_multiple(self.R_chan, params)
                 values_dR_chan = self.read_multiple(self.dR_chan, params)
-                if values_R_chan:
-                    data_R_chan.append([float(v) for v in values_R_chan.strip().split(',')])
-                if values_dR_chan:
+                data_R_chan.append([float(v) for v in values_R_chan.strip().split(',')])
+                data_dR_chan.append([float(v) for v in values_dR_chan.strip().split(',')])
             except Exception as e:
                 logging.error(f"Error reading data: {e}")
             time.sleep(delay)

@@ -9,6 +9,7 @@ RMCD experiment
 """
 from typing import Union
 import numpy as np
+import logging
 import time
 import matplotlib.pyplot as plt
 from homemade_servers.KeithleySourceMeter import KeithleySourceMeter
@@ -17,6 +18,12 @@ from homemade_servers.QDopticool import Opticool
 from devices.dualgate import DualGate
 from qcodes_contrib_drivers.drivers.Attocube.ANC300 import ANC300
 import toolbelt as tb
+
+
+def test(sample, lockin,opticool,bfield_array,file_save):
+    field = 0.01*10000
+    current_field = opticool.set_field(field, 110, opticool.field.approach_mode.linear)
+    return None
 
 def RMCD_bfield_scan(sample, lockin: LockInOE1022D,opticool: Opticool,bfield_array,file_save):
     
@@ -40,19 +47,38 @@ def RMCD_bfield_scan(sample, lockin: LockInOE1022D,opticool: Opticool,bfield_arr
     -------
     None
     """
+
     saving_file = sample.data_path+'/RMCD/bfield_scan/'+file_save
     tb.make_rmcd_saving_file(saving_file,'bscan')
-        
+    plt.ion()
+    fig, ax = plt.subplots()
+    line, = ax.plot([], [], 'b-')
+    ax.set_xlabel('B (T)')
+    ax.set_ylabel('RMCD %')
+    ax.set_xlim(min(bfield_array)/10000,max(bfield_array)/10000)
+    b_list, rmcd_list = [],[]
     for b in bfield_array:
-        
         lockin.reset_buffer()
-        current_field = opticool.set_field(b*10000, 110, opticool.field.approach_mode.linear)
+        opticool.set_field(b, 110, opticool.field.approach_mode.linear)
         opticool.wait_for(lockin.delay, 0, opticool.field.waitfor) 
+        current_field = opticool.get_field()[0]
         
         data = tb.read_lockin_rmcd_data(lockin) #THIS FUNCTION IS UNFINISHED. NEEDS TETSING
-        data_row = data.insert(0,current_field)        
-        np.savetxt(saving_file, data_row, fmt="%.9f", mode='a')
-        
+        rmcd = data[4]/data[0]
+        with open(saving_file, 'a') as file:
+            file.write(str(b/10000)+' ') 
+            file.write(' '.join(str(f) for f in data) + '\n') 
+        # np.savetxt(saving_file, data_row, fmt="%.9f", mode='a')
+        b_list.append(b/10000)
+        rmcd_list.append(rmcd)
+        line.set_xdata(b_list)
+        line.set_ydata(rmcd_list)
+        ax.set_ylim(min(rmcd_list)*1.1, max(rmcd_list)*1.1)        
+        fig.canvas.draw()
+        fig.canvas.flush_events()
+    # plt.ioff()
+    ax.plot(b_list,rmcd_list)
+    plt.show()
     return None
 
 

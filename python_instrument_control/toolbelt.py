@@ -10,6 +10,7 @@ Created on Fri Aug  8 21:25:45 2025
 import numpy as np
 import os
 import time
+import logging
 from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt
 from pymeasure.instruments.keithley import Keithley2400, Keithley2450
@@ -19,7 +20,7 @@ import astropy.constants as cont
 import astropy.units as uu
 
 def make_bfield_list(b_start,b_end,b_step):
-    bfield_list = np.append(np.arange(b_start,b_end+b_step,b_step),np.arange(b_end,b_start-b_step,-1*b_step))
+    bfield_list = np.append(np.arange(b_start,b_end,b_step),np.arange(b_end,b_start-b_step,-1*b_step))
     return bfield_list
 
 
@@ -33,26 +34,28 @@ def read_lockin_rmcd_data(lockin: LockInOE1022D):
     theta_R_cur_mean, theta_R_cur_std = mean_R_chan[1], std_R_chan[1]
     theta_dR_cur_mean, theta_dR_cur_std = mean_dR_chan[3], std_dR_chan[3]
 
-    return R_cur_mean,R_cur_std,theta_R_cur_mean,theta_R_cur_std,dR_cur_mean,dR_cur_std,theta_dR_cur_mean,theta_dR_cur_std
+    return [R_cur_mean,R_cur_std,theta_R_cur_mean,theta_R_cur_std,dR_cur_mean,dR_cur_std,theta_dR_cur_mean,theta_dR_cur_std]
     
 
 
 def make_rmcd_saving_file(filename,experiment):
     
-    if experiment == 'bscan'   :
+    if experiment == 'bscan':
         header = "#B(Oe) R(V) R_std(V) thetaR(deg) thetaR_std(deg) dR(V) dR_std(V) thetadR(deg) thetadR_std(deg)"
     elif experiment == 'mapping':
         header = "#X(V) Y(V) R_mean(V) R_std(V) thetaR_mean(deg) thetaR_std(deg) dR_mean(V) dR_std(V) thetadR_mean(deg) thetadR_std(deg)"
     elif experiment == 'Esweep':
         header = "#Vb_set(V) Vb(V) Vt_set(V) Vt(V) Ib(uA) It(uA) R(V) R_std(V) thetaR(deg) thetaR_std(deg) dR(V) dR_std(V) thetadR(deg) thetadR_std(deg)"
-    
+    logging.info('here')
     if not os.path.exists(filename):
-        np.savetxt(filename, [], header=header)
+        with open(filename, 'a') as file:
+            file.write(header + '\n') 
     else:
         print('file already exists. making a new one with add on to name')
         while os.path.exists(filename):            
             filename = filename.replace(".txt", "_new.txt")
-        np.savetxt(filename, [], header=header)
+        with open(filename, 'a') as file:
+            file.write(header + '\n') 
     return None
 
 
