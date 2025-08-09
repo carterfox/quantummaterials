@@ -27,7 +27,7 @@ def make_bfield_list(b_start,b_end,b_step):
 
 def read_lockin_rmcd_data(lockin: LockInOE1022D):
     
-    mean_R_chan, std_R_chan, mean_dR_chan, std_dR_chan = lockin.read_average_dual(params=[2,3,7,8],num_avgs=100,delay=0.02)
+    mean_R_chan, std_R_chan, mean_dR_chan, std_dR_chan = lockin.read_average_dual(params=[2,3,7,8],num_avgs=lockin.num_avgs,delay=0.02)
     
     R_cur_mean, R_cur_std = mean_R_chan[0], std_R_chan[0]
     dR_cur_mean, dR_cur_std = mean_dR_chan[2], std_dR_chan[2]

@@ -60,26 +60,26 @@ def close_all():
 if __name__ == "__main__":
     
     tb.init_plot_params()
-    # print('here')
-    # path_d4 = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/d4'
-    # sample = DualGate(sample_name='d4', d_b=18.45, d_t=5.67, data_path=path_d4)
+    path_d4 = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/d4'
+    sample = DualGate(sample_name='d4', d_b=18.45, d_t=5.67, data_path=path_d4)
     
-    # lockin = get_lockin()
+    lockin = get_lockin()
+    lockin.delay=0.4
+    lockin.num_avgs=20
     # opticool, current_temp, current_field = get_opticool()
-    # ANC = get_ANC300()
-    # try:
-    #     # bfield_array = tb.make_bfield_list(-21000, 21000, 1000)
-    #     # rmcd_scan_data = RMCD.RMCD_bfield_scan(device4, lockin,opticool,bfield_array,'BN-BN-Gr-Gr.txt')
+    ANC = get_ANC300()
+    try:
+        # bfield_array = tb.make_bfield_list(-21000, 21000, 1000)
+        # rmcd_scan_data = RMCD.RMCD_bfield_scan(device4, lockin,opticool,bfield_array,'BN-BN-Gr-Gr.txt')
     
-    #     # RMCD.RMCD_mapping(sample, lockin, ANC, 0, 5, 0, 5, 3, 2, 1, 'testmap.txt')
-    #     lockin.delay=0.4
-    #     lockin.num_avgs=20
-    #     RMCD.RMCD_mapping(sample, lockin, ANC, x_start=0, x_end=44, points=45, file_save='map1.txt')
+        # RMCD.RMCD_mapping(sample, lockin, ANC, 0, 5, 0, 5, 3, 2, 1, 'testmap.txt')
+        
+        RMCD.RMCD_mapping(sample, lockin, ANC, x_start=0, x_end=45, points=23, file_save='map1_0T.txt')
     
-    # except Exception as e:
-    #     print(e)
-    # finally:
-    #     close_all()
+    except Exception as e:
+        print(e)
+    finally:
+        close_all()
     
 
 

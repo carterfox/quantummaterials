@@ -34,7 +34,7 @@ class LockInOE1022D():
         self.dR_chan = 2
         self.num_avgs = 150
         self.set_harmonic(self.dR_chan, 1, 2)
-        logging.info("Connected to OE1022D LockIn")     
+        logging.info("Conected to OE1022D LockIn")     
         
     # --- Generic Commands ---
     def query(self, command):
@@ -74,7 +74,7 @@ class LockInOE1022D():
         return clean
     
         
-    def read_average_dual(self, params=[0, 1, 2, 3], num_avgs=100, delay=0.02):
+    def read_average_dual(self, params=[0, 1, 2, 3], num_avgs=100, delay=0.01):
         """
         Read and average multiple measurements from both channels.
         Returns:
@@ -104,70 +104,55 @@ class LockInOE1022D():
     def reset_buffer(self,channels=[1,2]):
         for chan in channels:
             self.write(f"RESTD {chan}")
-            logging.info(f"Buffer reset: Channel {chan}")
     
     # --- Auto Configuration ---
     
     def auto_scale(self, channel=1):
         self.write(f"ASCLD {channel}")
-        logging.info(f"Auto scale: Channel {channel}")
         
     def auto_gain(self, channel=1):
         self.write(f"AGAND {channel}")
-        logging.info(f"Auto gain: Channel {channel}")
 
     def auto_reserve(self, channel=1):
         self.write(f"ARSVD {channel}")
-        logging.info(f"Auto reserve: Channel {channel}")
 
     def auto_phase(self, channel=1):
         self.write(f"APHSD {channel}")
-        logging.info(f"Auto phase: Channel {channel}")
 
     def auto_phase_all(self):
         self.auto_phase(1)
         self.auto_phase(2)
-        logging.info("Auto phase applied to both channels")
         
     # --- Configuration ---
     
     def set_reference_source(self, channel=1, mode=1):
         self.write(f"FMODD {channel},{mode}")
-        logging.info(f"Reference source set: Channel {channel}, Mode {mode}")
 
     def set_reference_frequency(self, channel=1, freq_hz=1000):
         self.write(f"FREQD {channel},{freq_hz}")
-        logging.info(f"Reference frequency set: Channel {channel}, {freq_hz} Hz")
 
     def set_phase_shift(self, channel=1, degrees=0.0):
         self.write(f"PHASD {channel},{degrees}")
-        logging.info(f"Phase shift set: Channel {channel}, {degrees}°")
 
     def set_sensitivity(self, channel=1, sensitivity="5 mV"):
         """Index from 0 to 27 (see manual for mapping)"""
         if sensitivity in self.sensitivities:
             index = str(np.where(self.sensitivities == sensitivity)[0][0])
             self.write(f"SENSD {channel},{index}")
-            logging.info(f"Sensitivity set: Channel {channel}, {sensitivity}")
         else:
             logging.warning(f"Invalid sensitivity: {sensitivity}")
 
     def set_time_constant(self, channel=1, index=13):
         self.write(f"OFLTD {channel},{index}")
-        logging.info(f"Time constant set: Channel {channel}, Index {index}")
 
     def set_filter_slope(self, channel=1, db_per_oct=3):
         self.write(f"OFSLD {channel},{db_per_oct}")
-        logging.info(f"Filter slope set: Channel {channel}, {db_per_oct} dB/oct")
-    
 
     def set_sync_filter(self, channel=1, enable=True):
         self.write(f"SYNCD {channel},{1 if enable else 0}")
-        logging.info(f"Sync filter {'enabled' if enable else 'disabled'}: Channel {channel}")
 
     def set_harmonic(self, channel=1, slot=1, order=3):
         self.write(f"HARMD {channel},{slot},{order}")
-        logging.info(f"Harmonic set: Channel {channel}, Slot {slot}, Order {order}")
         
     def set_sine_output(self, channel=1, amplitude_v=1.0, offset_v=0.0, waveform_type=0):
         """
@@ -183,7 +168,6 @@ class LockInOE1022D():
             self.write(f"SLVLD {channel},{amplitude_v}")
             self.write(f"SVLLD {channel},{offset_v}")
             self.write(f"SWVTD {channel},{waveform_type}")
-            logging.info(f"SINE OUT configured: Channel {channel}, Amplitude={amplitude_v} V, Offset={offset_v} V, Waveform={waveform_type}")
         except Exception as e:
             logging.error(f"Error configuring SINE OUT: {e}")
         

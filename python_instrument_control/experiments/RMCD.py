@@ -150,7 +150,6 @@ def RMCD_mapping(sample, lockin: LockInOE1022D, ANC: ANC300, x_start, x_end, y_s
     scan_array = np.zeros((y_points, x_points))
     return_step_size = -(x_end - x_start) / returnsteps
     
-    
     plt.ion()
     fig, ax = plt.subplots()
     im = ax.imshow(scan_array, cmap='viridis', interpolation='none')
@@ -166,24 +165,23 @@ def RMCD_mapping(sample, lockin: LockInOE1022D, ANC: ANC300, x_start, x_end, y_s
     ax.set_yticklabels(ylabels)
     cbar.set_label('RMCD %')
 
-    
     for j in range(y_points):
         y = round(y_start + j * stepy,2)
         scannery.offset(y)
-
+        
         for i in range(x_points):
             lockin.reset_buffer()
             x = round(x_start + i * stepx,2)
             scannerx.offset(x)
             time.sleep(lockin.delay)
             data = tb.read_lockin_rmcd_data(lockin)
+            
             with open(saving_file, 'a') as file:
                 file.write(str(x)+' '+str(y)+' ') 
                 file.write(' '.join(f"{d:.9f}" for d in data) + '\n') 
-
             rmcd_value = data[4]/data[0]
             scan_array[j, x_points-1-i] = rmcd_value
-                        
+        
         im.set_data(scan_array)
         im.set_clim(vmin=np.min(scan_array), vmax=np.max(scan_array))
         fig.canvas.draw()
@@ -198,7 +196,7 @@ def RMCD_mapping(sample, lockin: LockInOE1022D, ANC: ANC300, x_start, x_end, y_s
     for r in range(returnsteps):
         y_back = y_end + (r+1) * return_step_size
         scannery.offset(y_back)
-        time.sleep(0.2)
+        time.sleep(0.15)
             
     plt.ioff()
     plt.show()
