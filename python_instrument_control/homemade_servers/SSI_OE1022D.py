@@ -34,6 +34,8 @@ class LockInOE1022D():
         self.R_chan = 1 #channels: 1 is channel A. 2 is channel B 
         self.dR_chan = 2
         self.num_avgs = 150
+        self.set_harmonic(dR_chan, 1, 2)
+
         logging.info("Connected to OE1022D LockIn")     
         
     # --- Generic Commands ---

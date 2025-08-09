@@ -14,10 +14,11 @@ import matplotlib.pyplot as plt
 from homemade_servers.KeithleySourceMeter import KeithleySourceMeter
 from homemade_servers.SSI_OE1022D import LockInOE1022D
 from homemade_servers.QDopticool import Opticool
+from devices.dualgate import DualGate
 from qcodes_contrib_drivers.drivers.Attocube.ANC300 import ANC300
 import toolbelt as tb
 
-def RMCD_bfield_scan(lockin: LockInOE1022D,opticool: Opticool,bfield_array,file_save):
+def RMCD_bfield_scan(sample, lockin: LockInOE1022D,opticool: Opticool,bfield_array,file_save):
     
     """
     Performs a magnetic field-dependent RMCD (Reflective Magnetic Circular Dichroism) scan
@@ -39,24 +40,23 @@ def RMCD_bfield_scan(lockin: LockInOE1022D,opticool: Opticool,bfield_array,file_
     -------
     None
     """
-
-    delay = 5    
-    tb.make_rmcd_saving_file(file_save,'bscan')
+    saving_file = sample.data_path+'/RMCD/bfield_scan/'+file_save
+    tb.make_rmcd_saving_file(saving_file,'bscan')
         
     for b in bfield_array:
         
         lockin.reset_buffer()
         current_field = opticool.set_field(b*10000, 110, opticool.field.approach_mode.linear)
-        opticool.wait_for(delay, 0, opticool.field.waitfor) 
+        opticool.wait_for(lockin.delay, 0, opticool.field.waitfor) 
         
         data = tb.read_lockin_rmcd_data(lockin) #THIS FUNCTION IS UNFINISHED. NEEDS TETSING
         data_row = data.insert(0,current_field)        
-        np.savetxt(file_save, data_row, fmt="%.9f", mode='a')
+        np.savetxt(saving_file, data_row, fmt="%.9f", mode='a')
         
     return None
 
 
-def RMCD_mapping(lockin: LockInOE1022D, ANC: ANC300, x_start, x_end, y_start, y_end, points, returnsteps,delay,file_save):
+def RMCD_mapping(sample, lockin: LockInOE1022D, ANC: ANC300, x_start, x_end, y_start, y_end, points, returnsteps,delay,file_save):
     
     """
     Performs a raster scan over a 2D grid to collect RMCD (Reflective Magnetic Circular Dichroism) data
@@ -98,7 +98,8 @@ def RMCD_mapping(lockin: LockInOE1022D, ANC: ANC300, x_start, x_end, y_start, y_
     scannerx = ANC.submodules['axis1']
     scannery = ANC.submodules['axis2']
     
-    tb.make_rmcd_saving_file(file_save,'mapping')
+    saving_file = sample.data_path+'/RMCD/mapping/'+file_save    
+    tb.make_rmcd_saving_file(saving_file,'mapping')
     
     y_points = points
     x_points = points
@@ -130,7 +131,7 @@ def RMCD_mapping(lockin: LockInOE1022D, ANC: ANC300, x_start, x_end, y_start, y_
             data = tb.read_lockin_rmcd_data(lockin)
             data_row = data.insert(0,y)
             data_row = data.insert(0,x)
-            np.savetxt(file_save, data_row, fmt="%.9f", mode='a')
+            np.savetxt(saving_file, data_row, fmt="%.9f", mode='a')
             
             rmcd_value = data[4]/data[0]
             scan_array[j, i] = rmcd_value
@@ -153,10 +154,12 @@ def RMCD_mapping(lockin: LockInOE1022D, ANC: ANC300, x_start, x_end, y_start, y_
     return scan_array
 
 
-def RMCD_dualgate_pure_Efield_sweep(lockin: LockInOE1022D,keithley_b: KeithleySourceMeter, keithley_t: KeithleySourceMeter,
-                                    E_array,d_b,d_t,file_save):
+def RMCD_dualgate_pure_Efield_sweep(sample: DualGate, lockin: LockInOE1022D,
+                                    keithley_b: KeithleySourceMeter, keithley_t: KeithleySourceMeter,
+                                    E_array,file_save):
     
-    tb.make_rmcd_saving_file(file_save,'Esweep')
+    saving_file = sample.data_path+'/RMCD/Esweep/'+file_save    
+    tb.make_rmcd_saving_file(saving_file,'Esweep')
     
     plt.ion()
     fig, ax = plt.subplots()
@@ -167,6 +170,8 @@ def RMCD_dualgate_pure_Efield_sweep(lockin: LockInOE1022D,keithley_b: KeithleySo
     tb.configure_keithley(keithley_t)
     
     rmcd_list = []
+    d_b = sample.d_b
+    d_t = sample.d_t
     
     for E in E_array:
         
@@ -186,7 +191,7 @@ def RMCD_dualgate_pure_Efield_sweep(lockin: LockInOE1022D,keithley_b: KeithleySo
         rmcd_list.append(rmcd_data[4]/rmcd_data[0]*100)
         
         data_row = elec_data + rmcd_data
-        np.savetxt(file_save, data_row, fmt="%.9f", mode='a')
+        np.savetxt(saving_file, data_row, fmt="%.9f", mode='a')
         
         ax.plot(E_array[0:len(rmcd_list)],rmcd_list)
         plt.draw()

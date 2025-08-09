@@ -13,13 +13,17 @@ from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt
 from homemade_servers.KeithleySourceMeter import KeithleySourceMeter
 from homemade_servers.SSI_OE1022D import LockInOE1022D
+from devices.dualgate import DualGate
 import toolbelt as tb
 
 
 
-def Gr_resistance_Vb_sweep(lockin: LockInOE1022D,keithley: KeithleySourceMeter,Rbox,Vb_array,Vsin_min,Vsin_max,Vsin_step,file_save):
+def Gr_resistance_Vb_sweep(sample: DualGate, lockin: LockInOE1022D, keithley: KeithleySourceMeter,Rbox,Vb_array,Vsin_min,Vsin_max,Vsin_step,file_save):
     
-    file_full = tb.make_Gr_resistance_saving_file(file_save,Rbox,lockin.delay,lockin.sin_freq,0,file='full')
+    lockin.set_sine_output(channel=lockin.R_chan,amplitude_v=Vsin_min)
+    
+    saving_file = sample.data_path+'/GrSensor/'+file_save
+    file_full = tb.make_Gr_resistance_saving_file(saving_file,Rbox,lockin.delay,lockin.sin_freq,0,file='full')
     plt.ion()  # Enable interactive mode
     fig1, ax1 = plt.subplots()  # R_Gr vs Vb
     fig2, ax2 = plt.subplots()  # V_Gr vs I_Gr
@@ -34,7 +38,7 @@ def Gr_resistance_Vb_sweep(lockin: LockInOE1022D,keithley: KeithleySourceMeter,R
 
     for Vb in Vb_array: # sweep Vb 
     
-        file_Vb = tb.make_Gr_resistance_saving_file(file_save,Rbox,lockin.delay,lockin.sin_freq,Vb,file='Vb') # make file for this Vb
+        file_Vb = tb.make_Gr_resistance_saving_file(saving_file,Rbox,lockin.delay,lockin.sin_freq,Vb,file='Vb') # make file for this Vb
         keithley.source_voltage = Vb             # Set output voltage
         time.sleep(0.3)                          # Allow output and DUT to settle
         v_meas, I_meas = tb.measure_V_I(keithley)
