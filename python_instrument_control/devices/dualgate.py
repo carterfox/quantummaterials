@@ -13,8 +13,6 @@ import numpy as np
 import os
 import logging
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-
 class DualGate():
     
     def __init__(self, sample_name,d_b,d_t,data_path):

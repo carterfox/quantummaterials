@@ -24,7 +24,6 @@ def make_bfield_list(b_start,b_end,b_step):
     bfield_list = np.append(np.arange(b_start,b_end,b_step),np.arange(b_end,b_start-b_step,-1*b_step))
     return bfield_list
 
-
 def read_lockin_rmcd_data(lockin: LockInOE1022D):
     
     mean_R_chan, std_R_chan, mean_dR_chan, std_dR_chan = lockin.read_average_dual(params=[2,3,7,8],num_avgs=lockin.num_avgs,delay=0.02)
@@ -47,7 +46,7 @@ def make_rmcd_saving_file(filename,experiment):
         header = "#X(V) Y(V) R_mean(V) R_std(V) thetaR_mean(deg) thetaR_std(deg) dR_mean(V) dR_std(V) thetadR_mean(deg) thetadR_std(deg)"
     elif experiment == 'Esweep':
         header = "#Vb_set(V) Vb(V) Vt_set(V) Vt(V) Ib(uA) It(uA) R(V) R_std(V) thetaR(deg) thetaR_std(deg) dR(V) dR_std(V) thetadR(deg) thetadR_std(deg)"
-    logging.info('here')
+
     if not os.path.exists(filename):
         with open(filename, 'a') as file:
             file.write(header + '\n') 

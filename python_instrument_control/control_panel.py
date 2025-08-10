@@ -18,7 +18,7 @@ import Gr_polarization_sensing
 from qcodes_contrib_drivers.drivers.Attocube.ANC300 import ANC300
 import toolbelt as tb
 import logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format='%(levelname)s - %(message)s')
 
 
 servers = []
@@ -64,17 +64,17 @@ if __name__ == "__main__":
     sample = DualGate(sample_name='d4', d_b=18.45, d_t=5.67, data_path=path_d4)
     
     lockin = get_lockin()
-    lockin.delay=0.4
-    lockin.num_avgs=20
-    # opticool, current_temp, current_field = get_opticool()
+    lockin.delay=1
+    lockin.num_avgs=100
+    opticool, current_temp, current_field = get_opticool()
     ANC = get_ANC300()
     try:
-        # bfield_array = tb.make_bfield_list(-21000, 21000, 1000)
-        # rmcd_scan_data = RMCD.RMCD_bfield_scan(device4, lockin,opticool,bfield_array,'BN-BN-Gr-Gr.txt')
+        bfield_array = tb.make_bfield_list(-500, 500, 500)
+        rmcd_scan_data = RMCD.RMCD_bfield_scan(sample, lockin,opticool,bfield_array,'test.txt')
     
-        # RMCD.RMCD_mapping(sample, lockin, ANC, 0, 5, 0, 5, 3, 2, 1, 'testmap.txt')
         
-        RMCD.RMCD_mapping(sample, lockin, ANC, x_start=0, x_end=45, points=23, file_save='map1_0T.txt')
+        # RMCD.RMCD_mapping(sample, lockin, ANC, x_start=0, x_end=2, points=3, 
+        #                   file_save='testest.txt')
     
     except Exception as e:
         print(e)

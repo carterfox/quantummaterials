@@ -11,6 +11,8 @@ from typing import Union
 import numpy as np
 import logging
 import time
+import matplotlib as mpl
+from matplotlib.lines import Line2D
 import matplotlib.pyplot as plt
 from homemade_servers.KeithleySourceMeter import KeithleySourceMeter
 from homemade_servers.SSI_OE1022D import LockInOE1022D
@@ -18,6 +20,7 @@ from homemade_servers.QDopticool import Opticool
 from devices.dualgate import DualGate
 from qcodes_contrib_drivers.drivers.Attocube.ANC300 import ANC300
 import toolbelt as tb
+from tqdm import tqdm
 
 def RMCD_bfield_scan(sample, lockin: LockInOE1022D,opticool: Opticool,bfield_array,file_save):
     
@@ -45,11 +48,8 @@ def RMCD_bfield_scan(sample, lockin: LockInOE1022D,opticool: Opticool,bfield_arr
     gen_path = sample.data_path+'/RMCD/bfield_scan/'+file_save
     saving_file = tb.make_rmcd_saving_file(gen_path,'bscan')
     
-    tb.init_plot_params()
     plt.ion()
-    fig, ax = plt.subplots()
-    ax.set_xlabel('B (T)'), ax.set_ylabel('RMCD %')
-    ax.set_xlim(min(bfield_array)/10000,max(bfield_array)/10000)
+    fig,ax,line_up,line_down = init_rmcd_bfield_scan_plot(bfield_array)
     
     b_list, rmcd_list,b_list_ascend, b_list_descend, rmcd_list_ascend,rmcd_list_descend = [],[],[],[],[],[]
     for b in bfield_array:
@@ -67,7 +67,7 @@ def RMCD_bfield_scan(sample, lockin: LockInOE1022D,opticool: Opticool,bfield_arr
         with open(saving_file, 'a') as file:
             file.write(str(field_T)+' ') 
             file.write(' '.join(f"{d:.9f}" for d in data) + '\n') 
-        # np.savetxt(saving_file, data_row, fmt="%.9f", mode='a')
+        
         try:
             if field_T>=b_list[-1]:
                 b_list_ascend.append(field_T)
@@ -78,20 +78,65 @@ def RMCD_bfield_scan(sample, lockin: LockInOE1022D,opticool: Opticool,bfield_arr
         except:
             b_list_ascend.append(field_T)
             rmcd_list_ascend.append(rmcd)
+            
         b_list.append(field_T)
-        ax.plot(b_list_ascend, rmcd_list_ascend, 'b-',label=r'$\rightarrow$')
-        ax.plot(b_list_descend, rmcd_list_descend, 'r-',label=r'$\leftarrow$')
-        if len(rmcd_list)>1: ax.set_ylim(min(rmcd_list)*1.1, max(rmcd_list)*1.1)        
-        ax.legend(loc='upper left')
-        fig.canvas.draw()
-        fig.canvas.flush_events()
+        update_rmcd_bfield_scan_plot(fig,ax,line_up,line_down,
+                                     b_list_ascend,rmcd_list_ascend,b_list_descend,rmcd_list_descend)
     
     plt.ioff()
     plt.show()
     
     return None
 
+def update_rmcd_bfield_scan_plot(fig,ax,line_up,line_down,b_list_ascend,rmcd_list_ascend,
+                                 b_list_descend,rmcd_list_descend):
+    line_up.set_data(b_list_ascend, rmcd_list_ascend)
+    line_down.set_data(b_list_descend, rmcd_list_descend)
+    ax.relim()
+    ax.autoscale_view()
+    fig.canvas.draw()
+    fig.canvas.flush_events()
+    plt.pause(0.05)
+    return None
+def init_rmcd_bfield_scan_plot(bfield_array):
+    fig, ax = plt.subplots()
+    ax.set_xlabel('B (T)'), ax.set_ylabel('RMCD %')
+    ax.set_xlim(min(bfield_array)/10000,max(bfield_array)/10000)
+    line_up = Line2D([], [], color='b', label=r'$\rightarrow$')
+    line_down = Line2D([], [], color='r', label=r'$\leftarrow$')
+    ax.add_line(line_up)
+    ax.add_line(line_down)
+    ax.legend()
+    return fig,ax,line_up,line_down
 
+def replot_rmcd_bfield_scan(data_file):
+    
+    data = np.loadtxt(data_file)
+    b_field, r, dr, theta_dr  = data[:,0], data[:,1],data[:,5], data[:,7]
+    print(theta_dr)
+    dr[np.where(theta_dr>50)] *= -1
+    rmcd = dr/r*100
+    diffs = np.diff(b_field)
+    try:
+        transition_index = np.where((diffs[:-1] > 0) & (diffs[1:] < 0))[0][0]+1
+    except:
+        transition_index=len(b_field)
+    b_field_ascend = b_field[0:transition_index]
+    b_field_descend = b_field[transition_index:]
+    rmcd_ascend = rmcd[0:transition_index]
+    rmcd_descend = rmcd[transition_index:]
+    
+    fig, ax = plt.subplots()
+    
+    ax.plot(b_field_ascend, rmcd_ascend, 'b-', label=r'$\rightarrow$')
+    ax.plot(b_field_descend, rmcd_descend, 'r-', label=r'$\leftarrow$')
+    ax.set_xlabel('B (T)'), ax.set_ylabel('RMCD %')
+    ax.set_xlim(min(b_field),max(b_field))
+    ax.legend(loc='upper left')
+    
+    return fig,ax
+    
+    
 def RMCD_mapping(sample, lockin: LockInOE1022D, ANC: ANC300, x_start, x_end, y_start=None, y_end=None, points=5, returnsteps=30,file_save='test.txt'):
     
     """
@@ -151,21 +196,9 @@ def RMCD_mapping(sample, lockin: LockInOE1022D, ANC: ANC300, x_start, x_end, y_s
     return_step_size = -(x_end - x_start) / returnsteps
     
     plt.ion()
-    fig, ax = plt.subplots()
-    im = ax.imshow(scan_array, cmap='viridis', interpolation='none')
-    cbar=plt.colorbar(im, ax=ax)
-    ax.set_xlabel('$V_x$'),ax.set_ylabel('$V_y$')
-    xticks = np.linspace(0, x_points - 1, num=5, dtype=int)  # 5 ticks evenly spaced
-    yticks = np.linspace(0, y_points - 1, num=5, dtype=int)
-    xlabels = [round(x_start + (x_points - 1 - i) * stepx, 2) for i in xticks]
-    ylabels = [round(y_start + j * stepy, 2) for j in yticks]
-    ax.set_xticks(xticks)
-    ax.set_yticks(yticks)
-    ax.set_xticklabels(xlabels)
-    ax.set_yticklabels(ylabels)
-    cbar.set_label('RMCD %')
+    fig,ax,im = plot_rmcd_map(scan_array,stepx,stepy,'RMCD')
 
-    for j in range(y_points):
+    for j in tqdm(range(y_points)):
         y = round(y_start + j * stepy,2)
         scannery.offset(y)
         
@@ -276,7 +309,56 @@ def RMCD_dualgate_pure_Efield_sweep(sample: DualGate, lockin: LockInOE1022D,
     plt.show()
     
     return None
+
+def plot_rmcd_map(scan_array,x_step,y_step,plot_type='RMCD'):
+    y_points,x_points = np.shape(scan_array)
+    fig, ax = plt.subplots()
+    im = ax.imshow(scan_array, cmap='viridis', interpolation='none')
+    cbar=plt.colorbar(im, ax=ax)
+    ax.set_xlabel('$V_x$'),ax.set_ylabel('$V_y$')
+    xticks = np.linspace(0, x_points - 1, num=5, dtype=int)  # 5 ticks evenly spaced
+    yticks = np.linspace(0, y_points - 1, num=5, dtype=int)
+    xlabels = [round(0 + (x_points - 1 - i) * x_step, 2) for i in xticks]
+    ylabels = [round(0 + j * y_step, 2) for j in yticks]
+    ax.set_xticks(xticks)
+    ax.set_yticks(yticks)
+    ax.set_xticklabels(xlabels)
+    ax.set_yticklabels(ylabels)
+    if plot_type == 'RMCD':
+        cbar.set_label('RMCD %')
+    elif plot_type == 'dR':
+        cbar.set_label('dR')
+    elif plot_type == 'R':
+        cbar.set_label('R')
+    elif plot_type == 'theta':
+        cbar.set_label(r'$\theta$')
+    return fig,ax,im
+
+def replot_rmcd_map(data_file,plot_type='RMCD'):
+    data = np.loadtxt(data_file)
+    x,y,r,dr = data[:,0], data[:,1],data[:,2], data[:,6]
+    rmcd = dr/r*100
+    x_points,y_points = np.unique(x), np.unique(y)
+    xstep = x_points[1]-x_points[0]
+    ystep = y_points[1]-y_points[0]
+
+    if plot_type == 'RMCD':
+        grid = rmcd
+    elif plot_type == 'R':
+        grid = r
+    elif plot_type == 'dR':
+        grid = dr
+    scan_array = np.fliplr(grid.reshape((len(y_points), len(x_points))))
+    fig,ax,im=plot_rmcd_map(scan_array,xstep,ystep,plot_type)
+    return fig,ax,im
+
+
+if __name__ == "__main__":
     
-    
-    
-    
+    path_d4 = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/d4/RMCD/bfield_scan/'
+    file = path_d4+'fourlayer_scan1.txt'
+        
+    # fig,ax,im = replot_rmcd_map(file,'RMCD')
+    fig,ax = replot_rmcd_bfield_scan(file)
+    # im.set_clim(0,5)
+    plt.show()
