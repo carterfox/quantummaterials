@@ -105,7 +105,6 @@ def init_rmcd_bfield_scan_plot(bfield_array):
     ax.set_xlim(min(bfield_array)/10000,max(bfield_array)/10000)
     line_up = Line2D([], [], color='black', label=r'$\rightarrow$',marker='.')
     line_down = Line2D([], [], color='r', label=r'$\leftarrow$',marker='.')
-    # tb.plot_arrow_legend(ax,r'$B_{\perp}$',x1=1.3,y1=-8,ls=18,yratio=.058,xratio=.12,wratio=.0872)
     ax.add_line(line_up)
     ax.add_line(line_down)
     ax.legend()
@@ -334,9 +333,9 @@ def replot_rmcd_bfield_scan(data_file):
     rmcd = dr/r*100
     # s6 sixlayer
     rmcd[np.where(theta_dr>50)] *= -1
-    rmcd[0:8] = rmcd[8] -(rmcd[0:8] - rmcd[8])
-    rmcd[80:96] = rmcd[80] - (rmcd[80:96]-rmcd[80])
-    rmcd[-8:] = rmcd[8] - (rmcd[-8:] - rmcd[8])    
+    # rmcd[0:8] = rmcd[8] -(rmcd[0:8] - rmcd[8])
+    # rmcd[80:96] = rmcd[80] - (rmcd[80:96]-rmcd[80])
+    # rmcd[-8:] = rmcd[8] - (rmcd[-8:] - rmcd[8])    
 
     diffs = np.diff(b_field)
     try:
@@ -363,7 +362,8 @@ if __name__ == "__main__":
     # 
     path_d4 = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/d4/RMCD/bfield_scan/'
     path_s6 = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/6-18-sample-for-afm-and-rmcd/RMCD/bfield_scan/'
-    file = path_s6+'sixlayer-scan3.txt'
+    # file = path_s6+'sixlayer-scan3.txt'
+    file = path_s6+'fourlayer-scan1.txt'
     # file = path_s6+'map1_0T.txt'
     tb.init_plot_params()
 
@@ -372,5 +372,5 @@ if __name__ == "__main__":
     fig,ax,b_field,theta_dr = replot_rmcd_bfield_scan(file)
     tb.plot_arrow_legend(ax,r'$B_{\perp}$',x1=1.3,y1=-8,ls=18,yratio=.058,xratio=.12,wratio=.0872)
 
-    plt.savefig(path_s6+'sixlayer-scan3-rmcd.png',dpi=500)
+    plt.savefig(path_s6+'fourlayer-scan1-rmcd.png',dpi=500)
     plt.show()

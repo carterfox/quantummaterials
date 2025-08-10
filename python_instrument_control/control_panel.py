@@ -71,12 +71,12 @@ if __name__ == "__main__":
     lockin.num_avgs=100
     opticool, current_temp, current_field = get_opticool()
     ANC = get_ANC300()
+    
     try:
         bfield_array = tb.make_bfield_list(-22000, 22000, 500)
-        rmcd_scan_data = RMCD.RMCD_bfield_scan(sample, lockin,opticool,bfield_array,
-                                               'fourlayer-scan1.txt')
+        rmcd_scan_data = RMCD.RMCD_bfield_scan(sample,lockin,opticool,bfield_array,
+                                               'fivelayer-scan1.txt')
     
-        
         # RMCD.RMCD_mapping(sample, lockin, ANC, x_start=0, x_end=60, points=61, 
                           # file_save='map1_m2p2T.txt')
     
