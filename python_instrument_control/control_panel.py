@@ -60,8 +60,11 @@ def close_all():
 if __name__ == "__main__":
     
     tb.init_plot_params()
-    path_d4 = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/d4'
-    sample = DualGate(sample_name='d4', d_b=18.45, d_t=5.67, data_path=path_d4)
+    # path_d4 = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/d4'
+    # sample = DualGate(sample_name='d4', d_b=18.45, d_t=5.67, data_path=path_d4)
+    
+    path_s6 = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/6-18-sample-for-afm-and-rmcd/'
+    sample = DualGate(sample_name='s6', d_b=0, d_t=0, data_path=path_s6)
     
     lockin = get_lockin()
     lockin.delay=1
@@ -69,12 +72,13 @@ if __name__ == "__main__":
     opticool, current_temp, current_field = get_opticool()
     ANC = get_ANC300()
     try:
-        bfield_array = tb.make_bfield_list(-500, 500, 500)
-        rmcd_scan_data = RMCD.RMCD_bfield_scan(sample, lockin,opticool,bfield_array,'test.txt')
+        bfield_array = tb.make_bfield_list(-22000, 22000, 500)
+        rmcd_scan_data = RMCD.RMCD_bfield_scan(sample, lockin,opticool,bfield_array,
+                                               'fourlayer-scan1.txt')
     
         
-        # RMCD.RMCD_mapping(sample, lockin, ANC, x_start=0, x_end=2, points=3, 
-        #                   file_save='testest.txt')
+        # RMCD.RMCD_mapping(sample, lockin, ANC, x_start=0, x_end=60, points=61, 
+                          # file_save='map1_m2p2T.txt')
     
     except Exception as e:
         print(e)

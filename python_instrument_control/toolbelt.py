@@ -6,7 +6,7 @@ Created on Fri Aug  8 21:25:45 2025
 @author: carterfox
 """
 
-
+from matplotlib_scalebar.scalebar import ScaleBar; import matplotlib.patches as mpatches
 import numpy as np
 import os
 import time
@@ -142,3 +142,22 @@ def init_plot_params():
     # "text.usetex": True,
     # "font.family": "Helvetica"})
     
+def plot_arrow_legend(ax,label,x1=None,y1=None,ls=18,yratio=.058,xratio=.12,wratio=.0872):
+    xrange = ax.get_xlim()[1] - ax.get_xlim()[0]
+    yrange = ax.get_ylim()[1] - ax.get_ylim()[0]
+    if x1 == None and y1 == None:
+        x1 = xrange*(1.6/4.2)
+        y1 = yrange*(-9.4/24.77)
+    xlen = xrange*xratio*.7
+    ylen = yrange*yratio*.6
+    x2 = x1-xlen
+    y2 = y1-ylen
+    yavg = (y1+y2)/2
+    w = yrange*wratio*.7
+    arrow2 = mpatches.Arrow(x1,y1,-xlen,0,width=w,color='red')
+    arrow = mpatches.Arrow(x2,y2,xlen,0,width=w,color='black')
+    ax.add_patch(arrow), ax.add_patch(arrow2)
+    ax.text(x1,yavg,r'$+$'+label,fontsize=ls,va='center',ha='left')
+    ax.text(x2,yavg,r'$-$'+label+r'  ',fontsize=ls,va='center',ha='right')
+    return ax
+

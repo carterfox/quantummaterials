@@ -24,6 +24,3 @@ class DualGate():
         
         logging.info("Initiated device: {}".format(sample_name))     
 
-    
-
-        

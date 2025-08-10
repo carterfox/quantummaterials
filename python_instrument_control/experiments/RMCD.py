@@ -52,7 +52,7 @@ def RMCD_bfield_scan(sample, lockin: LockInOE1022D,opticool: Opticool,bfield_arr
     fig,ax,line_up,line_down = init_rmcd_bfield_scan_plot(bfield_array)
     
     b_list, rmcd_list,b_list_ascend, b_list_descend, rmcd_list_ascend,rmcd_list_descend = [],[],[],[],[],[]
-    for b in bfield_array:
+    for b in tqdm(bfield_array):
         field_T = b/10000
         lockin.reset_buffer()
         opticool.set_field(b, 110, opticool.field.approach_mode.linear)
@@ -98,44 +98,18 @@ def update_rmcd_bfield_scan_plot(fig,ax,line_up,line_down,b_list_ascend,rmcd_lis
     fig.canvas.flush_events()
     plt.pause(0.05)
     return None
+
 def init_rmcd_bfield_scan_plot(bfield_array):
     fig, ax = plt.subplots()
     ax.set_xlabel('B (T)'), ax.set_ylabel('RMCD %')
     ax.set_xlim(min(bfield_array)/10000,max(bfield_array)/10000)
-    line_up = Line2D([], [], color='b', label=r'$\rightarrow$')
-    line_down = Line2D([], [], color='r', label=r'$\leftarrow$')
+    line_up = Line2D([], [], color='black', label=r'$\rightarrow$',marker='.')
+    line_down = Line2D([], [], color='r', label=r'$\leftarrow$',marker='.')
+    # tb.plot_arrow_legend(ax,r'$B_{\perp}$',x1=1.3,y1=-8,ls=18,yratio=.058,xratio=.12,wratio=.0872)
     ax.add_line(line_up)
     ax.add_line(line_down)
     ax.legend()
     return fig,ax,line_up,line_down
-
-def replot_rmcd_bfield_scan(data_file):
-    
-    data = np.loadtxt(data_file)
-    b_field, r, dr, theta_dr  = data[:,0], data[:,1],data[:,5], data[:,7]
-    print(theta_dr)
-    dr[np.where(theta_dr>50)] *= -1
-    rmcd = dr/r*100
-    diffs = np.diff(b_field)
-    try:
-        transition_index = np.where((diffs[:-1] > 0) & (diffs[1:] < 0))[0][0]+1
-    except:
-        transition_index=len(b_field)
-    b_field_ascend = b_field[0:transition_index]
-    b_field_descend = b_field[transition_index:]
-    rmcd_ascend = rmcd[0:transition_index]
-    rmcd_descend = rmcd[transition_index:]
-    
-    fig, ax = plt.subplots()
-    
-    ax.plot(b_field_ascend, rmcd_ascend, 'b-', label=r'$\rightarrow$')
-    ax.plot(b_field_descend, rmcd_descend, 'r-', label=r'$\leftarrow$')
-    ax.set_xlabel('B (T)'), ax.set_ylabel('RMCD %')
-    ax.set_xlim(min(b_field),max(b_field))
-    ax.legend(loc='upper left')
-    
-    return fig,ax
-    
     
 def RMCD_mapping(sample, lockin: LockInOE1022D, ANC: ANC300, x_start, x_end, y_start=None, y_end=None, points=5, returnsteps=30,file_save='test.txt'):
     
@@ -353,12 +327,50 @@ def replot_rmcd_map(data_file,plot_type='RMCD'):
     return fig,ax,im
 
 
-if __name__ == "__main__":
+def replot_rmcd_bfield_scan(data_file):
     
+    data = np.loadtxt(data_file)
+    b_field, r, dr, theta_dr  = data[:,0], data[:,1],data[:,5], data[:,7]
+    rmcd = dr/r*100
+    # s6 sixlayer
+    rmcd[np.where(theta_dr>50)] *= -1
+    rmcd[0:8] = rmcd[8] -(rmcd[0:8] - rmcd[8])
+    rmcd[80:96] = rmcd[80] - (rmcd[80:96]-rmcd[80])
+    rmcd[-8:] = rmcd[8] - (rmcd[-8:] - rmcd[8])    
+
+    diffs = np.diff(b_field)
+    try:
+        transition_index = np.where((diffs[:-1] > 0) & (diffs[1:] < 0))[0][0]+1
+    except:
+        transition_index=len(b_field)
+    b_field_ascend = b_field[0:transition_index]
+    b_field_descend = b_field[transition_index:]
+    rmcd_ascend = rmcd[0:transition_index]
+    rmcd_descend = rmcd[transition_index:]
+    
+    fig, ax = plt.subplots(1,1,figsize=(6,5))
+    
+    ax.plot(b_field_ascend, rmcd_ascend, color='black', label=r'$\rightarrow$',marker='.')
+    ax.plot(b_field_descend, rmcd_descend, color='r', label=r'$\leftarrow$',marker='.')
+    ax.set_xlabel('B (T)'), ax.set_ylabel('RMCD %')
+    ax.set_xlim(min(b_field),max(b_field))
+    # ax.legend(loc='upper left')
+    
+    return fig,ax,b_field,theta_dr
+    
+
+if __name__ == "__main__":
+    # 
     path_d4 = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/d4/RMCD/bfield_scan/'
-    file = path_d4+'fourlayer_scan1.txt'
+    path_s6 = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/6-18-sample-for-afm-and-rmcd/RMCD/bfield_scan/'
+    file = path_s6+'sixlayer-scan3.txt'
+    # file = path_s6+'map1_0T.txt'
+    tb.init_plot_params()
+
         
     # fig,ax,im = replot_rmcd_map(file,'RMCD')
-    fig,ax = replot_rmcd_bfield_scan(file)
-    # im.set_clim(0,5)
+    fig,ax,b_field,theta_dr = replot_rmcd_bfield_scan(file)
+    tb.plot_arrow_legend(ax,r'$B_{\perp}$',x1=1.3,y1=-8,ls=18,yratio=.058,xratio=.12,wratio=.0872)
+
+    plt.savefig(path_s6+'sixlayer-scan3-rmcd.png',dpi=500)
     plt.show()
