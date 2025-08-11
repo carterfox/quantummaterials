@@ -20,15 +20,19 @@ class H11890_INF(Structure):
 class HamamatsuH11890:
     
     def __init__(self, dll_path="h11890api.dll", device_index=0):
-        self.lib = WinDLL(dll_path)
-        self.devices = (H11890_INF * 16)()
-        self.num_devices = 0
-        self.device_index = device_index
-        self.device = None
-        self.handle = None
-        self._setup_functions()
-        self._open_devices()
-        self._select_device()
+        try:
+            self.lib = WinDLL(dll_path)
+            self.devices = (H11890_INF * 16)()
+            self.num_devices = 0
+            self.device_index = device_index
+            self.device = None
+            self.handle = None
+            self._setup_functions()
+            self._open_devices()
+            self._select_device()
+            self.num_gates = 10
+        except:
+            print('make sure you have the right driver. Open Zadig and convert the driver if needed')
         
     def _select_device(self):
         if self.device_index >= self.num_devices:
@@ -102,12 +106,15 @@ class HamamatsuH11890:
                     if first_fresh:
                         first_fresh = False
                     else:
-                        results.append(photons)
+                        results.append(photons) 
             except:
                 break
-        return results
+            
+        results_clean = results[-self.num_gates_raw:]
+        return results_clean
 
     def configure_gate(self, index=0, gate_time_ms=1000, num_gates=60):
+        self.num_gates_raw = num_gates
         num_gates = num_gates+1 #since we will remove first point which may be too small
         
         if gate_time_ms <= 400:  # add gates to account for the first few bins being all data that will be thown out
@@ -116,7 +123,7 @@ class HamamatsuH11890:
                 num_gates = num_gates+1
             if gate_time_ms <= 150:
                 num_gates = num_gates+1
-            
+
         self.set_it(index, gate_time_ms)
         self.set_rn(index, num_gates)
     
@@ -198,9 +205,11 @@ class HamamatsuH11890:
 
     def set_it(self, index=0, ms=1000):
         self.lib.H11890SetIT(self.handle, ms)
+        self.gate_time = ms
 
     def set_rn(self, index=0, rn=0xFFFFFFFF):
         self.lib.H11890SetRN(self.handle, rn)
+        self.num_gates=rn
 
     def close(self):
         self.lib.H11890CloseDevices(self.devices)

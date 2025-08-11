@@ -11,6 +11,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from homemade_servers.SSI_OE1022D import LockInOE1022D
 from homemade_servers.QDopticool import Opticool
+from homemade_servers.H11890PMT import HamamatsuH11890
 from homemade_servers.KeithleySourceMeter import KeithleySourceMeter
 from devices.dualgate import DualGate
 import RMCD
@@ -50,6 +51,10 @@ def get_ANC300(resource_name='ASRL11'):
     ANC = ANC300(name='ANC300',address=resource_name)
     servers.append(ANC)
     return ANC
+
+def get_PMT():
+    PMT = HamamatsuH11890()
+    return PMT
 
 def close_all():
     for server in servers:
