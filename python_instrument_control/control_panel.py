@@ -15,6 +15,7 @@ from homemade_servers.H11890PMT import HamamatsuH11890
 from homemade_servers.KeithleySourceMeter import KeithleySourceMeter
 from devices.dualgate import DualGate
 import RMCD
+from PMT_continuous_read import run_continuous_pmt_plot
 import Gr_polarization_sensing
 from qcodes_contrib_drivers.drivers.Attocube.ANC300 import ANC300
 import toolbelt as tb
@@ -54,41 +55,47 @@ def get_ANC300(resource_name='ASRL11'):
 
 def get_PMT():
     PMT = HamamatsuH11890()
+    servers.append(PMT)
     return PMT
 
 def close_all():
     for server in servers:
         server.close()
+    servers.clear
+    
         
 
 ##run experiments here by running the file 
 if __name__ == "__main__":
     
-    tb.init_plot_params()
+    # tb.init_plot_params()
     # path_d4 = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/d4'
     # sample = DualGate(sample_name='d4', d_b=18.45, d_t=5.67, data_path=path_d4)
     
-    path_s6 = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/6-18-sample-for-afm-and-rmcd/'
-    sample = DualGate(sample_name='s6', d_b=0, d_t=0, data_path=path_s6)
+    # path_s6 = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/6-18-sample-for-afm-and-rmcd/'
+    # sample = DualGate(sample_name='s6', d_b=0, d_t=0, data_path=path_s6)
     
-    lockin = get_lockin()
-    lockin.delay=1
-    lockin.num_avgs=100
-    opticool, current_temp, current_field = get_opticool()
-    ANC = get_ANC300()
+    # lockin = get_lockin()
+    # lockin.delay=1
+    # lockin.num_avgs=100
+    # opticool, current_temp, current_field = get_opticool()
+    # ANC = get_ANC300()
+    PMT = get_PMT()
     
     try:
-        bfield_array = tb.make_bfield_list(-22000, 22000, 500)
-        rmcd_scan_data = RMCD.RMCD_bfield_scan(sample,lockin,opticool,bfield_array,
-                                               'fivelayer-scan1.txt')
+        # bfield_array = tb.make_bfield_list(-22000, 22000, 500)
+        # rmcd_scan_data = RMCD.RMCD_bfield_scan(sample,lockin,opticool,bfield_array,
+        #                                        'fivelayer-scan1.txt')
     
         # RMCD.RMCD_mapping(sample, lockin, ANC, x_start=0, x_end=60, points=61, 
                           # file_save='map1_m2p2T.txt')
+        run_continuous_pmt_plot(PMT,gate_time_ms=100)
     
     except Exception as e:
         print(e)
     finally:
         close_all()
+        print('exited safely')
     
 
 

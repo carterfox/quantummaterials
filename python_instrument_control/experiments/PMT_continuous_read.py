@@ -8,14 +8,13 @@ from homemade_servers.H11890PMT import HamamatsuH11890
 import matplotlib.pylab as plt
 import time
 
-def update():
-    global first
+def update(pmt, fig, ax, line, gates, counts, first_flag):
     try:
         gate, photons, is_old = pmt.read_data()
         if not is_old:
-            if first:
-                first = False
-                return line,
+            if first_flag[0]:
+                first_flag[0] = False
+                return line, gates, counts
             gates.append(gate)
             counts.append(photons)
 
@@ -30,39 +29,35 @@ def update():
             fig.canvas.flush_events()
     except RuntimeError:
         pass  # Handle PMT read errors gracefully
-    return line,
+    return line, gates, counts
 
-if __name__ == "__main__":
-    
-    first = True
+def run_continuous_pmt_plot(pmt,gate_time_ms):
     counts = []
     gates = []
-    
+    first_flag = [True]
+
     plt.ion()
     fig, ax = plt.subplots()
     line, = ax.plot([], [], lw=2)
     ax.set_xlabel("Gate")
     ax.set_ylabel("Photon Count")
-    
-    pmt = HamamatsuH11890()
+
     pmt.set_hv(on=True)
-    
-    pmt.set_it(ms=200)
-    pmt.set_rn(rn=100)  # Large number for continuous mode
+    pmt.set_it(ms=gate_time_ms)
+    pmt.set_rn(rn=9999)
     pmt.start_counting()
-    
+
     try:
         while True:
-            update()
+            line, gates, counts = update(pmt, fig, ax, line, gates, counts, first_flag)
     except KeyboardInterrupt:
         pmt.stop_counting()
-        print("Stopped.")
-    
-    pmt.stop_counting()
-    
-    plt.ioff()
-    plt.show()
-    
-    pmt.set_hv(on=False)
-    pmt.close()
+        pmt.set_hv(on=False)
+    finally:
+        plt.ioff()
+        plt.show()
 
+if __name__ == "__main__":
+    pmt = HamamatsuH11890()
+    run_continuous_pmt_plot(pmt,gate_time_ms=100)
+    pmt.close()
