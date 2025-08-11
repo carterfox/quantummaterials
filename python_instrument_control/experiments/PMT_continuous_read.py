@@ -97,7 +97,7 @@ def run_continuous_pmt_plot(pmt,gate_time_ms,num_gates,file_save=None):
 if __name__ == "__main__":
     pmt = HamamatsuH11890()
     try:
-        gates,counts = run_continuous_pmt_plot(pmt,gate_time_ms=100,num_gates=20,file_save='test.txt')
+        gates,counts = run_continuous_pmt_plot(pmt,gate_time_ms=100,num_gates=20)
         pmt.close()
         
     except:

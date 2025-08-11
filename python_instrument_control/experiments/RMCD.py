@@ -11,6 +11,7 @@ from typing import Union
 import numpy as np
 import logging
 import time
+import os
 import matplotlib as mpl
 from matplotlib.lines import Line2D
 import matplotlib.pyplot as plt
@@ -44,6 +45,8 @@ def RMCD_bfield_scan(sample, lockin: LockInOE1022D,opticool: Opticool,bfield_arr
     -------
     None
     """
+    if not os.path.exists(sample.data_path+"/RMCD/bfield_scan"):
+        os.makedirs(sample.data_path+"/RMCD/bfield_scan")
 
     gen_path = sample.data_path+'/RMCD/bfield_scan/'+file_save
     saving_file = tb.make_rmcd_saving_file(gen_path,'bscan')
@@ -332,7 +335,7 @@ def replot_rmcd_bfield_scan(data_file):
     b_field, r, dr, theta_dr  = data[:,0], data[:,1],data[:,5], data[:,7]
     rmcd = dr/r*100
     # s6 sixlayer
-    rmcd[np.where(theta_dr>50)] *= -1
+    rmcd[np.where(theta_dr>0)] *= -1
     # rmcd[0:8] = rmcd[8] -(rmcd[0:8] - rmcd[8])
     # rmcd[80:96] = rmcd[80] - (rmcd[80:96]-rmcd[80])
     # rmcd[-8:] = rmcd[8] - (rmcd[-8:] - rmcd[8])    
@@ -360,17 +363,19 @@ def replot_rmcd_bfield_scan(data_file):
 
 if __name__ == "__main__":
     # 
-    path_d4 = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/d4/RMCD/bfield_scan/'
-    path_s6 = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/6-18-sample-for-afm-and-rmcd/RMCD/bfield_scan/'
+    # path_d4 = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/d4/RMCD/bfield_scan/'
+    path_d3 = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/d3/RMCD/bfield_scan/'
+    # path_s6 = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/6-18-sample-for-afm-and-rmcd/RMCD/bfield_scan/'
     # file = path_s6+'sixlayer-scan3.txt'
-    file = path_s6+'fourlayer-scan1.txt'
+    # file = path_s6+'fourlayer-scan1.txt'
     # file = path_s6+'map1_0T.txt'
+    file = path_d3+'twisted_scan3-nogates.txt'
     tb.init_plot_params()
 
         
     # fig,ax,im = replot_rmcd_map(file,'RMCD')
     fig,ax,b_field,theta_dr = replot_rmcd_bfield_scan(file)
-    tb.plot_arrow_legend(ax,r'$B_{\perp}$',x1=1.3,y1=-8,ls=18,yratio=.058,xratio=.12,wratio=.0872)
+    tb.plot_arrow_legend(ax,r'$B_{\perp}$',x1=0.7,y1=-4,ls=18,yratio=.058,xratio=.12,wratio=.0872)
 
-    plt.savefig(path_s6+'fourlayer-scan1-rmcd.png',dpi=500)
+    # plt.savefig(path_d4+'twisted-scan2-fine-rmcd.png',dpi=500)
     plt.show()

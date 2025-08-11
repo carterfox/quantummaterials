@@ -86,34 +86,53 @@ class HamamatsuH11890:
         # Already existing setters and other functions...
         
         
-    def run_collection(self,index=0,gate_time_ms=200,num_gates=10):
-
-        self.configure_gate(index,gate_time_ms, num_gates)
-        self.start_counting(index, correction=True)
-        results = self.read_clean_data(index)
-        self.stop_counting(index)
+    def run_collection(self,gate_time_ms=200,num_gates=10,remove_first=True):
+        if remove_first:
+            num_gates += 1
+        self.configure_gate(gate_time_ms, num_gates)
+        self.start_counting(correction=True)
+        results = self.read_clean_data(remove_first)
+        self.stop_counting()
         
         return results
 
-    def read_clean_data(self,index=0):
-        
-        first_fresh=True
+    def read_clean_data(self,remove_first=True):
         results=[]
         while True:
             try:
-                gate, photons, is_old = self.read_data(index)
+                gate, photons, is_old = self.read_data()
+                # print(gate,photons,is_old)
                 if not is_old:
-                    if first_fresh:
-                        first_fresh = False
+                    if remove_first:
+                        remove_first = False
                     else:
                         results.append(photons) 
             except:
                 break
-            
         results_clean = results[-self.num_gates_raw:]
         return results_clean
+    
+    def read_data(self):
+        
+        gate_num = c_uint32()
+        data_buf = c_uint32()
+        old_flag = c_bool()
+        
+        result = self.lib.H11890ReadData(self.handle, byref(gate_num), byref(data_buf), byref(old_flag))
+        result = ctypes.c_int32(result).value
 
-    def configure_gate(self, index=0, gate_time_ms=1000, num_gates=60):
+        if result == -2:
+            raise RuntimeError("Invalid device handle.")
+        elif result == -3:
+            raise RuntimeError("No more data.")
+        elif result == -4:
+            raise RuntimeError("BulkIn transfer failed.")
+        elif result in (1, 15):
+            return gate_num.value, data_buf.value, bool(old_flag.value)
+        else:
+            raise RuntimeError(f"Unexpected return value from DLL: {result}")
+
+    def configure_gate(self, gate_time_ms=1000, num_gates=60):
         self.num_gates_raw = num_gates
         num_gates = num_gates+1 #since we will remove first point which may be too small
         
@@ -123,25 +142,24 @@ class HamamatsuH11890:
                 num_gates = num_gates+1
             if gate_time_ms <= 150:
                 num_gates = num_gates+1
-
-        self.set_it(index, gate_time_ms)
-        self.set_rn(index, num_gates)
+        self.set_it(gate_time_ms)
+        self.set_rn(num_gates)
     
-    def get_hv(self, index=0):
+    def get_hv(self):
         hv = c_int()
         success = self.lib.H11890ReadHV(self.handle, byref(hv))
         if not success:
             raise RuntimeError("Failed to read HV state.")
         return bool(hv.value)
 
-    def get_it(self, index=0):
+    def get_it(self):
         it = c_ulong()
         success = self.lib.H11890ReadIT(self.handle, byref(it))
         if not success:
             raise RuntimeError("Failed to read integration time.")
         return it.value
 
-    def get_rn(self, index=0):
+    def get_rn(self):
         rn = c_ulong()
         success = self.lib.H11890ReadRN(self.handle, byref(rn))
         if not success:
@@ -167,47 +185,25 @@ class HamamatsuH11890:
                 })
         return info
 
-    def start_counting(self, index=0, correction=False):
+    def start_counting(self, correction=False):
         result = self.lib.H11890CountStart(self.handle, int(correction))
         # print(f"Start counting result: {result}")
         if not result:
             raise RuntimeError("Failed to start counting.")
 
-    def stop_counting(self, index=0):
+    def stop_counting(self):
         result = self.lib.H11890CountStop(self.handle)
         if not result:
             raise RuntimeError("Failed to stop counting.")
 
-
-    def read_data(self, index=0):
-        
-        gate_num = c_uint32()
-        data_buf = c_uint32()
-        old_flag = c_bool()
-        
-        result = self.lib.H11890ReadData(self.handle, byref(gate_num), byref(data_buf), byref(old_flag))
-        result = ctypes.c_int32(result).value
-
-        if result == -2:
-            raise RuntimeError("Invalid device handle.")
-        elif result == -3:
-            raise RuntimeError("No more data.")
-        elif result == -4:
-            raise RuntimeError("BulkIn transfer failed.")
-        elif result in (1, 15):
-            return gate_num.value, data_buf.value, bool(old_flag.value)
-        else:
-            raise RuntimeError(f"Unexpected return value from DLL: {result}")
-
-
-    def set_hv(self, index=0, on=True):
+    def set_hv(self, on=True):
         self.lib.H11890SetHV(self.handle, int(on))
 
-    def set_it(self, index=0, ms=1000):
+    def set_it(self, ms=1000):
         self.lib.H11890SetIT(self.handle, ms)
         self.gate_time = ms
 
-    def set_rn(self, index=0, rn=0xFFFFFFFF):
+    def set_rn(self, rn=0xFFFFFFFF):
         self.lib.H11890SetRN(self.handle, rn)
         self.num_gates=rn
 
