@@ -101,7 +101,7 @@ class HamamatsuH11890:
         while True:
             try:
                 gate, photons, is_old = self.read_data()
-                # print(gate,photons,is_old)
+                print(gate,photons,is_old)
                 if not is_old:
                     if remove_first:
                         remove_first = False

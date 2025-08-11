@@ -188,7 +188,7 @@ def RMCD_mapping(sample, lockin: LockInOE1022D, ANC: ANC300, x_start, x_end, y_s
             with open(saving_file, 'a') as file:
                 file.write(str(x)+' '+str(y)+' ') 
                 file.write(' '.join(f"{d:.9f}" for d in data) + '\n') 
-            rmcd_value = data[4]/data[0]
+            rmcd_value = data[4]/data[0]*100
             scan_array[j, x_points-1-i] = rmcd_value
         
         im.set_data(scan_array)
@@ -312,8 +312,9 @@ def plot_rmcd_map(scan_array,x_step,y_step,plot_type='RMCD'):
 
 def replot_rmcd_map(data_file,plot_type='RMCD'):
     data = np.loadtxt(data_file)
-    x,y,r,dr = data[:,0], data[:,1],data[:,2], data[:,6]
+    x,y,r,dr,theta_dr = data[:,0], data[:,1],data[:,2], data[:,6], data[:,8]
     rmcd = dr/r*100
+    rmcd[np.where(theta_dr>0)] *= -1
     x_points,y_points = np.unique(x), np.unique(y)
     xstep = x_points[1]-x_points[0]
     ystep = y_points[1]-y_points[0]
@@ -342,7 +343,7 @@ def replot_rmcd_bfield_scan(data_file):
 
     diffs = np.diff(b_field)
     try:
-        transition_index = np.where((diffs[:-1] > 0) & (diffs[1:] < 0))[0][0]+1
+        transition_index = np.where((diffs[:-1] >= 0) & (diffs[1:] <= 0))[0][0]+1
     except:
         transition_index=len(b_field)
     b_field_ascend = b_field[0:transition_index]
@@ -354,7 +355,7 @@ def replot_rmcd_bfield_scan(data_file):
     
     ax.plot(b_field_ascend, rmcd_ascend, color='black', label=r'$\rightarrow$',marker='.')
     ax.plot(b_field_descend, rmcd_descend, color='r', label=r'$\leftarrow$',marker='.')
-    ax.set_xlabel('B (T)'), ax.set_ylabel('RMCD %')
+    ax.set_xlabel('B (T)'), ax.set_ylabel(r'RMCD %')
     ax.set_xlim(min(b_field),max(b_field))
     # ax.legend(loc='upper left')
     
@@ -364,18 +365,21 @@ def replot_rmcd_bfield_scan(data_file):
 if __name__ == "__main__":
     # 
     # path_d4 = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/d4/RMCD/bfield_scan/'
-    path_d3 = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/d3/RMCD/bfield_scan/'
+    path_d3 = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/d3/RMCD/mapping/'
     # path_s6 = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/6-18-sample-for-afm-and-rmcd/RMCD/bfield_scan/'
     # file = path_s6+'sixlayer-scan3.txt'
     # file = path_s6+'fourlayer-scan1.txt'
     # file = path_s6+'map1_0T.txt'
-    file = path_d3+'twisted_scan3-nogates.txt'
+    file = path_d3+'map1_0T_after_m2T.txt'
     tb.init_plot_params()
 
-        
-    # fig,ax,im = replot_rmcd_map(file,'RMCD')
-    fig,ax,b_field,theta_dr = replot_rmcd_bfield_scan(file)
-    tb.plot_arrow_legend(ax,r'$B_{\perp}$',x1=0.7,y1=-4,ls=18,yratio=.058,xratio=.12,wratio=.0872)
+    fig,ax,im = replot_rmcd_map(file,'RMCD')
 
-    # plt.savefig(path_d4+'twisted-scan2-fine-rmcd.png',dpi=500)
+    # fig,ax,b_field,theta_dr = replot_rmcd_bfield_scan(file)
+    # tb.plot_arrow_legend(ax,r'$B_{\perp}$',x1=1.7,y1=-7,ls=18,yratio=.058,xratio=.12,wratio=.0872)
+    
+    title = file.split('/')[-1].split('.txt')[0]
+    plt.title(title)
+    
+    plt.savefig(file.replace('.txt','_plot.png'),dpi=500)
     plt.show()

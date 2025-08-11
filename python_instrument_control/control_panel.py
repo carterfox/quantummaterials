@@ -74,9 +74,9 @@ if __name__ == "__main__":
     # sample = DualGate(sample_name='d4', d_b=18.45, d_t=5.67, data_path=path_d4)
     sample = DualGate(sample_name='d3', d_b=9.41, d_t=7.93, data_path=path_d3)
     
-    segment1 = np.arange(-22000, -8000 + 1, 1000)
+    segment1 = np.arange(-12000, -8000 + 1, 1000)
     segment2 = np.arange(-7750, 8000 + 1, 250)
-    segment3 = np.arange(9000, 22000 + 1, 1000)
+    segment3 = np.arange(9000, 12000 + 1, 1000)
     forward_array = np.concatenate([segment1, segment2, segment3])
     backward_array = forward_array[::-1]
     full_symmetric_array = np.concatenate([forward_array, backward_array])
@@ -91,7 +91,7 @@ if __name__ == "__main__":
     try:
         bfield_array = full_symmetric_array#tb.make_bfield_list(-22000, 22000, 500)
         rmcd_scan_data = RMCD.RMCD_bfield_scan(sample,lockin,opticool,bfield_array,
-                                                'twisted_scan3-nogates.txt')
+                                                'bilayer_scan_p5-nogates.txt')
     
         # RMCD.RMCD_mapping(sample, lockin, ANC, x_start=0, x_end=60, points=61, 
                           # file_save='map1_m2p2T.txt')
