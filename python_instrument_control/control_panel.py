@@ -68,7 +68,7 @@ def close_all():
 ##run experiments here by running the file 
 if __name__ == "__main__":
     
-    # tb.init_plot_params()
+    tb.init_plot_params()
     # path_d4 = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/d4'
     # sample = DualGate(sample_name='d4', d_b=18.45, d_t=5.67, data_path=path_d4)
     
@@ -89,7 +89,7 @@ if __name__ == "__main__":
     
         # RMCD.RMCD_mapping(sample, lockin, ANC, x_start=0, x_end=60, points=61, 
                           # file_save='map1_m2p2T.txt')
-        run_continuous_pmt_plot(PMT,gate_time_ms=100)
+        run_continuous_pmt_plot(PMT,gate_time_ms=200,num_gates=10)
     
     except Exception as e:
         print(e)

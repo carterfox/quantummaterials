@@ -63,9 +63,9 @@ def make_Gr_resistance_saving_file(filename,Rbox,delay,freq,Vb,file='Vb'):
     if file == 'Vb':
         filename_a = filename.split('.txt')
         filename = filename_a + '_VI_data_Vb'+str(int(Vb/1000))+'mV_.txt'
-        header = '# Rbox (Ohm) = {Rbox}'.format(Rbox)
-        header += '\n' + '# Lockin wait time (ms) = {delay}'.format(delay)
-        header += '\n' + '# Vb (V) = {Vb}'.format(Vb)
+        header = '# Rbox (Ohm) = {}'.format(Rbox)
+        header += '\n' + '# Lockin wait time (ms) = {}'.format(delay)
+        header += '\n' + '# Vb (V) = {}'.format(Vb)
         header += '\n' + '# V_sin(V) V_Gr(V) I_Gr(kA) theta(deg)'
     
     elif file == 'full':

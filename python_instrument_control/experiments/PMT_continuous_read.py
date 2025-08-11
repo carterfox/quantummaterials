@@ -7,6 +7,8 @@ Created on Sun Aug 10 11:48:23 2025
 from homemade_servers.H11890PMT import HamamatsuH11890
 import matplotlib.pylab as plt
 import time
+import numpy as np
+import os
 
 def update(pmt, fig, ax, line, gates, counts, first_flag):
     try:
@@ -19,8 +21,8 @@ def update(pmt, fig, ax, line, gates, counts, first_flag):
             counts.append(photons)
 
             # Keep only last 200 points
-            gates[:] = gates[-200:]
-            counts[:] = counts[-200:]
+            # gates[:] = gates[-200:]
+            # counts[:] = counts[-200:]
 
             line.set_data(gates, counts)
             ax.relim()
@@ -31,33 +33,72 @@ def update(pmt, fig, ax, line, gates, counts, first_flag):
         pass  # Handle PMT read errors gracefully
     return line, gates, counts
 
-def run_continuous_pmt_plot(pmt,gate_time_ms):
+def run_continuous_pmt_plot(pmt,gate_time_ms,num_gates,file_save=None):
     counts = []
     gates = []
     first_flag = [True]
 
     plt.ion()
     fig, ax = plt.subplots()
+    plt.show(block=False)
+    try:
+        fig.canvas.manager.window.raise_()  # Works on Qt
+        fig.canvas.manager.window.activateWindow()
+    except Exception as e:
+        print("Window raise failed:", e)
     line, = ax.plot([], [], lw=2)
     ax.set_xlabel("Gate")
     ax.set_ylabel("Photon Count")
 
     pmt.set_hv(on=True)
     pmt.set_it(ms=gate_time_ms)
-    pmt.set_rn(rn=9999)
+    if num_gates==0:
+        rn=9999
+    else:
+        rn = num_gates
+        if gate_time_ms <= 400:  # add gates to account for the first few bins being all data that will be thown out
+            rn = rn+1
+            if gate_time_ms <= 200:
+                rn = rn+1
+            if gate_time_ms <= 150:
+                rn = rn+1
+            if gate_time_ms <= 100:
+                rn = rn+1
+    pmt.set_rn(rn=rn)
     pmt.start_counting()
-
+    
+    gate_num = 0
     try:
-        while True:
+        while gate_num < rn:
             line, gates, counts = update(pmt, fig, ax, line, gates, counts, first_flag)
+            gate_num += 1
     except KeyboardInterrupt:
+        print('stopped')
+    finally:
         pmt.stop_counting()
         pmt.set_hv(on=False)
-    finally:
         plt.ioff()
         plt.show()
-
+    gates_clean = np.array(gates)-np.array(gates[0])
+    
+    if file_save != None:
+        if os.path.exists(file_save):
+            while os.path.exists(file_save):     
+                file_save = file_save.replace(".txt", "_new.txt")
+            
+        header = '# Num Gates = {}'.format(num_gates)
+        header += '\n' + '# Gate time (ms) = {}'.format(gate_time_ms)
+        with open(file_save, 'a') as file:
+            file.write(header + '\n') 
+            for g,c in zip(gates_clean,counts):
+                file.write("{} {} \n".format(g,c))
+        
+    return gates_clean, counts
 if __name__ == "__main__":
     pmt = HamamatsuH11890()
-    run_continuous_pmt_plot(pmt,gate_time_ms=100)
-    pmt.close()
+    try:
+        gates,counts = run_continuous_pmt_plot(pmt,gate_time_ms=100,num_gates=20,file_save='test.txt')
+        pmt.close()
+        
+    except:
+        pmt.close()
