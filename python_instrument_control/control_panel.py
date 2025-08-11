@@ -9,19 +9,16 @@ Created on Sun Aug  3 12:32:27 2025
 # import MultiPyVu as mpv
 import numpy as np
 import matplotlib.pyplot as plt
+from qcodes_contrib_drivers.drivers.Attocube.ANC300 import ANC300
+import toolbelt as tb
+import logging
+logging.basicConfig(level=logging.INFO, format='%(levelname)s - %(message)s')
 from homemade_servers.SSI_OE1022D import LockInOE1022D
 from homemade_servers.QDopticool import Opticool
 from homemade_servers.H11890PMT import HamamatsuH11890
 from homemade_servers.KeithleySourceMeter import KeithleySourceMeter
 from devices.dualgate import DualGate
-import RMCD
-from PMT_continuous_read import run_continuous_pmt_plot
-import Gr_polarization_sensing
-from qcodes_contrib_drivers.drivers.Attocube.ANC300 import ANC300
-import toolbelt as tb
-import logging
-logging.basicConfig(level=logging.INFO, format='%(levelname)s - %(message)s')
-
+from experiments import RMCD_bfield_scan, RMCD_mapping, PMT_continuous_read, Gr_polarization_sensing
 
 servers = []
 ### functions for getting instruments
@@ -90,10 +87,10 @@ if __name__ == "__main__":
     
     try:
         bfield_array = full_symmetric_array#tb.make_bfield_list(-22000, 22000, 500)
-        rmcd_scan_data = RMCD.RMCD_bfield_scan(sample,lockin,opticool,bfield_array,
+        rmcd_scan_data = RMCD_bfield_scan.main(sample,lockin,opticool,bfield_array,
                                                 'bilayer_scan_p5-nogates.txt')
     
-        # RMCD.RMCD_mapping(sample, lockin, ANC, x_start=0, x_end=60, points=61, 
+        # RMCD_mapping.main(sample, lockin, ANC, x_start=0, x_end=60, points=61, 
                           # file_save='map1_m2p2T.txt')
     except Exception as e:
         print(e)

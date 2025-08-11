@@ -10,27 +10,7 @@ import time
 import numpy as np
 import os
 
-def update(pmt, fig, ax, line, gates, counts):
-    try:
-        gate, photons, is_old = pmt.read_data()
-        if not is_old:
-            gates.append(gate)
-            counts.append(photons)
-
-            # Keep only last 200 points
-            # gates[:] = gates[-200:]
-            # counts[:] = counts[-200:]
-
-            line.set_data(gates, counts)
-            ax.relim()
-            ax.autoscale_view()
-            fig.canvas.draw()
-            fig.canvas.flush_events()
-    except RuntimeError:
-        pass  # Handle PMT read errors gracefully
-    return line, gates, counts
-
-def run_continuous_pmt_plot(pmt,gate_time_ms,num_gates,file_save=None):
+def main(pmt,gate_time_ms,num_gates,file_save=None):
     counts = []
     gates = []
 
@@ -82,10 +62,31 @@ def run_continuous_pmt_plot(pmt,gate_time_ms,num_gates,file_save=None):
                 file.write("{} {} \n".format(g,c))
         
     return gates_clean, counts
+
+def update(pmt, fig, ax, line, gates, counts):
+    try:
+        gate, photons, is_old = pmt.read_data()
+        if not is_old:
+            gates.append(gate)
+            counts.append(photons)
+
+            # Keep only last 200 points
+            # gates[:] = gates[-200:]
+            # counts[:] = counts[-200:]
+
+            line.set_data(gates, counts)
+            ax.relim()
+            ax.autoscale_view()
+            fig.canvas.draw()
+            fig.canvas.flush_events()
+    except RuntimeError:
+        pass  # Handle PMT read errors gracefully
+    return line, gates, counts
+
 if __name__ == "__main__":
     pmt = HamamatsuH11890()
     try:
-        gates,counts = run_continuous_pmt_plot(pmt,gate_time_ms=200,num_gates=0)
+        gates,counts = main(pmt,gate_time_ms=200,num_gates=0)
         pmt.close()
         
     except:
