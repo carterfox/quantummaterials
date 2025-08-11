@@ -10,13 +10,10 @@ import time
 import numpy as np
 import os
 
-def update(pmt, fig, ax, line, gates, counts, first_flag):
+def update(pmt, fig, ax, line, gates, counts):
     try:
         gate, photons, is_old = pmt.read_data()
         if not is_old:
-            if first_flag[0]:
-                first_flag[0] = False
-                return line, gates, counts
             gates.append(gate)
             counts.append(photons)
 
@@ -36,7 +33,6 @@ def update(pmt, fig, ax, line, gates, counts, first_flag):
 def run_continuous_pmt_plot(pmt,gate_time_ms,num_gates,file_save=None):
     counts = []
     gates = []
-    first_flag = [True]
 
     plt.ion()
     fig, ax = plt.subplots()
@@ -56,21 +52,13 @@ def run_continuous_pmt_plot(pmt,gate_time_ms,num_gates,file_save=None):
         rn=9999
     else:
         rn = num_gates
-        if gate_time_ms <= 400:  # add gates to account for the first few bins being all data that will be thown out
-            rn = rn+1
-            if gate_time_ms <= 200:
-                rn = rn+1
-            if gate_time_ms <= 150:
-                rn = rn+1
-            if gate_time_ms <= 100:
-                rn = rn+1
     pmt.set_rn(rn=rn)
+    time.sleep(.5)
     pmt.start_counting()
-    
     gate_num = 0
     try:
         while gate_num < rn:
-            line, gates, counts = update(pmt, fig, ax, line, gates, counts, first_flag)
+            line, gates, counts = update(pmt, fig, ax, line, gates, counts)
             gate_num += 1
     except KeyboardInterrupt:
         print('stopped')
@@ -97,7 +85,7 @@ def run_continuous_pmt_plot(pmt,gate_time_ms,num_gates,file_save=None):
 if __name__ == "__main__":
     pmt = HamamatsuH11890()
     try:
-        gates,counts = run_continuous_pmt_plot(pmt,gate_time_ms=100,num_gates=20)
+        gates,counts = run_continuous_pmt_plot(pmt,gate_time_ms=200,num_gates=0)
         pmt.close()
         
     except:

@@ -7,6 +7,7 @@ Created on Sun Aug 10 11:47:06 2025
 
 import ctypes
 from ctypes import *
+import time
 
 class H11890_INF(Structure):
     _fields_ = [
@@ -85,8 +86,8 @@ class HamamatsuH11890:
         
         # Already existing setters and other functions...
         
-        
     def run_collection(self,gate_time_ms=200,num_gates=10,remove_first=True):
+        time.sleep(.5) #ensures we don't collect old data. just gives the program a second to catch up
         if remove_first:
             num_gates += 1
         self.configure_gate(gate_time_ms, num_gates)
@@ -109,8 +110,7 @@ class HamamatsuH11890:
                         results.append(photons) 
             except:
                 break
-        results_clean = results[-self.num_gates_raw:]
-        return results_clean
+        return results
     
     def read_data(self):
         
@@ -134,16 +134,9 @@ class HamamatsuH11890:
 
     def configure_gate(self, gate_time_ms=1000, num_gates=60):
         self.num_gates_raw = num_gates
-        num_gates = num_gates+1 #since we will remove first point which may be too small
-        
-        if gate_time_ms <= 400:  # add gates to account for the first few bins being all data that will be thown out
-            num_gates = num_gates+1
-            if gate_time_ms <= 200:
-                num_gates = num_gates+1
-            if gate_time_ms <= 150:
-                num_gates = num_gates+1
         self.set_it(gate_time_ms)
         self.set_rn(num_gates)
+
     
     def get_hv(self):
         hv = c_int()
@@ -216,4 +209,10 @@ class HamamatsuH11890:
         except:
             pass
 
+if __name__ == "__main__":
 
+    PMT = HamamatsuH11890()
+    PMT.set_hv(on=True)
+    PMT.run_collection(100,10,remove_first=False)
+    PMT.set_hv(on=False)
+    PMT.close()
