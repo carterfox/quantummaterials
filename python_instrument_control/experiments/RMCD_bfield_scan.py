@@ -104,6 +104,12 @@ def update_rmcd_bfield_scan_plot(fig,ax,line_up,line_down,b_list_ascend,rmcd_lis
 
 def init_rmcd_bfield_scan_plot(bfield_array):
     fig, ax = plt.subplots()
+    plt.show(block=False)
+    try:
+        fig.canvas.manager.window.raise_()  # Works on Qt
+        fig.canvas.manager.window.activateWindow()
+    except Exception as e:
+        print("Window raise failed:", e)
     ax.set_xlabel('B (T)'), ax.set_ylabel('RMCD %')
     ax.set_xlim(min(bfield_array)/10000,max(bfield_array)/10000)
     line_up = Line2D([], [], color='black', label=r'$\rightarrow$',marker='.')

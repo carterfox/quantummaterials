@@ -10,6 +10,7 @@ from pymeasure.adapters import VISAAdapter
 from pymeasure.instruments.keithley import Keithley2400, Keithley2450
 import logging
 import numpy as np
+import time
 
 def KeithleySourceMeter(resource_name, model="2450"):
     adapter = VISAAdapter(resource_name)
@@ -49,6 +50,7 @@ def KeithleySourceMeter(resource_name, model="2450"):
         def measure_current_avg(self,num_points,nplc=.5):
             self.measure_current(nplc=nplc)
             self.config_buffer(num_points)
+            time.sleep(0.1)
             self.start_buffer()
             self.wait_for_buffer()
             current_avg = np.average(self.buffer_data)
@@ -57,6 +59,7 @@ def KeithleySourceMeter(resource_name, model="2450"):
         def measure_voltage_avg(self,num_points,nplc=.1):
             self.measure_voltage(nplc=nplc)
             self.config_buffer(num_points)
+            time.sleep(0.1)
             self.start_buffer()
             self.wait_for_buffer()
             voltage_avg = np.average(self.buffer_data)

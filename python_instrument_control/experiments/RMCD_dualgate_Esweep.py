@@ -22,7 +22,7 @@ from devices.dualgate import DualGate
 from qcodes_contrib_drivers.drivers.Attocube.ANC300 import ANC300
 import toolbelt as tb
 from tqdm import tqdm
-
+import numpy as np
 
 def main(sample: DualGate, lockin: LockInOE1022D,
          keithley_b: KeithleySourceMeter,
@@ -60,8 +60,17 @@ def main(sample: DualGate, lockin: LockInOE1022D,
     tb.init_plot_params()
     plt.ion()
     fig, ax = plt.subplots()
+    plt.show(block=False)
+    try:
+        fig.canvas.manager.window.raise_()  # Works on Qt
+        fig.canvas.manager.window.activateWindow()
+    except Exception as e:
+        print("Window raise failed:", e)
+        
     ax.set_xlabel('E (V/nm)')
     ax.set_ylabel('RMCD %')
+    line = Line2D([], [], color='blue',marker='.')
+    ax.add_line(line)
     
     keithley_b.enable_source()
     
@@ -70,52 +79,78 @@ def main(sample: DualGate, lockin: LockInOE1022D,
     # d_t = sample.d_t
     
     for E in E_array:
-        V_b = E*d_b
+        V_b = E*d_b*2
         # V_t = -V_b*d_t/d_b
         
         keithley_b.source_voltage = V_b
         V_b_meas = keithley_b.measure_voltage_avg(10)
-        I_b_meas = 10**6 * keithley_b.measure_current_avg(20)
+        I_b_meas = 10**9 * keithley_b.measure_current_avg(20)
 
         lockin.reset_buffer()
         time.sleep(lockin.delay)
         rmcd_data = tb.read_lockin_rmcd_data(lockin)#tb.read_lockin_rmcd_data(lockin)
         # [R_cur_mean,R_cur_std,theta_R_cur_mean,theta_R_cur_std,dR_cur_mean,dR_cur_std,theta_dR_cur_mean,theta_dR_cur_std]
-        rmcd_list.append(rmcd_data[4]/rmcd_data[0]*100)
+        rmcd = rmcd_data[4]/rmcd_data[0]*100
+        rmcd_list.append(rmcd)
+        values = [E, V_b, V_b_meas, I_b_meas, rmcd]
+        print(" ".join(f"{v:.4f}" for v in values))
+        # print(round(E,3),round(V_b,3),round(V_b_meas,3), round(I_b_meas,4), round(rmcd,4))
         
         with open(saving_file, 'a') as file:
             file.write('{} {} {} '.format(round(V_b,3),round(V_b_meas,3), round(I_b_meas,4)) )
             file.write(' '.join(f"{d:.9f}" for d in rmcd_data) + '\n') 
-        ax.plot(E_array[0:len(rmcd_list)],rmcd_list)
+            
+        line.set_data(E_array[0:len(rmcd_list)],rmcd_list)
+        ax.relim()
+        ax.autoscale_view()
         fig.canvas.draw()
         fig.canvas.flush_events()
+        
     plt.ioff()
     plt.show()
     
-    return rmcd_list
-
-def get_lockin(resource_name='ASRL12::INSTR', R_chan=1, dR_chan=2, num_avgs=100,sensitivities=["10 mV","1 mV"]):  
-    lockin = LockInOE1022D(resource_name)
-    lockin.R_chan, lockin.dR_chan = R_chan, dR_chan
-    lockin.num_avgs = num_avgs
-    lockin.delay=2
-    lockin.set_sensitivity(R_chan,sensitivities[0])
-    lockin.set_sensitivity(dR_chan,sensitivities[1])
-    # servers.append(lockin)
-    return lockin
+    return E_array,rmcd_list
 
 if __name__ == "__main__":
     # 
-    path_d3 = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/d3'
+    path_d3 = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/d3/RMCD/Esweep/'
     # sample = DualGate(sample_name='d4', d_b=18.45, d_t=5.67, data_path=path_d4)
     sample = DualGate(sample_name='d3', d_b=9.41, d_t=7.93, data_path=path_d3)
+    file = path_d3+'Esweep1_0T_after_m2T.txt'
+    data = np.loadtxt(file)
+    Vb = data[:,1]
+    R = data[:,3]
+    dR = data[:,7]
+    rmcd = dR/R*100
+    E = tb.E_dualgate(Vb, 0, sample.d_b, sample.d_t)
     
-    keithleyb = KeithleySourceMeter('GPIB::1','2450')
-    keithleyb.compliance_current=.02
-    lockin = get_lockin()
+    tb.init_plot_params()
+    fig,ax = plt.subplots()
+    
+    diffs = np.diff(E)
+    try:
+        transition_index = np.where((diffs[:-1] >= 0) & (diffs[1:] <= 0))[0][0]+1
+    except:
+        transition_index=len(E)
+        
+    E_ascend = E[0:transition_index]
+    E_descend = E[transition_index:]
+    rmcd_ascend = rmcd[0:transition_index]
+    rmcd_descend = rmcd[transition_index:]
+    
+    ax.plot(E_ascend, rmcd_ascend, color='black', label=r'$\rightarrow$',marker='.')
+    ax.plot(E_descend, rmcd_descend, color='r', label=r'$\leftarrow$',marker='.')
+    ax.set_xlabel('E (V/nm)')
+    ax.set_ylabel('RMCD %')
+    ax.legend()
+    plt.savefig(file.replace('.txt','_plot.png'),dpi=500)
+    plt.show()
+    
+    # keithleyb = KeithleySourceMeter('GPIB::1','2450')
+    # keithleyb.compliance_current=.02
 
-    E_array = np.array([-.1,0,.1])
-    rmcd = main(sample, lockin,keithleyb,E_array,'testest.txt')
-    keithleyb.close()
+    # E_array = np.array([-.1,0,.1])
+    # rmcd = main(sample, lockin,keithleyb,E_array,'testest.txt')
+    # keithleyb.close()
     # lockin.close()
     
