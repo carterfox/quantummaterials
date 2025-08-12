@@ -18,7 +18,8 @@ from homemade_servers.QDopticool import Opticool
 from homemade_servers.H11890PMT import HamamatsuH11890
 from homemade_servers.KeithleySourceMeter import KeithleySourceMeter
 from devices.dualgate import DualGate
-from experiments import RMCD_bfield_scan, RMCD_mapping, PMT_continuous_read, Gr_polarization_sensing
+from experiments import RMCD_bfield_scan, RMCD_mapping, RMCD_dualgate_Esweep
+from experiments import PMT_continuous_read, Gr_polarization_sensing
 
 servers = []
 ### functions for getting instruments
@@ -71,27 +72,26 @@ if __name__ == "__main__":
     # sample = DualGate(sample_name='d4', d_b=18.45, d_t=5.67, data_path=path_d4)
     sample = DualGate(sample_name='d3', d_b=9.41, d_t=7.93, data_path=path_d3)
     
-    segment1 = np.arange(-12000, -8000 + 1, 1000)
-    segment2 = np.arange(-7750, 8000 + 1, 250)
-    segment3 = np.arange(9000, 12000 + 1, 1000)
-    forward_array = np.concatenate([segment1, segment2, segment3])
-    backward_array = forward_array[::-1]
-    full_symmetric_array = np.concatenate([forward_array, backward_array])
-    
     lockin = get_lockin()
-    lockin.delay=1
-    lockin.num_avgs=100
-    opticool, current_temp, current_field = get_opticool()
-    # ANC = get_ANC300()
+    lockin.delay=0.3
+    lockin.num_avgs=20
+    # opticool, current_temp, current_field = get_opticool()
+    ANC = get_ANC300()
     # PMT = get_PMT()
+    # keithley_b = get_keithley('GPIB::1','2450')
     
     try:
-        bfield_array = full_symmetric_array#tb.make_bfield_list(-22000, 22000, 500)
-        rmcd_scan_data = RMCD_bfield_scan.main(sample,lockin,opticool,bfield_array,
-                                                'bilayer_scan_p5-nogates.txt')
+        # print('test')
+        # bfield_array = full_symmetric_array#tb.make_bfield_list(-22000, 22000, 500)
+        # rmcd_scan_data = RMCD_bfield_scan.main(sample,lockin,opticool,bfield_array,
+        #                                         'bilayer_scan_p5-nogates.txt')
     
-        # RMCD_mapping.main(sample, lockin, ANC, x_start=0, x_end=60, points=61, 
-                          # file_save='map1_m2p2T.txt')
+        RMCD_mapping.main(sample, lockin, ANC, x_start=0, x_end=40, points=41, 
+                           file_save='map1_m2p2T.txt')
+                          
+        # RMCD_dualgate_Esweep.main(sample,lockin,keithley_b,[-0.1,0,.1],'test.txt')
+        
+        
     except Exception as e:
         print(e)
     finally:

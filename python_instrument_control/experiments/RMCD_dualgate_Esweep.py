@@ -24,9 +24,9 @@ import toolbelt as tb
 from tqdm import tqdm
 
 
-def RMCD_dualgate_pure_Efield_sweep(sample: DualGate, lockin: LockInOE1022D,
-                                    keithley_b: KeithleySourceMeter, keithley_t: KeithleySourceMeter,
-                                    E_array,file_save):
+def main(sample: DualGate, lockin: LockInOE1022D,
+         keithley_b: KeithleySourceMeter,
+         E_array,file_save):
     
     """
     Perform a pure out-of-plane electric field sweep using a dual-gated sample
@@ -51,9 +51,11 @@ def RMCD_dualgate_pure_Efield_sweep(sample: DualGate, lockin: LockInOE1022D,
     -------
     None
     """
-    
-    saving_file = sample.data_path+'/RMCD/Esweep/'+file_save    
-    tb.make_rmcd_saving_file(saving_file,'Esweep')
+    if not os.path.exists(sample.data_path+"/RMCD/Esweep"):
+        os.makedirs(sample.data_path+"/RMCD/Esweep")
+
+    gen_path = sample.data_path+'/RMCD/Esweep/'+file_save
+    saving_file = tb.make_rmcd_saving_file(gen_path,'Esweep-Vb')
     
     tb.init_plot_params()
     plt.ion()
@@ -61,43 +63,59 @@ def RMCD_dualgate_pure_Efield_sweep(sample: DualGate, lockin: LockInOE1022D,
     ax.set_xlabel('E (V/nm)')
     ax.set_ylabel('RMCD %')
     
-    tb.configure_keithley(keithley_b)
-    tb.configure_keithley(keithley_t)
+    keithley_b.enable_source()
     
     rmcd_list = []
     d_b = sample.d_b
-    d_t = sample.d_t
+    # d_t = sample.d_t
     
     for E in E_array:
-        
         V_b = E*d_b
-        V_t = -V_b*d_t/d_b
+        # V_t = -V_b*d_t/d_b
         
-        keithley_b.source_voltage = V_b             # Set output voltage
-        keithley_t.source_voltage = V_t             # Set output voltage
-        time.sleep(0.3)                          # Allow output and DUT to settle
-        Vb_meas, Ib_meas = tb.measure_V_I(keithley_b)
-        Vt_meas, It_meas = tb.measure_V_I(keithley_t)
-        elec_data = [V_b,Vb_meas,V_t,Vt_meas,Ib_meas,It_meas]
-        
-        lockin.sleep(lockin.delay)
+        keithley_b.source_voltage = V_b
+        V_b_meas = keithley_b.measure_voltage_avg(10)
+        I_b_meas = 10**6 * keithley_b.measure_current_avg(20)
+
         lockin.reset_buffer()
-        rmcd_data = tb.read_lockin_rmcd_data(lockin)
+        time.sleep(lockin.delay)
+        rmcd_data = tb.read_lockin_rmcd_data(lockin)#tb.read_lockin_rmcd_data(lockin)
+        # [R_cur_mean,R_cur_std,theta_R_cur_mean,theta_R_cur_std,dR_cur_mean,dR_cur_std,theta_dR_cur_mean,theta_dR_cur_std]
         rmcd_list.append(rmcd_data[4]/rmcd_data[0]*100)
         
-        data_row = elec_data + rmcd_data
-        np.savetxt(saving_file, data_row, fmt="%.9f", mode='a')
-        
+        with open(saving_file, 'a') as file:
+            file.write('{} {} {} '.format(round(V_b,3),round(V_b_meas,3), round(I_b_meas,4)) )
+            file.write(' '.join(f"{d:.9f}" for d in rmcd_data) + '\n') 
         ax.plot(E_array[0:len(rmcd_list)],rmcd_list)
         fig.canvas.draw()
         fig.canvas.flush_events()
-    
     plt.ioff()
     plt.show()
     
-    return None
+    return rmcd_list
 
+def get_lockin(resource_name='ASRL12::INSTR', R_chan=1, dR_chan=2, num_avgs=100,sensitivities=["10 mV","1 mV"]):  
+    lockin = LockInOE1022D(resource_name)
+    lockin.R_chan, lockin.dR_chan = R_chan, dR_chan
+    lockin.num_avgs = num_avgs
+    lockin.delay=2
+    lockin.set_sensitivity(R_chan,sensitivities[0])
+    lockin.set_sensitivity(dR_chan,sensitivities[1])
+    # servers.append(lockin)
+    return lockin
 
 if __name__ == "__main__":
     # 
-    print('test')
+    path_d3 = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/d3'
+    # sample = DualGate(sample_name='d4', d_b=18.45, d_t=5.67, data_path=path_d4)
+    sample = DualGate(sample_name='d3', d_b=9.41, d_t=7.93, data_path=path_d3)
+    
+    keithleyb = KeithleySourceMeter('GPIB::1','2450')
+    keithleyb.compliance_current=.02
+    lockin = get_lockin()
+
+    E_array = np.array([-.1,0,.1])
+    rmcd = main(sample, lockin,keithleyb,E_array,'testest.txt')
+    keithleyb.close()
+    # lockin.close()
+    

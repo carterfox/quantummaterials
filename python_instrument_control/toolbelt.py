@@ -25,16 +25,14 @@ def make_bfield_list(b_start,b_end,b_step):
     return bfield_list
 
 def read_lockin_rmcd_data(lockin: LockInOE1022D):
-    
-    mean_R_chan, std_R_chan, mean_dR_chan, std_dR_chan = lockin.read_average_dual(params=[2,3,7,8],num_avgs=lockin.num_avgs,delay=0.02)
-    
+    start= time.time()
+    mean_R_chan, std_R_chan, mean_dR_chan, std_dR_chan = lockin.read_average_dual(params=[2,3,7,8],num_avgs=lockin.num_avgs)
     R_cur_mean, R_cur_std = mean_R_chan[0], std_R_chan[0]
     dR_cur_mean, dR_cur_std = mean_dR_chan[2], std_dR_chan[2]
-    
     theta_R_cur_mean, theta_R_cur_std = mean_R_chan[1], std_R_chan[1]
     theta_dR_cur_mean, theta_dR_cur_std = mean_dR_chan[3], std_dR_chan[3]
-
-    return [R_cur_mean,R_cur_std,theta_R_cur_mean,theta_R_cur_std,dR_cur_mean,dR_cur_std,theta_dR_cur_mean,theta_dR_cur_std]
+    pack = [R_cur_mean,R_cur_std,theta_R_cur_mean,theta_R_cur_std,dR_cur_mean,dR_cur_std,theta_dR_cur_mean,theta_dR_cur_std]
+    return pack
     
 
 
@@ -44,8 +42,8 @@ def make_rmcd_saving_file(filename,experiment):
         header = "#B(Oe) R(V) R_std(V) thetaR(deg) thetaR_std(deg) dR(V) dR_std(V) thetadR(deg) thetadR_std(deg)"
     elif experiment == 'mapping':
         header = "#X(V) Y(V) R_mean(V) R_std(V) thetaR_mean(deg) thetaR_std(deg) dR_mean(V) dR_std(V) thetadR_mean(deg) thetadR_std(deg)"
-    elif experiment == 'Esweep':
-        header = "#Vb_set(V) Vb(V) Vt_set(V) Vt(V) Ib(uA) It(uA) R(V) R_std(V) thetaR(deg) thetaR_std(deg) dR(V) dR_std(V) thetadR(deg) thetadR_std(deg)"
+    elif experiment == 'Esweep-Vb':
+        header = "#Vb_set(V) Vb(V) Ib(uA) R(V) R_std(V) thetaR(deg) thetaR_std(deg) dR(V) dR_std(V) thetadR(deg) thetadR_std(deg)"
 
     if not os.path.exists(filename):
         with open(filename, 'a') as file:
@@ -86,19 +84,6 @@ def n_dualgate(V_b,V_t,d_b,d_t):
     e = cont.e.si
     n = eps_bn*eps_0 * (V_t/d_t + V_b/d_b)/e
     return n.value
-
-    
-def configure_keithley(keithley,num_points=10):
-    keithley.apply_voltage(compliance_current=keithley.compliance_current)
-    keithley.enable_source()
-    keithley.measure_voltage()
-    keithley.measure_current()
-    keithley.filter_state = 'ON'
-    keithley.filter_type = 'REP'
-    keithley.filter_count = num_points
-    keithley.config_buffer(points=num_points, delay=0)
-    
-    return None
 
 def measure_V_I(keithley):
     keithley.reset_buffer()                  # Clear buffer before new measurement
