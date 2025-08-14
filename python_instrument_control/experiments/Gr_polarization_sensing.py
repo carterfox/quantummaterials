@@ -15,72 +15,180 @@ from homemade_servers.KeithleySourceMeter import KeithleySourceMeter
 from homemade_servers.SSI_OE1022D import LockInOE1022D
 from devices.dualgate import DualGate
 import toolbelt as tb
+import os
+from matplotlib.lines import Line2D
+from sklearn.linear_model import HuberRegressor
+from sklearn.preprocessing import StandardScaler
 
 
+def main(sample: DualGate, lockin: LockInOE1022D, keithley_b: KeithleySourceMeter,Vb_array,Vsin_array,file_save):
+    """
+    Executes a sweep of the back gate while measuring the top graphene resistance.
 
-def Gr_resistance_Vb_sweep(sample: DualGate, lockin: LockInOE1022D, keithley: KeithleySourceMeter,Rbox,Vb_array,Vsin_min,Vsin_max,Vsin_step,file_save):
-    
-    lockin.set_sine_output(channel=lockin.R_chan,amplitude_v=Vsin_min)
-    
-    saving_file = sample.data_path+'/GrSensor/'+file_save
-    file_full = tb.make_Gr_resistance_saving_file(saving_file,Rbox,lockin.delay,lockin.sin_freq,0,file='full')
-    plt.ion()  # Enable interactive mode
-    fig1, ax1 = plt.subplots()  # R_Gr vs Vb
-    fig2, ax2 = plt.subplots()  # V_Gr vs I_Gr
-    ax2.set_xlabel('I_Gr (mA)'), ax2.set_ylabel('V_Gr (V)')
-    ax1.set_xlabel('Vb (V)')   , ax1.set_ylabel('R_Gr (kΩ)')
-    ax1.set_title('R_Gr vs Vb')
+    Parameters
+    ----------
+    sample : DualGate
+        Object representing the graphene sample and its configuration.
+    lockin : LockInOE1022D
+        Lock-in amplifier used to generate and measure AC signals.
+    keithley_b : KeithleySourceMeter
+        Source meter used to apply and measure DC bias voltage.
+    Vb_array : array-like
+        Array of bias voltages to sweep across the sample.
+    Vsin_array : array-like
+        Array of sine amplitudes to apply via the lock-in amplifier.
+    file_save : str
+        Filename for saving measurement data.
 
-    # Data storage for plotting
-    Vb_list, R_Gr_list = [],[]
-    Vsin_list = np.ararnge(Vsin_min,Vsin_max+Vsin_step,Vsin_step)
-    tb.configure_keithley(keithley)
+    Returns
+    -------
+    V_Gr_list : list of float
+        Measured graphene voltages (µV) for the final bias point.
+    I_Gr_list : list of float
+        Calculated graphene currents (nA) for the final bias point.
+    R_Gr_list : list of float
+        Extracted graphene resistances (kΩ) for each bias voltage.
+    R_Gr_std_list : list of float
+        Standard deviation of resistance fits (kΩ).
+    """
+    lockin.set_sine_output(channel=lockin.R_chan,amplitude_v=Vsin_array[0])
+    save_file_Vb_gen, saving_file = create_files(sample,file_save,sample.Rbox,lockin)
+    plt.ion()
+    fig1,ax1,line1 = init_main_plot()
+    fig2, ax2, line2, line3 = init_VI_plot()
+    Vb_list, R_Gr_list, R_Gr_std_list = [],[],[]
+
+    keithley_b.enable_source()
+    keithley_b.apply_voltage()
 
     for Vb in Vb_array: # sweep Vb 
-    
-        file_Vb = tb.make_Gr_resistance_saving_file(saving_file,Rbox,lockin.delay,lockin.sin_freq,Vb,file='Vb') # make file for this Vb
-        keithley.source_voltage = Vb             # Set output voltage
-        time.sleep(0.3)                          # Allow output and DUT to settle
-        v_meas, I_meas = tb.measure_V_I(keithley)
-        
-        I_Gr_list, V_Gr_list = [],[]
-        
-        for Vsin in Vsin_list: # sweep Vsin and measure Vgr,Igr to determine Rgr at that Vb
-            
-            lockin.set_sine_output(channel=lockin.R_chan,amplitude=Vsin)
-            time.sleep(lockin.delay)
-            mean_R_chan, std_R_chan, mean_dR_chan, std_dR_chan = lockin.read_average_dual(params=[2, 3], num_avgs=lockin.num_avgs, delay=lockin.delay)
-            
-            V_Gr, theta = mean_R_chan[0], mean_R_chan[1]
-            Vbox = Vsin - V_Gr
-            I_Gr = Vbox/Rbox * 10**3  #kA
-                        
-            I_Gr_list.append(I_Gr)
-            V_Gr_list.append(V_Gr)
-            
-            # Update plot of V_Gr vs I_Gr and save new data to file
-            ax2.clear()
-            ax2.plot(I_Gr_list, V_Gr_list, 'o-', color='orange')
-            ax2.set_title(f'V_Gr vs I_Gr at Vb = {Vb:.3f} V')
-            fig2.canvas.draw()
-            fig2.canvas.flush_events()
-            np.savetxt(file_Vb, [Vsin,V_Gr,I_Gr,theta], fmt="%.9f", mode='a')
-            
-        p,c = curve_fit(tb.line, I_Gr_list, V_Gr_list,p0=[1,0])  # fit for Gr resistance and save to file
-        R_Gr,  R_Gr_std = p[0], np.sqrt(np.diag(c))[0]
-        Vb_list.append(Vb)
-        R_Gr_list.append(R_Gr)
-        
-        # Update plot of R_Gr vs Vb and save new data to file 
-        ax1.clear()
-        ax1.plot(Vb_list, R_Gr_list, 'o-b')
-        fig1.canvas.draw()
-        fig1.canvas.flush_events()
-        np.savetxt(file_full, [Vb,v_meas,I_meas,R_Gr,R_Gr_std], fmt="%.9f", mode='a')
 
+        file_Vb = tb.make_Gr_resistance_saving_file(save_file_Vb_gen,sample.Rbox,lockin.delay,lockin.sine_out_freq,Vb,file='Vb') # make file for this Vb
+        keithley_b.source_voltage = Vb
+        V_b_meas = keithley_b.measure_voltage_avg(10)
+        I_b_meas = 10**9 * keithley_b.measure_current_avg(20)
+        print(Vb,V_b_meas,I_b_meas)
+        time.sleep(0.3)
+        I_Gr_list, V_Gr_list = [],[]
+        update_plot(fig2,ax2,line3,[],[],title=f'Vb = {Vb:.3f} V')
+        
+        for Vsin in Vsin_array:
+            
+            lockin.set_sine_output(channel=lockin.R_chan,amplitude_v=Vsin)
+            time.sleep(lockin.delay)
+            mean_R_chan, std_R_chan, mean_dR_chan, std_dR_chan = lockin.read_average_dual(params=[2, 3], num_avgs=lockin.num_avgs)
+            V_Gr, theta = mean_R_chan[0], mean_R_chan[1]
+            V_Gr = V_Gr*10**6   #uV 
+            Vbox = Vsin*10**6 - V_Gr  #uV
+            I_Gr = Vbox/sample.Rbox *10**3 #nA  . Rbox should be in ohm
+                        
+            I_Gr_list.append(I_Gr) #nA
+            V_Gr_list.append(V_Gr) #uV
+            update_plot(fig2,ax2,line2,I_Gr_list,R_Gr_list)
+            save_VI_data(Vsin,V_Gr,I_Gr,theta,file_Vb)
+                
+        lockin.set_sine_output(channel=lockin.R_chan,amplitude_v=Vsin_array[0])
+
+        R_Gr,  R_Gr_std, fit = fit_resistance(I_Gr_list,V_Gr_list,Vb)
+        update_plot(fig2,ax2,line2,I_Gr_list,R_Gr_list,f'Vb = {Vb:.3f} V     '+r'R$_{Gr}$ = '+f'{R_Gr:.3f} '+r'k$\Omega$')
+        update_plot(fig2,ax2,line3,I_Gr_list,fit)
+        
+        Vb_list.append(Vb)
+        R_Gr_list.append(R_Gr) #kOhm
+        R_Gr_std_list.append(R_Gr_std) #kOhm
+        save_full_data(Vb,V_b_meas,I_b_meas,R_Gr,R_Gr_std,saving_file)
+        update_plot(fig1,ax1,line1,Vb_list,R_Gr_list)
+        time.sleep(3)
+        
     plt.ioff()
     plt.show()
     
-    return None
+    return V_Gr_list,I_Gr_list,R_Gr_list,R_Gr_std_list
     
     
+def fit_resistance(I_Gr_list,V_Gr_list,Vb):
+    """
+    Fits a linear model to graphene I-V data to extract resistance. removes outliers 
+
+    Parameters
+    ----------
+    I_Gr_list : list of float
+        List of graphene currents (nA).
+    V_Gr_list : list of float
+        List of graphene voltages (µV).
+    Vb : float
+        Bias voltage used during the sweep.
+
+    Returns
+    -------
+    R_Gr : float
+        Fitted graphene resistance (kΩ).
+    R_Gr_std : float
+        Standard deviation of the resistance fit.
+    fit : ndarray
+        Fitted voltage values corresponding to input currents.
+    """
+    model = HuberRegressor()
+    I_Gr_list2 = np.array(I_Gr_list).reshape(len(I_Gr_list),1)
+    model.fit(I_Gr_list2,V_Gr_list)
+    pred = model.predict(I_Gr_list2)
+    residuals = abs(pred-V_Gr_list)
+    outliers = np.where(residuals>=.8)
+    if len(outliers[0]) !=0:
+        rem = np.array(V_Gr_list)[outliers]
+        print('removing Vref = ',rem, '   in Vb = ',str(Vb))
+    Igr_noout = np.array(I_Gr_list)[np.where(residuals<1)]
+    Vgr_noout = np.array(V_Gr_list)[np.where(residuals<1)]
+    
+    p, c = curve_fit(tb.line, Igr_noout, Vgr_noout)
+    R_Gr,  R_Gr_std = p[0], np.sqrt(np.diag(c))[0]
+    fit = tb.line(np.array(I_Gr_list),p[0],p[1])
+    return R_Gr, R_Gr_std, fit
+
+def update_plot(fig,ax,line,xdata,ydata,title=None):
+    line.set_data(xdata, ydata)
+    if title != None:
+        ax.set_title(title)
+    ax.relim()
+    ax.autoscale_view()
+    fig.canvas.draw()
+    fig.canvas.flush_events()
+
+def init_main_plot():
+    fig, ax = plt.subplots()
+    ax.set_xlabel(r'V$_{b}$ (V)')
+    ax.set_ylabel(r'R$_{Gr}$ (k$\Omega$)')
+    line = Line2D([], [], color='blue',marker='.')
+    ax.add_line(line)
+    return fig,ax,line
+
+def init_VI_plot():
+    fig, ax = plt.subplots()  # V_Gr vs I_Gr
+    ax.set_xlabel(r'I$_{Gr}$ (nA)')
+    ax.set_ylabel(r'V$_{Gr}$ ($\mu$V)')
+    line2 = Line2D([], [], color='red',marker='.',linewidth=0)
+    ax.add_line(line2)
+    line3 = Line2D([], [], color='red',marker='')
+    ax.add_line(line3)
+    return fig,ax,line2,line3
+
+def create_files(sample,file_save,Rbox,lockin):
+    if not os.path.exists(sample.data_path+"/GrSensor"):
+        os.makedirs(sample.data_path+"/GrSensor")
+    if not os.path.exists(sample.data_path+"/GrSensor/"+file_save.split('.txt')[0]):
+        os.makedirs(sample.data_path+"/GrSensor/"+file_save.split('.txt')[0]+'_VI_data')
+    gen_path = sample.data_path+'/GrSensor/'+file_save
+    save_file_Vb_gen = sample.data_path+'/GrSensor/'+file_save.split('.txt')[0]+'_VI_data/'
+    saving_file = tb.make_Gr_resistance_saving_file(gen_path,Rbox,lockin.delay,lockin.sine_out_freq,0,file='full')
+    return save_file_Vb_gen, saving_file
+
+def save_full_data(Vb,V_b_meas,I_b_meas,R_Gr,R_Gr_std,saving_file):
+    data_save = [Vb,V_b_meas,I_b_meas,R_Gr,R_Gr_std]
+    with open(saving_file, 'a') as file:
+        file.write(' '.join(f"{d:.9f}" for d in data_save) + '\n') 
+
+def save_VI_data(Vsin,V_Gr,I_Gr,theta,file_Vb):
+    data = [Vsin,V_Gr,I_Gr,theta]
+    with open(file_Vb, 'a') as file:
+        file.write(' '.join(f"{d:.9f}" for d in data) + '\n') 
+        

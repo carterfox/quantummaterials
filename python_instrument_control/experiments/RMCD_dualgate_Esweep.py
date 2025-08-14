@@ -57,23 +57,11 @@ def main(sample: DualGate, lockin: LockInOE1022D,
     gen_path = sample.data_path+'/RMCD/Esweep/'+file_save
     saving_file = tb.make_rmcd_saving_file(gen_path,'Esweep-Vb')
     
-    tb.init_plot_params()
     plt.ion()
-    fig, ax = plt.subplots()
-    plt.show(block=False)
-    try:
-        fig.canvas.manager.window.raise_()  # Works on Qt
-        fig.canvas.manager.window.activateWindow()
-    except Exception as e:
-        print("Window raise failed:", e)
-        
-    ax.set_xlabel('E (V/nm)')
-    ax.set_ylabel('RMCD %')
-    line = Line2D([], [], color='blue',marker='.')
-    ax.add_line(line)
+    fig, ax, line = init_main_plot()
     
     keithley_b.enable_source()
-    
+    keithley_b.apply_voltage()
     rmcd_list = []
     d_b = sample.d_b
     # d_t = sample.d_t
@@ -89,49 +77,56 @@ def main(sample: DualGate, lockin: LockInOE1022D,
         lockin.reset_buffer()
         time.sleep(lockin.delay)
         rmcd_data = tb.read_lockin_rmcd_data(lockin)#tb.read_lockin_rmcd_data(lockin)
-        # [R_cur_mean,R_cur_std,theta_R_cur_mean,theta_R_cur_std,dR_cur_mean,dR_cur_std,theta_dR_cur_mean,theta_dR_cur_std]
         rmcd = rmcd_data[4]/rmcd_data[0]*100
         rmcd_list.append(rmcd)
-        values = [E, V_b, V_b_meas, I_b_meas, rmcd]
-        print(" ".join(f"{v:.4f}" for v in values))
-        # print(round(E,3),round(V_b,3),round(V_b_meas,3), round(I_b_meas,4), round(rmcd,4))
-        
-        with open(saving_file, 'a') as file:
-            file.write('{} {} {} '.format(round(V_b,3),round(V_b_meas,3), round(I_b_meas,4)) )
-            file.write(' '.join(f"{d:.9f}" for d in rmcd_data) + '\n') 
-            
-        line.set_data(E_array[0:len(rmcd_list)],rmcd_list)
-        ax.relim()
-        ax.autoscale_view()
-        fig.canvas.draw()
-        fig.canvas.flush_events()
+        save_data(E,V_b,V_b_meas,I_b_meas,rmcd_data,saving_file)
+        update_plot(fig,ax,line,E_array[0:len(rmcd_list)],rmcd_list)
         
     plt.ioff()
     plt.show()
     
     return E_array,rmcd_list
 
+def save_data(V_b,V_b_meas,I_b_meas,rmcd_data,saving_file):
+    values = [E, V_b, V_b_meas, I_b_meas, rmcd]
+    print(" ".join(f"{v:.4f}" for v in values))
+    with open(saving_file, 'a') as file:
+        file.write('{} {} {} '.format(round(V_b,3),round(V_b_meas,3), round(I_b_meas,4)) )
+        file.write(' '.join(f"{d:.9f}" for d in rmcd_data) + '\n') 
+
+def update_plot(fig,ax,line,xdata,ydata):
+    line.set_data(xdata,ydata)
+    ax.relim()
+    ax.autoscale_view()
+    fig.canvas.draw()
+    fig.canvas.flush_events()
+
+def init_main_plot():
+    fig, ax = plt.subplots()
+    ax.set_xlabel('E (V/nm)')
+    ax.set_ylabel('RMCD %')
+    line = Line2D([], [], color='blue',marker='.')
+    ax.add_line(line)
+    return fig,ax,line
+
 if __name__ == "__main__":
     # 
+    tb.init_plot_params()
     path_d3 = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/d3/RMCD/Esweep/'
     # sample = DualGate(sample_name='d4', d_b=18.45, d_t=5.67, data_path=path_d4)
     sample = DualGate(sample_name='d3', d_b=9.41, d_t=7.93, data_path=path_d3)
-    file = path_d3+'Esweep1_0T_after_m2T.txt'
+    
+    file = path_d3+'Esweep2_0T_stacked_p6_after_m2T.txt'
     data = np.loadtxt(file)
-    Vb = data[:,1]
-    R = data[:,3]
-    dR = data[:,7]
+    Vb, R, dR, Ib, theta_dr = data[:,1], data[:,3], data[:,7], data[:,2], data[:,9]
     rmcd = dR/R*100
     E = tb.E_dualgate(Vb, 0, sample.d_b, sample.d_t)
     
-    tb.init_plot_params()
     fig,ax = plt.subplots()
-    
     diffs = np.diff(E)
-    try:
-        transition_index = np.where((diffs[:-1] >= 0) & (diffs[1:] <= 0))[0][0]+1
-    except:
-        transition_index=len(E)
+    try: transition_index = np.where((diffs[:-1] >= 0) & (diffs[1:] <= 0))[0][0]+2
+    
+    except: transition_index=len(E)
         
     E_ascend = E[0:transition_index]
     E_descend = E[transition_index:]
@@ -140,9 +135,12 @@ if __name__ == "__main__":
     
     ax.plot(E_ascend, rmcd_ascend, color='black', label=r'$\rightarrow$',marker='.')
     ax.plot(E_descend, rmcd_descend, color='r', label=r'$\leftarrow$',marker='.')
+    # ax.plot(E_ascend, rmcd_ascend-rmcd_descend[::-1], color='r', label=r'$\leftarrow$',marker='.')
+    
     ax.set_xlabel('E (V/nm)')
     ax.set_ylabel('RMCD %')
     ax.legend()
+    # ax.set_ylim(.5,.8)
     plt.savefig(file.replace('.txt','_plot.png'),dpi=500)
     plt.show()
     

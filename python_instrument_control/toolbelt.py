@@ -59,17 +59,25 @@ def make_rmcd_saving_file(filename,experiment):
 def make_Gr_resistance_saving_file(filename,Rbox,delay,freq,Vb,file='Vb'):
     
     if file == 'Vb':
-        filename_a = filename.split('.txt')
-        filename = filename_a + '_VI_data_Vb'+str(int(Vb/1000))+'mV_.txt'
-        header = '# Rbox (Ohm) = {}'.format(Rbox)
-        header += '\n' + '# Lockin wait time (ms) = {}'.format(delay)
-        header += '\n' + '# Vb (V) = {}'.format(Vb)
-        header += '\n' + '# V_sin(V) V_Gr(V) I_Gr(kA) theta(deg)'
+        filename = filename + 'VI_data_Vb'+str(int(Vb*1000))+'mV_.txt'
+        while os.path.exists(filename):            
+            filename = filename.replace(".txt", "_new.txt")
+        with open(filename, 'a') as file:
+            header1 = '# Rbox (Ohm) = {}'.format(Rbox)
+            header2 = '# Lockin wait time (ms) = {}'.format(delay)
+            header3 = '# Vb (V) = {}'.format(Vb)
+            header4 = '# V_sin(V) V_Gr(uV) I_Gr(nA) theta(deg)'
+            file.write(header1 + '\n') 
+            file.write(header2 + '\n') 
+            file.write(header3 + '\n') 
+            file.write(header4 + '\n') 
     
     elif file == 'full':
-        header = '#Vb_set(V) Vb_meas(V) Ib_meas(kA) R_Gr(kOhm) R_Gr_std(kOhm)'
-
-    np.savetxt(filename, [], header=header)
+        while os.path.exists(filename):            
+            filename = filename.replace(".txt", "_new.txt")
+        header = '#Vb_set(V) Vb_meas(V) Ib_meas(nA) R_Gr(kOhm) R_Gr_std(kOhm)'
+        with open(filename, 'a') as file:
+            file.write(header + '\n') 
     return filename
 
 def E_dualgate(V_b,V_t,d_b,d_t):

@@ -34,6 +34,7 @@ class LockInOE1022D():
         self.dR_chan = 2
         self.num_avgs = 150
         self.set_harmonic(self.dR_chan, 1, 2)
+        self.sine_out_freq=0
         logging.info("Conected to OE1022D LockIn")     
         
     # --- Generic Commands ---
@@ -98,8 +99,8 @@ class LockInOE1022D():
         std_R_chan = np.std(data_R_chan, axis=0) if data_R_chan else None
         mean_dR_chan = np.mean(data_dR_chan, axis=0) if data_dR_chan else None
         std_dR_chan = np.std(data_dR_chan, axis=0) if data_dR_chan else None
-    
-        return mean_R_chan, std_R_chan, mean_dR_chan, std_dR_chan
+        pack = mean_R_chan, std_R_chan, mean_dR_chan, std_dR_chan
+        return pack
     
     def reset_buffer(self,channels=[1,2]):
         for chan in channels:

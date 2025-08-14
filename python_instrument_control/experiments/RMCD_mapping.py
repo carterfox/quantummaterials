@@ -162,6 +162,8 @@ def replot_rmcd_map(data_file,plot_type='RMCD'):
         grid = r
     elif plot_type == 'dR':
         grid = dr
+    elif plot_type == 'thetadR':
+        grid = theta_dr
     scan_array = np.fliplr(grid.reshape((len(y_points), len(x_points))))
     fig,ax,im=plot_rmcd_map(scan_array,xstep,ystep,plot_type)
     return fig,ax,im
@@ -175,8 +177,9 @@ if __name__ == "__main__":
     # file = path_s6+'sixlayer-scan3.txt'
     # file = path_s6+'fourlayer-scan1.txt'
     # file = path_s6+'map1_0T.txt'
-    file = path_d3+'map1_0T_after_m2T.txt'
+    file = path_d3+'map2_0T_afterEsweeping.txt'
     tb.init_plot_params()
+
 
     fig,ax,im = replot_rmcd_map(file,'RMCD')
 
@@ -186,5 +189,5 @@ if __name__ == "__main__":
     title = file.split('/')[-1].split('.txt')[0]
     plt.title(title)
     
-    plt.savefig(file.replace('.txt','_plot.png'),dpi=500)
+    # plt.savefig(file.replace('.txt','_plot.png'),dpi=500)
     plt.show()

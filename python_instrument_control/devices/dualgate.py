@@ -21,6 +21,7 @@ class DualGate():
         self.d_b = d_b
         self.d_t = d_t
         self.data_path = data_path
+        self.Rbox = 0
         
         logging.info("Initiated device: {}".format(sample_name))     
 

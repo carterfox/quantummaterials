@@ -11,7 +11,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from qcodes_contrib_drivers.drivers.Attocube.ANC300 import ANC300
 import toolbelt as tb
+import traceback
 import logging
+import time
 logging.basicConfig(level=logging.INFO, format='%(levelname)s - %(message)s')
 from homemade_servers.SSI_OE1022D import LockInOE1022D
 from homemade_servers.QDopticool import Opticool
@@ -23,7 +25,7 @@ from experiments import PMT_continuous_read, Gr_polarization_sensing
 
 servers = []
 ### functions for getting instruments
-def get_lockin(resource_name='ASRL12::INSTR', R_chan=1, dR_chan=2, num_avgs=25,sensitivities=["10 mV","1 mV"]):  
+def get_lockin(resource_name='ASRL12::INSTR', R_chan=1, dR_chan=2, num_avgs=25,sensitivities=["10 mV","100 uV"]):  
     lockin = LockInOE1022D(resource_name)
     lockin.R_chan, lockin.dR_chan = R_chan, dR_chan
     lockin.num_avgs = num_avgs
@@ -73,30 +75,35 @@ if __name__ == "__main__":
     sample = DualGate(sample_name='d3', d_b=9.41, d_t=7.93, data_path=path_d3)
     
     lockin = get_lockin()
-    lockin.delay=2
-    lockin.num_avgs=200
+    lockin.set_sensitivity(lockin.R_chan,"50 uV")
+    lockin.delay=2.5
+    lockin.num_avgs=150
+    lockin.sine_out_freq=1000
+    sample.Rbox = 2e6
     # opticool, current_temp, current_field = get_opticool()
-    ANC = get_ANC300()
+    # ANC = get_ANC300()
     # PMT = get_PMT()
     keithley_b = get_keithley('GPIB::1','2450')
+    
+    Vsin_array = np.linspace(0.001,0.012,15)
+    
+    Vb_array = np.arange(-6.5,6.51,.25)
+    Vb_array_full = np.concatenate((Vb_array,Vb_array[::-1]))
     keithley_b.compliance_current = 1e-8
-    E_array = np.arange(-0.7, 0.701, 0.01)
-    E_full = np.concatenate((E_array, E_array[::-1]))
     try:
-        # print('test')
-        # bfield_array = full_symmetric_array#tb.make_bfield_list(-22000, 22000, 500)
         # rmcd_scan_data = RMCD_bfield_scan.main(sample,lockin,opticool,bfield_array,
         #                                         'bilayer_scan_p5-nogates.txt')
     
-        # RMCD_mapping.main(sample, lockin, ANC, x_start=0, x_end=40, points=41, 
-        #                    file_save='map1_m2p2T.txt')
-                          
-        E,rmcd =RMCD_dualgate_Esweep.main(sample,lockin,keithley_b,
-                                          E_full,'Esweep3_0T_after_m2T_diffInput.txt')
+        # E,rmcd =RMCD_dualgate_Esweep.main(sample,lockin,keithley_b,
+        #                                     E_back,'back.txt')
+        
+        V,I,R,R_std=Gr_polarization_sensing.main(sample,lockin,keithley_b,Vb_array_full,Vsin_array,
+                'sweep2_2K_0T.txt')
+        
         
         
     except Exception as e:
-        print(e)
+        traceback.print_exc()
     finally:
         close_all()
         print('exited safely')
