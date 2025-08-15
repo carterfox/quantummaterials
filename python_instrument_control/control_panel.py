@@ -98,7 +98,7 @@ if __name__ == "__main__":
         # E,rmcd =RMCD_dualgate_Esweep.main(sample,lockin,keithley_b,
         #                                     E_back,'back.txt')
         
-        V,I,R,R_std=Gr_polarization_sensing.main(sample,lockin,keithley_b,Vb_array,Vsin_array,'testmpl6.txt')
+        V,I,R,R_std=Gr_polarization_sensing.main(sample,lockin,keithley_b,Vb_array,Vsin_array,'testmpl7.txt')
         
         
         

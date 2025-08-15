@@ -18,12 +18,110 @@ import toolbelt as tb
 import os
 from matplotlib.lines import Line2D
 from sklearn.linear_model import HuberRegressor
-from sklearn.preprocessing import StandardScaler
-import pyqtgraph as pg
-from PyQt5 import QtWidgets, QtCore
-import numpy as np
-import sys
 
+
+def main(sample: DualGate, lockin: LockInOE1022D, keithley_b: KeithleySourceMeter,Vb_array,Vsin_array,file_save):
+    """
+    Sweeps back gate and measures resistance of a graphene flake using lock-in technique.
+
+    Parameters
+    ----------
+    sample : DualGate
+        Graphene device object containing metadata and configuration (e.g., Rbox, data path).
+    lockin : LockInOE1022D
+        Lock-in amplifier interface used to measure V_Gr and phase.
+    keithley_b : KeithleySourceMeter
+        Source meter used to apply and measure back-gate voltage and current.
+    Vb_array : array-like
+        Array of back-gate voltages to sweep (in volts).
+    Vsin_array : array-like
+        Array of sine excitation voltages to sweep (in volts).
+    file_save : str
+        Filename for saving the measurement data.
+
+    Returns
+    -------
+    V_Gr_list : list of float
+        Final list of measured graphene voltages (in µV) from the last Vb sweep.
+    I_Gr_list : list of float
+        Final list of calculated graphene currents (in nA) from the last Vb sweep.
+    R_Gr_list : list of float
+        List of extracted graphene resistances (in kΩ) for each Vb.
+    R_Gr_std_list : list of float
+        List of standard deviations of the resistance fits (in kΩ) for each Vb.
+
+    Notes
+    -----
+    - Live plots are updated during acquisition using matplotlib.
+    - Data is saved in two formats: per-Vb sweep and full summary.
+    - Resistance is fit using Huber regression with outlier rejection.
+    - The figure window is initialized and positioned manually (see `init_plot()`).
+    """
+    
+    lockin.set_sine_output(channel=lockin.R_chan,amplitude_v=Vsin_array[0])
+    Rbox = sample.Rbox
+    d_b = sample.d_b
+    save_file_Vb_gen, saving_file = make_files(sample,lockin,file_save)
+
+    plt.ion()
+    fig,ax1,ax2,line1,line2,line3 = init_plot()
+    
+    keithley_b.enable_source()
+    keithley_b.apply_voltage()
+    
+    Vb_list, R_Gr_list, R_Gr_std_list = [],[],[]
+
+    for Vb in Vb_array: # sweep Vb 
+
+        keithley_b.source_voltage = Vb
+        V_b_meas = keithley_b.measure_voltage_avg(10)
+        I_b_meas = 10**9 * keithley_b.measure_current_avg(20)
+        print(Vb,V_b_meas,I_b_meas)
+        file_Vb = tb.make_Gr_resistance_saving_file(save_file_Vb_gen,Rbox,lockin.delay,lockin.sine_out_freq,Vb,file='Vb') # make file for this Vb
+        
+        time.sleep(0.3)
+        I_Gr_list, V_Gr_list = [],[]
+        line3.set_data([],[])
+        
+        for Vsin in Vsin_array: # sweep Vsin and measure Vgr,Igr to determine Rgr at that Vb
+            
+            lockin.set_sine_output(channel=lockin.R_chan,amplitude_v=Vsin)
+            time.sleep(lockin.delay)
+            mean_R_chan, std_R_chan, mean_dR_chan, std_dR_chan = lockin.read_average_dual(params=[2, 3], num_avgs=lockin.num_avgs)
+            V_Gr, theta = mean_R_chan[0], mean_R_chan[1]
+            V_Gr = V_Gr*10**6   #uV 
+            Vbox = Vsin*10**6 - V_Gr  #uV
+            I_Gr = Vbox/Rbox *10**3 #nA  . Rbox should be in ohm
+                        
+            I_Gr_list.append(I_Gr) #nA
+            V_Gr_list.append(V_Gr) #uV
+            line2.set_data(I_Gr_list,V_Gr_list)
+            update_plot(line2,I_Gr_list,V_Gr_list,ax2,fig)
+            save_data([Vsin,V_Gr,I_Gr,theta],file_Vb)
+                
+        lockin.set_sine_output(channel=lockin.R_chan,amplitude_v=Vsin_array[0])
+        time.sleep(3)
+
+        R_Gr,  R_Gr_std, fit = fit_resistance(I_Gr_list,V_Gr_list,Vb)
+        update_plot(line3,I_Gr_list,fit,ax2,fig)
+        
+        Vb_list.append(Vb)
+        R_Gr_list.append(R_Gr) #kOhm
+        R_Gr_std_list.append(R_Gr_std) #kOhm
+        save_data([Vb,V_b_meas,I_b_meas,R_Gr,R_Gr_std],saving_file)
+        update_plot(line1,Vb_list,R_Gr_list,ax1,fig)
+
+    plt.ioff()
+    plt.show()
+    
+    return V_Gr_list,I_Gr_list,R_Gr_list,R_Gr_std_list
+    
+    
+
+def save_data(data_save,saving_file):
+    with open(saving_file, 'a') as file:
+        file.write(' '.join(f"{d:.9f}" for d in data_save) + '\n') 
+        
 def update_plot(line: Line2D, x_data, y_data, ax: plt.Axes, fig: plt.Figure, pause_time: float = 0.05):
     line.set_data(x_data, y_data)
     ax.relim()
@@ -47,85 +145,6 @@ def init_plot():
     ax2.add_line(line3)
     return fig,ax1,ax2,line1,line2,line3
 
-def main(sample: DualGate, lockin: LockInOE1022D, keithley_b: KeithleySourceMeter,Vb_array,Vsin_array,file_save):
-    
-    lockin.set_sine_output(channel=lockin.R_chan,amplitude_v=Vsin_array[0])
-    Rbox = sample.Rbox
-    d_b = sample.d_b
-    
-    if not os.path.exists(sample.data_path+"/GrSensor"):
-        os.makedirs(sample.data_path+"/GrSensor")
-    if not os.path.exists(sample.data_path+"/GrSensor/"+file_save.split('.txt')[0]):
-        os.makedirs(sample.data_path+"/GrSensor/"+file_save.split('.txt')[0]+'_VI_data')
-    gen_path = sample.data_path+'/GrSensor/'+file_save
-    save_file_Vb_gen = sample.data_path+'/GrSensor/'+file_save.split('.txt')[0]+'_VI_data/'
-    saving_file = tb.make_Gr_resistance_saving_file(gen_path,Rbox,lockin.delay,lockin.sine_out_freq,0,file='full')
-
-    plt.ion()
-    fig,ax1,ax2,line1,line2,line3 = init_plot()
-    
-    keithley_b.enable_source()
-    keithley_b.apply_voltage()
-    
-    Vb_list, R_Gr_list, R_Gr_std_list = [],[],[]
-
-    for Vb in Vb_array: # sweep Vb 
-
-        keithley_b.source_voltage = Vb
-        V_b_meas = keithley_b.measure_voltage_avg(10)
-        I_b_meas = 10**9 * keithley_b.measure_current_avg(20)
-        print(Vb,V_b_meas,I_b_meas)
-    
-        file_Vb = tb.make_Gr_resistance_saving_file(save_file_Vb_gen,Rbox,lockin.delay,lockin.sine_out_freq,Vb,file='Vb') # make file for this Vb
-        
-        time.sleep(0.3)
-        I_Gr_list, V_Gr_list = [],[]
-        line3.set_data([],[])
-        for Vsin in Vsin_array: # sweep Vsin and measure Vgr,Igr to determine Rgr at that Vb
-            
-            lockin.set_sine_output(channel=lockin.R_chan,amplitude_v=Vsin)
-            time.sleep(lockin.delay)
-            mean_R_chan, std_R_chan, mean_dR_chan, std_dR_chan = lockin.read_average_dual(params=[2, 3], num_avgs=lockin.num_avgs)
-            V_Gr, theta = mean_R_chan[0], mean_R_chan[1]
-            V_Gr = V_Gr*10**6   #uV 
-            Vbox = Vsin*10**6 - V_Gr  #uV
-            I_Gr = Vbox/Rbox *10**3 #nA  . Rbox should be in ohm
-                        
-            I_Gr_list.append(I_Gr) #nA
-            V_Gr_list.append(V_Gr) #uV
-            data = [Vsin,V_Gr,I_Gr,theta]
-
-            # Update plot of V_Gr vs I_Gr and save new data to file
-            line2.set_data(I_Gr_list,V_Gr_list)
-            update_plot(line2,I_Gr_list,V_Gr_list,ax2,fig)
-
-            with open(file_Vb, 'a') as file:
-                file.write(' '.join(f"{d:.9f}" for d in data) + '\n') 
-                
-        lockin.set_sine_output(channel=lockin.R_chan,amplitude_v=Vsin_array[0])
-        time.sleep(3)
-
-        R_Gr,  R_Gr_std, p = fit_resistance(I_Gr_list,V_Gr_list,Vb)
-        
-        fit = tb.line(np.array(I_Gr_list),p[0],p[1])
-        update_plot(line3,I_Gr_list,fit,ax2,fig)
-        
-        Vb_list.append(Vb)
-        R_Gr_list.append(R_Gr) #kOhm
-        R_Gr_std_list.append(R_Gr_std) #kOhm
-        data_save = [Vb,V_b_meas,I_b_meas,R_Gr,R_Gr_std]
-        with open(saving_file, 'a') as file:
-            file.write(' '.join(f"{d:.9f}" for d in data_save) + '\n') 
-        
-        # Update plot of R_Gr vs Vb and save new data to file 
-        update_plot(line1,Vb_list,R_Gr_list,ax1,fig)
-
-    plt.ioff()
-    plt.show()
-    
-    return V_Gr_list,I_Gr_list,R_Gr_list,R_Gr_std_list
-    
-    
 def fit_resistance(I_Gr_list,V_Gr_list,Vb):
     model = HuberRegressor()
     I_Gr_list2 = np.array(I_Gr_list).reshape(len(I_Gr_list),1)
@@ -141,5 +160,15 @@ def fit_resistance(I_Gr_list,V_Gr_list,Vb):
     
     p, c = curve_fit(tb.line, Igr_noout, Vgr_noout)
     R_Gr,  R_Gr_std = p[0], np.sqrt(np.diag(c))[0]
-    return R_Gr, R_Gr_std, p
+    fit = tb.line(np.array(I_Gr_list),p[0],p[1])
+    return R_Gr, R_Gr_std, fit
 
+def make_files(sample,lockin,file_save):
+    if not os.path.exists(sample.data_path+"/GrSensor"):
+        os.makedirs(sample.data_path+"/GrSensor")
+    if not os.path.exists(sample.data_path+"/GrSensor/"+file_save.split('.txt')[0]):
+        os.makedirs(sample.data_path+"/GrSensor/"+file_save.split('.txt')[0]+'_VI_data')
+    gen_path = sample.data_path+'/GrSensor/'+file_save
+    save_file_Vb_gen = sample.data_path+'/GrSensor/'+file_save.split('.txt')[0]+'_VI_data/'
+    saving_file = tb.make_Gr_resistance_saving_file(gen_path,sample.Rbox,lockin.delay,lockin.sine_out_freq,0,file='full')
+    return save_file_Vb_gen, saving_file
