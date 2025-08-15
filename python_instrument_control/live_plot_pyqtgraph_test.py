@@ -1,35 +1,41 @@
 import pyqtgraph as pg
-from PyQt5 import QtWidgets, QtCore
+from PyQt5 import QtWidgets
 import numpy as np
 import sys
+import time
 
-# Create application
+# Create application and window
 app = QtWidgets.QApplication(sys.argv)
+win = pg.GraphicsLayoutWidget(show=True, title="Live Updating Plots")
 
-# Create a window and plot widget
-win = pg.GraphicsLayoutWidget(title="Live Plot")
-win.show()
+# === Plot 1: Scatter Only ===
+plot1 = win.addPlot(title="Plot 1: Scatter Only")
+scatter1 = pg.ScatterPlotItem(symbol='o', brush='b', size=10)
+plot1.addItem(scatter1)
 
-# Bring window to front
-win.raise_()                     # Raise above other windows
-win.activateWindow()             # Request focus
-win.setWindowState(QtCore.Qt.WindowActive)  # Ensure it's active
+# === Plot 2: Scatter + Line ===
+win.nextRow()
+plot2 = win.addPlot(title="Plot 2: Scatter + Line")
+line2 = plot2.plot(pen='r')
+scatter2 = pg.ScatterPlotItem(symbol='t', brush='g', size=12)
+plot2.addItem(scatter2)
 
-plot = win.addPlot(title="Real-Time Sine Wave")
-curve = plot.plot(pen='y')
+# === Live Update Loop ===
+x = np.linspace(0, 10, 100)
+for i in range(100):
+    # Generate new data
+    y1 = np.sin(x + i * 0.1)
+    y2 = np.cos(x + i * 0.1)
 
-# Timer-based update
-data = np.linspace(0, 2*np.pi, 100)
-i = 0
+    # Update Plot 1 (scatter only)
+    scatter1.setData(x[::5], y1[::5])  # downsample for clarity
 
-def update():
-    global i
-    y = np.sin(data + i * 0.1)
-    curve.setData(data, y)
-    i += 1
+    # Update Plot 2 (line + scatter)
+    line2.setData(x, y2)
+    scatter2.setData(x[::10], y2[::10])  # fewer points for scatter
 
-timer = QtCore.QTimer()
-timer.timeout.connect(update)
-timer.start(50)
+    # Process GUI events and pause
+    QtWidgets.QApplication.processEvents()
+    time.sleep(0.1)
 
 sys.exit(app.exec_())
