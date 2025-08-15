@@ -127,9 +127,9 @@ def replot_rmcd_bfield_scan(data_file):
     rmcd = dr/r*100
     # s6 sixlayer
     rmcd[np.where(theta_dr>0)] *= -1
-    # rmcd[0:8] = rmcd[8] -(rmcd[0:8] - rmcd[8])
-    # rmcd[80:96] = rmcd[80] - (rmcd[80:96]-rmcd[80])
-    # rmcd[-8:] = rmcd[8] - (rmcd[-8:] - rmcd[8])    
+    rmcd[0:8] = rmcd[8] -(rmcd[0:8] - rmcd[8])
+    rmcd[80:96] = rmcd[80] - (rmcd[80:96]-rmcd[80])
+    rmcd[-8:] = rmcd[8] - (rmcd[-8:] - rmcd[8])    
 
     diffs = np.diff(b_field)
     try:
@@ -156,19 +156,32 @@ if __name__ == "__main__":
     # 
     # path_d4 = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/d4/RMCD/bfield_scan/'
     # path_d3 = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/d3/RMCD/bfield_scan/'
+<<<<<<< Updated upstream
     path_s6 = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/6-18-sample-for-afm-and-rmcd/RMCD/bfield_scan/'
     file = path_s6+'sixlayer-scan3.txt'
     # file = path_s6+'fourlayer-scan1.txt'
     # file = path_s6+'map1_0T.txt'
     # file = path_d3+'bilayer_scan_p5-nogates.txt'
+=======
+    path_s6 = '/Users/carterfox/Library/CloudStorage/GoogleDrive-cdfox@wisc.edu/.shortcut-targets-by-id/1-8q9lGFnGNt4mDzcxXwdk43m1aVWT66q/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/6-18-sample-for-afm-and-rmcd/RMCD/bfield_scan/'
+    # file = path_s6+'sixlayer-scan3.txt'
+    # file = path_s6+'fourlayer-scan1.txt'
+    # file = path_s6+'map1_0T.txt'
+    # file = path_d3+'map1_0T_after_m2T.txt'
+    file = path_s6+'sixlayer-scan3.txt'
+>>>>>>> Stashed changes
     tb.init_plot_params()
 
 
     fig,ax,b_field,theta_dr = replot_rmcd_bfield_scan(file)
-    tb.plot_arrow_legend(ax,r'$B_{\perp}$',x1=1.7,y1=-7,ls=18,yratio=.058,xratio=.12,wratio=.0872)
+    tb.plot_arrow_legend(ax,r'$B_{\perp}$',x1=1.5,y1=-7.9,ls=18,yratio=.058,xratio=.12,wratio=.0872)
     
     title = file.split('/')[-1].split('.txt')[0]
     # plt.title(title)
     
+<<<<<<< Updated upstream
     plt.savefig(file.replace('.txt','_paper_plot.png'),dpi=500)
+=======
+    # plt.savefig(file.replace('.txt','_plot.png'),dpi=500)
+>>>>>>> Stashed changes
     plt.show()
