@@ -21,7 +21,8 @@ class DualGate():
         self.d_b = d_b
         self.d_t = d_t
         self.data_path = data_path
-        self.Rbox = 0
+        self.Rbox = 0 # resistance used in voltage divider for graphene polarization sensing measurement 
+        self.d_flake = 0 #thickness of material (such as the twisted Cri3 thickness)
         
         logging.info("Initiated device: {}".format(sample_name))     
 
