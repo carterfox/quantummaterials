@@ -154,3 +154,11 @@ def plot_arrow_legend(ax,label,x1=None,y1=None,ls=18,yratio=.058,xratio=.12,wrat
     ax.text(x2,yavg,r'$-$'+label+r'  ',fontsize=ls,va='center',ha='right')
     return ax
 
+def plot_rmcd_state(ax,state,x,y,xstep=0.1,h='right',f=18):
+    xcur = x
+    for a in state:
+        if a == 'up':
+            ax.text(xcur,y,r'$\uparrow$',c='darkblue',ha=h,fontsize=f)
+        if a == 'down':
+            ax.text(xcur,y,r'$\downarrow$',c='firebrick',ha=h,fontsize=f)
+        xcur = xcur+xstep
