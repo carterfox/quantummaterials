@@ -77,7 +77,7 @@ if __name__ == "__main__":
     lockin = get_lockin()
     lockin.set_sensitivity(lockin.R_chan,"50 uV")
     lockin.delay=3
-    lockin.num_avgs=100
+    lockin.num_avgs=150
     lockin.sine_out_freq=1000
     sample.Rbox = 2e6
     # opticool, current_temp, current_field = get_opticool()
@@ -85,11 +85,14 @@ if __name__ == "__main__":
     # PMT = get_PMT()
     keithley_b = get_keithley('GPIB::1','2450')
     
-    Vsin_array = np.linspace(0.001,0.012,5)
+    Vsin_array = np.linspace(0.001,0.012,15)
     
-    Vb_array = np.array([0,.1])
-    # Vb_array = np.arange(0,3,.2)
-   # Vb_array_full = np.concatenate((Vb_array,Vb_array[::-1]))
+    Vb_array1 = np.arange(7.4,2,-.4)
+    Vb_array2 = np.arange(2,-2.1,-.1)
+    Vb_array3 = np.arange(-2.2,-7.42,-.4)
+    Vb_array = np.concatenate((Vb_array1,Vb_array2,Vb_array3))
+    Vb_array_return= Vb_array[::-1]
+    # Vb_array_full = np.concatenate((Vb_array,Vb_array[::-1]))
     keithley_b.compliance_current = 1e-8
     try:
         # rmcd_scan_data = RMCD_bfield_scan.main(sample,lockin,opticool,bfield_array,
@@ -98,7 +101,7 @@ if __name__ == "__main__":
         # E,rmcd =RMCD_dualgate_Esweep.main(sample,lockin,keithley_b,
         #                                     E_back,'back.txt')
         
-        V,I,R,R_std=Gr_polarization_sensing.main(sample,lockin,keithley_b,Vb_array,Vsin_array,'testmpl7.txt')
+        V,I,R,R_std=Gr_polarization_sensing.main(sample,lockin,keithley_b,Vb_array_return,Vsin_array,'sweep8_return_2K_0T.txt')
         
         
         

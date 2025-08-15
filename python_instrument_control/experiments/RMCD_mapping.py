@@ -126,6 +126,7 @@ def main(sample, lockin: LockInOE1022D, ANC: ANC300, x_start, x_end, y_start=Non
 def plot_rmcd_map(scan_array,x_step,y_step,plot_type='RMCD'):
     y_points,x_points = np.shape(scan_array)
     fig, ax = plt.subplots()
+    fig.canvas.manager.window.move(1920, 100)
     im = ax.imshow(scan_array, cmap='viridis', interpolation='none')
     cbar=plt.colorbar(im, ax=ax)
     ax.set_xlabel('$V_x$'),ax.set_ylabel('$V_y$')

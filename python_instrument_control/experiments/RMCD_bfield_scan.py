@@ -104,6 +104,7 @@ def update_rmcd_bfield_scan_plot(fig,ax,line_up,line_down,b_list_ascend,rmcd_lis
 
 def init_rmcd_bfield_scan_plot(bfield_array):
     fig, ax = plt.subplots()
+    fig.canvas.manager.window.move(1920, 100)
     plt.show(block=False)
     try:
         fig.canvas.manager.window.raise_()  # Works on Qt
