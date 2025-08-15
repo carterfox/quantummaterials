@@ -67,7 +67,7 @@ def main(sample: DualGate, lockin: LockInOE1022D, keithley_b: KeithleySourceMete
     fig,ax1,ax2,line1,line2,line3 = init_plot()
     
     keithley_b.enable_source()
-    keithley_b.apply_voltage()
+    keithley_b.apply_voltage(compliance_current=keithley_b.compliance_current)
     
     Vb_list, R_Gr_list, R_Gr_std_list = [],[],[]
 

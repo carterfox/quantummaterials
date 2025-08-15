@@ -16,12 +16,7 @@ def main(pmt,gate_time_ms,num_gates,file_save=None):
 
     plt.ion()
     fig, ax = plt.subplots()
-    plt.show(block=False)
-    try:
-        fig.canvas.manager.window.raise_()  # Works on Qt
-        fig.canvas.manager.window.activateWindow()
-    except Exception as e:
-        print("Window raise failed:", e)
+    fig.canvas.manager.window.move(1920, 100)
     line, = ax.plot([], [], lw=2)
     ax.set_xlabel("Gate")
     ax.set_ylabel("Photon Count")
