@@ -77,7 +77,7 @@ def main(sample: DualGate, lockin: LockInOE1022D, keithley_b: KeithleySourceMete
         V_b_meas = keithley_b.measure_voltage_avg(10)
         I_b_meas = 10**9 * keithley_b.measure_current_avg(20)
         print(Vb,V_b_meas,I_b_meas)
-        file_Vb = tb.make_Gr_resistance_saving_file(save_file_Vb_gen,Rbox,lockin.delay,lockin.sine_out_freq,Vb,file='Vb') # make file for this Vb
+        file_Vb = make_Gr_resistance_saving_file(save_file_Vb_gen,Rbox,lockin.delay,lockin.sine_out_freq,Vb,file='Vb') # make file for this Vb
         
         time.sleep(0.3)
         I_Gr_list, V_Gr_list = [],[]
@@ -170,5 +170,67 @@ def make_files(sample,lockin,file_save):
         os.makedirs(sample.data_path+"/GrSensor/"+file_save.split('.txt')[0]+'_VI_data')
     gen_path = sample.data_path+'/GrSensor/'+file_save
     save_file_Vb_gen = sample.data_path+'/GrSensor/'+file_save.split('.txt')[0]+'_VI_data/'
-    saving_file = tb.make_Gr_resistance_saving_file(gen_path,sample.Rbox,lockin.delay,lockin.sine_out_freq,0,file='full')
+    saving_file = make_Gr_resistance_saving_file(gen_path,sample.Rbox,lockin.delay,lockin.sine_out_freq,0,file='full')
     return save_file_Vb_gen, saving_file
+
+
+def make_Gr_resistance_saving_file(filename,Rbox,delay,freq,Vb,file='Vb'):
+    
+    if file == 'Vb':
+        filename = filename + 'VI_data_Vb'+str(int(Vb*1000))+'mV_.txt'
+        while os.path.exists(filename):            
+            filename = filename.replace(".txt", "_new.txt")
+        with open(filename, 'a') as file:
+            header1 = '# Rbox (Ohm) = {}'.format(Rbox)
+            header2 = '# Lockin wait time (ms) = {}'.format(delay)
+            header3 = '# Vb (V) = {}'.format(Vb)
+            header4 = '# V_sin(V) V_Gr(uV) I_Gr(nA) theta(deg)'
+            file.write(header1 + '\n') 
+            file.write(header2 + '\n') 
+            file.write(header3 + '\n') 
+            file.write(header4 + '\n') 
+    
+    elif file == 'full':
+        while os.path.exists(filename):            
+            filename = filename.replace(".txt", "_new.txt")
+        header = '#Vb_set(V) Vb_meas(V) Ib_meas(nA) R_Gr(kOhm) R_Gr_std(kOhm)'
+        with open(filename, 'a') as file:
+            file.write(header + '\n') 
+    return filename
+
+
+if __name__ == "__main__":
+
+    path = '/Users/carterfox/My Drive (cdfox@wisc.edu)/StackingTransitions/CrI3/round7/d3/GrSensor/'    
+    file = path+'sweep7_reverse_electrodes.txt'
+    
+    data = np.loadtxt(file)
+    Vb,V_b_meas,I_b_meas,R_Gr,R_Gr_std = data[:,0],data[:,1],data[:,2],data[:,3],data[:,4]
+    
+    diffs = np.diff(Vb)
+    try:
+        transition_index = np.where((diffs[:-1] >= 0) & (diffs[1:] <= 0))[0][0]+1
+    except:
+        transition_index=len(Vb)
+        
+    
+    Vb_ascend = Vb[0:transition_index]
+    Vb_descend = Vb[transition_index:]
+    R_Gr_ascend = R_Gr[0:transition_index]
+    R_Gr_descend = R_Gr[transition_index:]
+    R_Gr_std_ascend = R_Gr_std[0:transition_index]
+    R_Gr_std_descend = R_Gr_std[transition_index:]
+    
+    
+    tb.init_plot_params()
+    fig, ax = plt.subplots(1,1,figsize=(6,5))
+    ax.errorbar(Vb_ascend, R_Gr_ascend, yerr=R_Gr_std_ascend,color='black',marker='.',ms=5,label=r'$\rightarrow$',elinewidth=0)
+    ax.errorbar(Vb_descend, R_Gr_descend, yerr=R_Gr_std_descend,color='r',marker='.',ms=5,label=r'$\leftarrow$',elinewidth=0)
+    ax.legend()
+    ax.set_xlabel('V$_{b}$ (V)'), ax.set_ylabel(r'R$_{Gr}$ (k$\Omega$)')
+    # ax.set_xlim(-.5,2)
+    # ax.set_ylim(1.95,2.24)
+    plt.savefig(file.replace('.txt','_plot.png'),dpi=500)
+    plt.show()
+    
+

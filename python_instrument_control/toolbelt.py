@@ -35,7 +35,6 @@ def read_lockin_rmcd_data(lockin: LockInOE1022D):
     return pack
     
 
-
 def make_rmcd_saving_file(filename,experiment):
     
     if experiment == 'bscan':
@@ -56,35 +55,16 @@ def make_rmcd_saving_file(filename,experiment):
             file.write(header + '\n') 
     return filename
 
-def make_Gr_resistance_saving_file(filename,Rbox,delay,freq,Vb,file='Vb'):
-    
-    if file == 'Vb':
-        filename = filename + 'VI_data_Vb'+str(int(Vb*1000))+'mV_.txt'
-        while os.path.exists(filename):            
-            filename = filename.replace(".txt", "_new.txt")
-        with open(filename, 'a') as file:
-            header1 = '# Rbox (Ohm) = {}'.format(Rbox)
-            header2 = '# Lockin wait time (ms) = {}'.format(delay)
-            header3 = '# Vb (V) = {}'.format(Vb)
-            header4 = '# V_sin(V) V_Gr(uV) I_Gr(nA) theta(deg)'
-            file.write(header1 + '\n') 
-            file.write(header2 + '\n') 
-            file.write(header3 + '\n') 
-            file.write(header4 + '\n') 
-    
-    elif file == 'full':
-        while os.path.exists(filename):            
-            filename = filename.replace(".txt", "_new.txt")
-        header = '#Vb_set(V) Vb_meas(V) Ib_meas(nA) R_Gr(kOhm) R_Gr_std(kOhm)'
-        with open(filename, 'a') as file:
-            file.write(header + '\n') 
-    return filename
-
-def E_dualgate(V_b,V_t,d_b,d_t):
-    
-    E = (-V_t/d_t + V_b/d_b)/2
-    
+def E_dualgate(V_b,V_t,sample,no_middle_gr=False):
+    d_b = sample.d_b
+    d_t = sample.d_t
+    if no_middle_gr:
+        d_flake = sample.d_flake
+        E = (V_b+V_t)/(d_b+d_t+d_flake)
+    else:
+        E = (-V_t/d_t + V_b/d_b)/2
     return E
+
 
 def n_dualgate(V_b,V_t,d_b,d_t):
     eps_0 = cont.eps0
@@ -154,3 +134,11 @@ def plot_arrow_legend(ax,label,x1=None,y1=None,ls=18,yratio=.058,xratio=.12,wrat
     ax.text(x2,yavg,r'$-$'+label+r'  ',fontsize=ls,va='center',ha='right')
     return ax
 
+def plot_rmcd_state(ax,state,x,y,xstep=0.1,h='right',f=18):
+    xcur = x
+    for a in state:
+        if a == 'up':
+            ax.text(xcur,y,r'$\uparrow$',c='darkblue',ha=h,fontsize=f)
+        if a == 'down':
+            ax.text(xcur,y,r'$\downarrow$',c='firebrick',ha=h,fontsize=f)
+        xcur = xcur+xstep
