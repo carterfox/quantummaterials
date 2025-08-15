@@ -560,9 +560,9 @@ def get_gatetime(file):
 def initiate_SHG_fig(title):
     fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
     # ax.set_theta_zero_location("N")
-    ax.set_title(title, va='top')
     ax.set_rlabel_position(-10)
-    ax.set_xticks(np.arange(0, np.radians(360),np.radians(45),),fontsize=4)  # Less radial ticks# ax.set_rlabel_position(20)  # Move radial labels away from plotted line
+    ax.set_xticks(np.arange(0, np.radians(360),np.radians(45),))  # Less radial ticks# ax.set_rlabel_position(20)  # Move radial labels away from plotted line
+    ax.set_title(title+'\n', va='bottom')
     return fig,ax
     
 def plotseveralSHG(title,files,labels,ms=10,el=.4,append=False,order=None,factor=np.array([1]),legend=True,normalize=True,subtract_substrate=False,divide_substrate=False,lw=2,colors = ['b','brown','gray']):
@@ -589,6 +589,7 @@ def plotseveralSHG(title,files,labels,ms=10,el=.4,append=False,order=None,factor
         angles = (data[:,0])*np.pi/180*2
         means = data[:,1]
         stds = data[:,2]
+        
         if any(factor != 1):
             means = means*factor[i]            
             stds = stds*factor[i]
@@ -601,6 +602,7 @@ def plotseveralSHG(title,files,labels,ms=10,el=.4,append=False,order=None,factor
         means_list.append(means)
         stds_list.append(stds)
         maxval_list.append(np.max(means))
+    
         
     if subtract_substrate:
         means_list = means_list[0:-1] - means_list[-1]
@@ -609,9 +611,10 @@ def plotseveralSHG(title,files,labels,ms=10,el=.4,append=False,order=None,factor
 
     if normalize:
         maxval = np.max(maxval_list)
-        means_list = means_list/maxval
-        stds_list = stds_list/maxval
-        stds_list = stds_list/np.sqrt(num_gates)
+        means_list = [np.array(sublist) / maxval for sublist in means_list]
+        stds_list = [np.array(sublist) / maxval for sublist in stds_list]
+        # print(stds_list,np.sqrt(num_gates))
+        stds_list = [np.array(sublist) / np.sqrt(num_gates) for sublist in stds_list]
     
     if divide_substrate:
         means_list = means_list/(means_list[-1]/np.max(means_list[-1]))

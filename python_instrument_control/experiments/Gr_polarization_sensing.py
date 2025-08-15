@@ -67,7 +67,7 @@ def main(sample: DualGate, lockin: LockInOE1022D, keithley_b: KeithleySourceMete
     fig,ax1,ax2,line1,line2,line3 = init_plot()
     
     keithley_b.enable_source()
-    keithley_b.apply_voltage()
+    keithley_b.apply_voltage(compliance_current=keithley_b.compliance_current)
     
     Vb_list, R_Gr_list, R_Gr_std_list = [],[],[]
 
@@ -202,7 +202,7 @@ def make_Gr_resistance_saving_file(filename,Rbox,delay,freq,Vb,file='Vb'):
 if __name__ == "__main__":
 
     path = '/Users/carterfox/My Drive (cdfox@wisc.edu)/StackingTransitions/CrI3/round7/d3/GrSensor/'    
-    file = path+'sweep7_reverse_electrodes.txt'
+    file = path+'sweep10_2K_0T.txt'
     
     data = np.loadtxt(file)
     Vb,V_b_meas,I_b_meas,R_Gr,R_Gr_std = data[:,0],data[:,1],data[:,2],data[:,3],data[:,4]
@@ -211,8 +211,11 @@ if __name__ == "__main__":
     try:
         transition_index = np.where((diffs[:-1] >= 0) & (diffs[1:] <= 0))[0][0]+1
     except:
-        transition_index=len(Vb)
+        transition_index=int(len(Vb)/2)
         
+        
+    # G_Gr = 1000/R_Gr
+    # G_Gr_std = 1000/R_Gr_std
     
     Vb_ascend = Vb[0:transition_index]
     Vb_descend = Vb[transition_index:]
@@ -224,13 +227,16 @@ if __name__ == "__main__":
     
     tb.init_plot_params()
     fig, ax = plt.subplots(1,1,figsize=(6,5))
-    ax.errorbar(Vb_ascend, R_Gr_ascend, yerr=R_Gr_std_ascend,color='black',marker='.',ms=5,label=r'$\rightarrow$',elinewidth=0)
-    ax.errorbar(Vb_descend, R_Gr_descend, yerr=R_Gr_std_descend,color='r',marker='.',ms=5,label=r'$\leftarrow$',elinewidth=0)
+    ax.errorbar(Vb_descend, R_Gr_descend,color='black',marker='.',ms=5,label=r'$\rightarrow$',elinewidth=0)
+    ax.errorbar(Vb_ascend, R_Gr_ascend,color='r',marker='.',ms=5,label=r'$\leftarrow$',elinewidth=0)
+    # ax.errorbar(Vb_ascend, G_Gr_ascend,color='black',marker='.',ms=5,label=r'$\rightarrow$',elinewidth=0)
+    # ax.errorbar(Vb_descend, G_Gr_descend,color='r',marker='.',ms=5,label=r'$\leftarrow$',elinewidth=0)
     ax.legend()
     ax.set_xlabel('V$_{b}$ (V)'), ax.set_ylabel(r'R$_{Gr}$ (k$\Omega$)')
-    # ax.set_xlim(-.5,2)
-    # ax.set_ylim(1.95,2.24)
-    plt.savefig(file.replace('.txt','_plot.png'),dpi=500)
+    ax.set_ylim(1.7,2.4)
+    ax.set_xlim(-.5,7.5)
+    # ax.set_ylim(350,700)
+    # plt.savefig(file.replace('.txt','_G_plot.png'),dpi=500)
     plt.show()
     
 
