@@ -21,43 +21,40 @@ from sklearn.linear_model import HuberRegressor
 
 
 def main(sample: DualGate, lockin: LockInOE1022D, keithley_b: KeithleySourceMeter,Vb_array,Vsin,file_save):
-  
     
-    lockin.set_sine_output(channel=lockin.R_chan,amplitude_v=Vsin)
+    # lockin.set_sine_output(channel=lockin.R_chan,amplitude_v=Vsin)
     Rbox = sample.Rbox
     d_b = sample.d_b
     saving_file = make_files(sample,lockin,file_save)
 
     plt.ion()
     fig,ax1,line1 = init_plot()
-    
-    keithley_b.enable_source()
-    keithley_b.apply_voltage(compliance_current=keithley_b.compliance_current)
-    
+    ax1.set_ylim(0,2.1)
+    ax1.set_xlim(np.min(Vb_array)*1.1,1.1*np.max(Vb_array))
     Vb_list, R_Gr_list = [],[]
     
     for Vb in Vb_array: # sweep Vb 
-
+        start = time.time()
         keithley_b.source_voltage = Vb
         V_b_meas = keithley_b.measure_voltage_avg(10)
         I_b_meas = 10**9 * keithley_b.measure_current_avg(20)
-        print(Vb,V_b_meas,I_b_meas)
         
         time.sleep(lockin.delay)
-        
         mean_R_chan, std_R_chan, mean_dR_chan, std_dR_chan = lockin.read_average_dual(params=[2, 3], num_avgs=lockin.num_avgs)
         V_Gr, V_Gr_std = mean_R_chan[0], std_R_chan[0]
         V_Gr = V_Gr*10**6   #uV 
+        V_Gr_std = V_Gr_std*10**6
         Vbox = Vsin*10**6 - V_Gr  #uV
         I_Gr = Vbox/Rbox *10**3 #nA  . Rbox should be in ohm
+        
         R_Gr = V_Gr/I_Gr
+        R_Gr_std = V_Gr_std/I_Gr
+        print(round(V_b_meas,3),round(I_b_meas,3),round(V_Gr,4),round(I_Gr,4),round(R_Gr,3))
         
         Vb_list.append(Vb)
         R_Gr_list.append(R_Gr) #kOhm
-        
-        save_data([Vb,V_b_meas,I_b_meas,R_Gr,V_Gr,I_Gr,V_Gr_std,Vbox],saving_file)
+        save_data([Vb,V_b_meas,I_b_meas,R_Gr,R_Gr_std,V_Gr,I_Gr,Vbox],saving_file)
         update_plot(line1,Vb_list,R_Gr_list,ax1,fig)
-
     plt.ioff()
     plt.show()
     
@@ -87,19 +84,25 @@ def init_plot():
     return fig,ax1,line1
 
 def make_files(sample,lockin,file_save):
-    if not os.path.exists(sample.data_path+"/GrSensor"):
-        os.makedirs(sample.data_path+"/GrSensor")
-    gen_path = sample.data_path+'/GrSensor/'+file_save
-    saving_file = make_Gr_resistance_saving_file(gen_path,sample.Rbox,lockin.delay,lockin.sine_out_freq,0,file='full')
+    if not os.path.exists(sample.data_path+"/GrSensorSingle"):
+        os.makedirs(sample.data_path+"/GrSensorSingle")
+    gen_path = sample.data_path+'/GrSensorSingle/'+file_save
+    saving_file = make_Gr_resistance_saving_file(gen_path,sample.Rbox,lockin.delay,lockin.sine_out_freq,0,lockin.num_avgs,file='full')
     return saving_file
 
 
-def make_Gr_resistance_saving_file(filename,Rbox,delay,freq,Vb,file='Vb'):
+def make_Gr_resistance_saving_file(filename,Rbox,delay,freq,Vb,num_avg,file='Vb'):
     if file == 'full':
         while os.path.exists(filename):            
             filename = filename.replace(".txt", "_new.txt")
-        header = '#Vb_set(V) Vb_meas(V) Ib_meas(nA) R_Gr(kOhm) V_Gr(uV) I_Gr(nA) V_Gr_std(uV) Vbox(uV)'
+        header = '#Vb_set(V) Vb_meas(V) Ib_meas(nA) R_Gr(kOhm) R_Gr_std(kOhm) V_Gr(uV) I_Gr(nA) Vbox(uV)'
         with open(filename, 'a') as file:
+            header1 = '# Rbox (Ohm) = {}'.format(Rbox)
+            header2 = '# Lockin wait time (ms) = {}'.format(delay)
+            header3 = '# Lockin averages = {}'.format(num_avg)
+            file.write(header1 + '\n') 
+            file.write(header2 + '\n') 
+            file.write(header3 + '\n') 
             file.write(header + '\n') 
     return filename
 

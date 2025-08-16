@@ -21,17 +21,17 @@ from homemade_servers.H11890PMT import HamamatsuH11890
 from homemade_servers.KeithleySourceMeter import KeithleySourceMeter
 from devices.dualgate import DualGate
 from experiments import RMCD_bfield_scan, RMCD_mapping, RMCD_dualgate_Esweep
-from experiments import PMT_continuous_read, Gr_polarization_sensing
+from experiments import PMT_continuous_read, Gr_polarization_sensing, Gr_polarization_sensing_singlepoint
 
 servers = []
 ### functions for getting instruments
 def get_lockin(resource_name='ASRL12::INSTR', R_chan=1, dR_chan=2, num_avgs=25,sensitivities=["10 mV","100 uV"]):  
     lockin = LockInOE1022D(resource_name)
     lockin.R_chan, lockin.dR_chan = R_chan, dR_chan
-    lockin.num_avgs = num_avgs
-    lockin.delay=1
-    lockin.set_sensitivity(R_chan,sensitivities[0])
-    lockin.set_sensitivity(dR_chan,sensitivities[1])
+    # lockin.num_avgs = num_avgs
+    # lockin.delay=1
+    # lockin.set_sensitivity(R_chan,sensitivities[0])
+    # lockin.set_sensitivity(dR_chan,sensitivities[1])
     servers.append(lockin)
     return lockin
 
@@ -75,25 +75,28 @@ if __name__ == "__main__":
     sample = DualGate(sample_name='d3', d_b=9.41, d_t=7.93, data_path=path_d3)
     
     lockin = get_lockin()
-    lockin.set_sensitivity(lockin.R_chan,"50 uV")
-    lockin.delay=3
-    lockin.num_avgs=150
-    lockin.sine_out_freq=1000
+    # lockin.set_sensitivity(lockin.R_chan,"100 uV")
+    lockin.delay=2
+    lockin.num_avgs=50
+    # lockin.sine_out_freq=1000
     sample.Rbox = 2e6
     # opticool, current_temp, current_field = get_opticool()
     # ANC = get_ANC300()
     # PMT = get_PMT()
     keithley_b = get_keithley('GPIB::1','2450')
-    
-    Vsin_array = np.linspace(0.001,0.012,15)
-    
-    Vb_array1 = np.arange(7.4,2,-.4)
-    Vb_array2 = np.arange(2,-2.1,-.1)
-    Vb_array3 = np.arange(-2.2,-7.42,-.4)
-    Vb_array = np.concatenate((Vb_array1,Vb_array2,Vb_array3))
-    Vb_array_return= Vb_array[::-1]
-    # Vb_array_full = np.concatenate((Vb_array,Vb_array[::-1]))
+    keithley_b.enable_source()
     keithley_b.compliance_current = 1e-8
+    keithley_b.apply_voltage(compliance_current=keithley_b.compliance_current)
+    # lockin.set_sine_output(1,.01,0,0)
+    # time.sleep(4)
+    # Vsin_array = np.linspace(0.001,0.012,12)
+    
+    # Vb_array = np.array([0,-.1,-.2,-.3,-.4,-.5,-.6])#np.arange(0,1.4,0.2)
+    # Vb_array2 = np.arange(2,-2.1,-.1)
+    Vb_array = np.arange(-7.3,7.31,.02)
+    # Vb_array = np.concatenate((Vb_array1,Vb_array2,Vb_array3))
+    Vb_array_full = np.concatenate((Vb_array,Vb_array[::-1]))
+    # keithley_b.compliance_current = 1e-8
     try:
         # rmcd_scan_data = RMCD_bfield_scan.main(sample,lockin,opticool,bfield_array,
         #                                         'bilayer_scan_p5-nogates.txt')
@@ -101,8 +104,11 @@ if __name__ == "__main__":
         # E,rmcd =RMCD_dualgate_Esweep.main(sample,lockin,keithley_b,
         #                                     E_back,'back.txt')
         
-        V,I,R,R_std=Gr_polarization_sensing.main(sample,lockin,keithley_b,Vb_array_return,Vsin_array,'sweep8_return_2K_0T.txt')
-        
+        # V,I,R,R_std=Gr_polarization_sensing.main(sample,lockin,keithley_b,Vb_array_full,Vsin_array,
+        #                                          'sweep10_2K_0T.txt')
+        Vsin=0.020
+        Vblist,Rgrlist = Gr_polarization_sensing_singlepoint.main(sample,lockin,keithley_b,Vb_array_full,Vsin,
+                                                  'sweep1_2K_0T.txt')
         
         
     except Exception as e:
