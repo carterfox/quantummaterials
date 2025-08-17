@@ -29,7 +29,7 @@ def main(sample: DualGate, lockin: LockInOE1022D, keithley_b: KeithleySourceMete
 
     plt.ion()
     fig,ax1,line1 = init_plot()
-    ax1.set_ylim(0,2.1)
+    ax1.set_ylim(0.5,3.1)
     ax1.set_xlim(np.min(Vb_array)*1.1,1.1*np.max(Vb_array))
     Vb_list, R_Gr_list = [],[]
     
@@ -79,7 +79,7 @@ def init_plot():
     fig.canvas.manager.window.move(1920, 100)  # (x, y) position in pixels
     ax1.set_xlabel(r'V$_{b}$ (V)')
     ax1.set_ylabel(r'R$_{Gr}$ (k$\Omega$)')
-    line1 = Line2D([], [], color='blue',marker='.')
+    line1 = Line2D([], [], color='blue',marker='.',markersize=4)
     ax1.add_line(line1)
     return fig,ax1,line1
 
