@@ -92,9 +92,10 @@ def main(sample: DualGate, lockin: LockInOE1022D,
             if E <0:
                 E_list_up.append(E)
                 rmcd_list_up.append(rmcd)
-            elif Vb>0:
+            elif E>0:
                 E_list_down.append(E)
                 rmcd_list_down.append(rmcd)
+        E_list.append(E)
         
         update_plot(fig,ax,lineup,linedown,E_list_up,E_list_down,rmcd_list_up,rmcd_list_down)
         
@@ -124,8 +125,8 @@ def init_main_plot():
     fig, ax = plt.subplots()
     ax.set_xlabel('E (V/nm)')
     ax.set_ylabel('RMCD %')
-    lineup = Line2D([], [], color='black',marker='.',label=r'$\rightarrow$')
-    linedown = Line2D([], [], color='red',marker='.',label=r'$\leftarrow$')
+    lineup = Line2D([], [], color='black',marker='.',ms=3,label=r'$\rightarrow$')
+    linedown = Line2D([], [], color='red',marker='.',ms=3,label=r'$\leftarrow$')
     ax.add_line(lineup)
     ax.add_line(linedown)
     ax.legend()

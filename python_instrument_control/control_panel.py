@@ -25,7 +25,7 @@ from experiments import PMT_continuous_read, Gr_polarization_sensing, Gr_polariz
 
 servers = []
 ### functions for getting instruments
-def get_lockin(resource_name='ASRL12::INSTR', R_chan=1, dR_chan=2, num_avgs=25,delay=1,sensitivities=["10 mV","100 uV"]):  
+def get_lockin(resource_name='ASRL12::INSTR', R_chan=1, dR_chan=2, num_avgs=25,delay=1):  
     lockin = LockInOE1022D(resource_name)
     lockin.R_chan, lockin.dR_chan = R_chan, dR_chan
     lockin.num_avgs = num_avgs
@@ -74,14 +74,14 @@ if __name__ == "__main__":
     # sample = DualGate(sample_name='d4', d_b=18.45, d_t=5.67, data_path=path_d4)
     sample = DualGate(sample_name='d3', d_b=9.41, d_t=7.93, data_path=path_d3)
     # sample.Rbox = 2e6
-    lockin = get_lockin(delay=2,num_avgs=200)
-    lockin.set_time_constant(1,7)
+    lockin = get_lockin(delay=2,num_avgs=150)
+    # lockin.set_time_constant(1,7)
     keithley_b = get_keithley('GPIB::1','2450')
     keithley_b.enable_source()
     keithley_b.compliance_current = 5.5e-9
     keithley_b.apply_voltage(compliance_current=keithley_b.compliance_current)
-    E_array = np.arange(-.46,.4,.01)
-    # Vb_array = np.arange(5.4,1.4,-0.02)
+    E_array = np.arange(-.46,.395,.01)
+    # E_array = np.arange(0,-.5,-0.04)
     E_array_full = np.concatenate((E_array,E_array[::-1]))
     try:
         # Vsin=0.01
@@ -89,7 +89,8 @@ if __name__ == "__main__":
                                                     # 'goingup.txt')
         
         # E,rmcd = RMCD_dualgate_Esweep.main(sample, lockin, keithley_b, E_array, 'goingdown.txt')
-        E,rmcd = RMCD_dualgate_Esweep.main(sample, lockin, keithley_b, E_array_full, 'sweep3_8-18_2K_0T_after_m2T_m65deg.txt')
+        E,rmcd = RMCD_dualgate_Esweep.main(sample, lockin, keithley_b, E_array_full, 
+                                           'sweep6_8-18_2K_0T_after_m2T_m65deg.txt')
         
     except Exception as e:
         traceback.print_exc()

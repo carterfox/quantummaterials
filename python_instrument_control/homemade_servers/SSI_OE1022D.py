@@ -30,6 +30,8 @@ class LockInOE1022D():
                          "1 uV", "2 uV", "5 uV", "10 uV", "20 uV", "50 uV", "100 uV", "200 uV", "500 uV",
                          "1 mV", "2 mV", "5 mV", "10 mV", "20 mV", "50 mV", "100 mV", "200 mV", "500 mV","1 V"])
         self.parameters = np.array(["X","Y","R","theta","Frequency","Xh1","Yh1","Rh1","thetah1","Xh2","Yh2","Rh2","thetah2", "Noise","A1","A2","A3","A4","E1","E2","E3","E4"])
+        self.time_constants = np.array(['10 us', '30 us', '100 us', '300 us', '1 ms', '3 ms', '10 ms', '30 ms', '100 ms',
+                                         '300 ms', '1 s', '3 s', '10 s', '30 s', '100 s', '300 s', '1000 s', '3000 s'])
         self.R_chan = 1 #channels: 1 is channel A. 2 is channel B 
         self.dR_chan = 2
         self.num_avgs = 150
@@ -125,6 +127,49 @@ class LockInOE1022D():
         self.auto_phase(2)
         
     # --- Configuration ---
+    
+    def get_reference_source(self, channel=1):
+        return self.query(f"FMODD? {channel}")
+    
+    def get_reference_frequency(self, channel=1):
+        return float(self.query(f"FREQD? {channel}"))
+    
+    def get_phase_shift(self, channel=1):
+        return float(self.query(f"PHASD? {channel}"))
+    
+    def get_sensitivity(self, channel=1):
+        index = int(self.query(f"SENSD? {channel}"))
+        if 0 <= index < len(self.sensitivities):
+            return self.sensitivities[index]
+        else:
+            logging.warning(f"Invalid sensitivity index: {index}")
+            return None
+    
+    def get_time_constant(self, channel=1):
+        return int(self.query(f"OFLTD? {channel}"))
+    
+    def get_filter_slope(self, channel=1):
+        return int(self.query(f"OFSLD? {channel}"))
+    
+    def get_sync_filter(self, channel=1):
+        return bool(int(self.query(f"SYNCD? {channel}")))
+    
+    def get_harmonic(self, channel=1, slot=1):
+        return int(self.query(f"HARMD? {channel},{slot}"))
+    
+    def get_sine_output(self, channel=1):
+        try:
+            amplitude = float(self.query(f"SLVLD? {channel}"))
+            offset = float(self.query(f"SVLLD? {channel}"))
+            waveform_type = int(self.query(f"SWVTD? {channel}"))
+            return {
+                "amplitude_v": amplitude,
+                "offset_v": offset,
+                "waveform_type": waveform_type
+            }
+        except Exception as e:
+            logging.error(f"Error reading SINE OUT: {e}")
+            return None
     
     def set_reference_source(self, channel=1, mode=1):
         self.write(f"FMODD {channel},{mode}")
