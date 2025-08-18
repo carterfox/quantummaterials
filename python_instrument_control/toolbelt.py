@@ -138,7 +138,7 @@ def plot_rmcd_state(ax,state,x,y,xstep=0.1,h='right',f=18):
     xcur = x
     for a in state:
         if a == 'up':
-            ax.text(xcur,y,r'$\uparrow$',c='darkblue',ha=h,fontsize=f)
+            ax.text(xcur,y,r'$\uparrow$',c='mediumblue',ha=h,fontsize=f)
         if a == 'down':
             ax.text(xcur,y,r'$\downarrow$',c='firebrick',ha=h,fontsize=f)
         xcur = xcur+xstep

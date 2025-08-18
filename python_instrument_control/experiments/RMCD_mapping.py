@@ -126,7 +126,7 @@ def main(sample, lockin: LockInOE1022D, ANC: ANC300, x_start, x_end, y_start=Non
 def plot_rmcd_map(scan_array,x_step,y_step,plot_type='RMCD'):
     y_points,x_points = np.shape(scan_array)
     fig, ax = plt.subplots()
-    fig.canvas.manager.window.move(1920, 100)
+    # fig.canvas.manager.window.move(1920, 100)
     im = ax.imshow(scan_array, cmap='viridis', interpolation='none')
     cbar=plt.colorbar(im, ax=ax)
     ax.set_xlabel('$V_x$'),ax.set_ylabel('$V_y$')
@@ -173,22 +173,23 @@ def replot_rmcd_map(data_file,plot_type='RMCD'):
 if __name__ == "__main__":
     # 
     # path_d4 = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/d4/RMCD/bfield_scan/'
-    path_d3 = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/d3/RMCD/mapping/'
+    path_d3 = '/Users/carterfox/Google Drive/My Drive/StackingTransitions/CrI3/round7/d3/RMCD/mapping/'
     # path_s6 = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/6-18-sample-for-afm-and-rmcd/RMCD/bfield_scan/'
     # file = path_s6+'sixlayer-scan3.txt'
     # file = path_s6+'fourlayer-scan1.txt'
     # file = path_s6+'map1_0T.txt'
-    file = path_d3+'map2_0T_afterEsweeping.txt'
+    file = path_d3+'map1_0T_after_m2T.txt'
     tb.init_plot_params()
 
 
-    fig,ax,im = replot_rmcd_map(file,'RMCD')
+    fig,ax,im = replot_rmcd_map(file,'thetadR')
 
     # fig,ax,b_field,theta_dr = replot_rmcd_bfield_scan(file)
     # tb.plot_arrow_legend(ax,r'$B_{\perp}$',x1=1.7,y1=-7,ls=18,yratio=.058,xratio=.12,wratio=.0872)
     
     title = file.split('/')[-1].split('.txt')[0]
     plt.title(title)
-    
-    # plt.savefig(file.replace('.txt','_plot.png'),dpi=500)
+    plt.xlim(0,40)
+    plt.ylim(40,0)
+    plt.savefig(file.replace('.txt','_theta_plot.png'),dpi=500)
     plt.show()

@@ -47,8 +47,8 @@ def init_plot_params():
 def init_fig(figtype=None,figsize=(6,5)):
     fig, ax = plt.subplots(1,1,figsize=figsize)
     if figtype == 'RMCD':
-        ax.set_xlabel(r'$B$ (T)')
-        ax.set_ylabel("RMCD %",rotation=90)
+        ax.set_xlabel(r'$B$ (T)',fontsize=24)
+        ax.set_ylabel("RMCD %",rotation=90,fontsize=24,labelpad=-10)
     return ax
 
 def plot_arrow_legend(ax,label,x1=None,y1=None,ls=18,yratio=.058,xratio=.12,wratio=.0872):
@@ -561,8 +561,10 @@ def initiate_SHG_fig(title):
     fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
     # ax.set_theta_zero_location("N")
     ax.set_rlabel_position(-10)
-    ax.set_xticks(np.arange(0, np.radians(360),np.radians(45),))  # Less radial ticks# ax.set_rlabel_position(20)  # Move radial labels away from plotted line
-    ax.set_title(title+'\n', va='bottom')
+    ax.set_xticks(np.arange(0, np.radians(360),np.radians(45),))
+    # ax.tick_params(axis='x', labelsize=14) 
+    # ax.set_xticklabels([0,45,90,135,180,225,270,315],fontsize=10)# Less radial ticks# ax.set_rlabel_position(20)  # Move radial labels away from plotted line
+    ax.set_title(title+'\n', va='bottom',fontsize=18)
     return fig,ax
     
 def plotseveralSHG(title,files,labels,ms=10,el=.4,append=False,order=None,factor=np.array([1]),legend=True,normalize=True,subtract_substrate=False,divide_substrate=False,lw=2,colors = ['b','brown','gray']):
@@ -614,7 +616,7 @@ def plotseveralSHG(title,files,labels,ms=10,el=.4,append=False,order=None,factor
         means_list = [np.array(sublist) / maxval for sublist in means_list]
         stds_list = [np.array(sublist) / maxval for sublist in stds_list]
         # print(stds_list,np.sqrt(num_gates))
-        stds_list = [np.array(sublist) / np.sqrt(num_gates) for sublist in stds_list]
+    stds_list = [np.array(sublist) / np.sqrt(num_gates) for sublist in stds_list]
     
     if divide_substrate:
         means_list = means_list/(means_list[-1]/np.max(means_list[-1]))
@@ -709,7 +711,7 @@ def plot_state(ax,state,x,y,xstep=0.1,h='right',f=18):
     xcur = x
     for a in state:
         if a == 'up':
-            ax.text(xcur,y,r'$\uparrow$',c='darkblue',ha=h,fontsize=f)
+            ax.text(xcur,y,r'$\uparrow$',c='mediumblue',ha=h,fontsize=f)
         if a == 'down':
             ax.text(xcur,y,r'$\downarrow$',c='firebrick',ha=h,fontsize=f)
         xcur = xcur+xstep

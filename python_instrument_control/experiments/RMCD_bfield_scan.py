@@ -130,7 +130,11 @@ def replot_rmcd_bfield_scan(data_file):
     rmcd[np.where(theta_dr>0)] *= -1
     rmcd[0:8] = rmcd[8] -(rmcd[0:8] - rmcd[8])
     rmcd[80:96] = rmcd[80] - (rmcd[80:96]-rmcd[80])
-    rmcd[-8:] = rmcd[8] - (rmcd[-8:] - rmcd[8])    
+    rmcd[-8:] = rmcd[8] - (rmcd[-8:] - rmcd[8])   
+    dr[np.where(theta_dr>0)] *= -1
+    dr[0:8] = dr[8] -(dr[0:8] - dr[8])
+    dr[80:96] = dr[80] - (dr[80:96]-dr[80])
+    dr[-8:] = dr[8] - (dr[-8:] - dr[8])   
 
     diffs = np.diff(b_field)
     try:
@@ -150,7 +154,7 @@ def replot_rmcd_bfield_scan(data_file):
     ax.set_xlim(min(b_field),max(b_field))
     # ax.legend(loc='upper left')
     
-    return fig,ax,b_field,theta_dr
+    return fig,ax,b_field,theta_dr,dr,r
     
 
 if __name__ == "__main__":
@@ -171,7 +175,7 @@ if __name__ == "__main__":
     tb.init_plot_params()
 
 
-    fig,ax,b_field,theta_dr = replot_rmcd_bfield_scan(file)
+    fig,ax,b_field,theta_dr,dr,r = replot_rmcd_bfield_scan(file)
     tb.plot_arrow_legend(ax,r'$B_{\perp}$',x1=1.5,y1=-7.9,ls=18,yratio=.058,xratio=.12,wratio=.0872)
     
     title = file.split('/')[-1].split('.txt')[0]

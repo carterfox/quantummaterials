@@ -202,7 +202,7 @@ def make_Gr_resistance_saving_file(filename,Rbox,delay,freq,Vb,file='Vb'):
 if __name__ == "__main__":
 
     path = '/Users/carterfox/My Drive (cdfox@wisc.edu)/StackingTransitions/CrI3/round7/d3/GrSensor/'    
-    file = path+'sweep10_2K_0T.txt'
+    file = path+'sweep11_2K_0T.txt'
     
     data = np.loadtxt(file)
     Vb,V_b_meas,I_b_meas,R_Gr,R_Gr_std = data[:,0],data[:,1],data[:,2],data[:,3],data[:,4]
@@ -233,8 +233,10 @@ if __name__ == "__main__":
     # ax.errorbar(Vb_descend, G_Gr_descend,color='r',marker='.',ms=5,label=r'$\leftarrow$',elinewidth=0)
     ax.legend()
     ax.set_xlabel('V$_{b}$ (V)'), ax.set_ylabel(r'R$_{Gr}$ (k$\Omega$)')
-    ax.set_ylim(1.7,2.4)
-    ax.set_xlim(-.5,7.5)
+    # plt.xlim(-7.5,7.5)
+    # plt.ylim(.25,2.5)
+    ax.set_ylim(.25,2.5)
+    ax.set_xlim(-.5,.5)
     # ax.set_ylim(350,700)
     # plt.savefig(file.replace('.txt','_G_plot.png'),dpi=500)
     plt.show()

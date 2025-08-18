@@ -108,43 +108,53 @@ def make_Gr_resistance_saving_file(filename,Rbox,delay,freq,Vb,num_avg,file='Vb'
 
 
 if __name__ == "__main__":
-
-    path = '/Users/carterfox/My Drive (cdfox@wisc.edu)/StackingTransitions/CrI3/round7/d3/GrSensor/'    
-    file = path+'sweep10_2K_0T.txt'
-    
+    tb.init_plot_params()
+    path = '/Users/carterfox/My Drive (cdfox@wisc.edu)/StackingTransitions/CrI3/round7/d3/GrSensorSingle/'    
+    # file = path+'sweep3_2K_0T_floatVc.txt'
+    file = path+'sweep1_2K_0T.txt'
     data = np.loadtxt(file)
     Vb,V_b_meas,I_b_meas,R_Gr,R_Gr_std = data[:,0],data[:,1],data[:,2],data[:,3],data[:,4]
+    db = 18.45
+    db = 9.41
+    dt = 7.93
+    dc = 0.7*4
+    db = db+dt+dc
+
     
     diffs = np.diff(Vb)
-    try:
-        transition_index = np.where((diffs[:-1] >= 0) & (diffs[1:] <= 0))[0][0]+1
-    except:
-        transition_index=int(len(Vb)/2)
-        
-        
-    # G_Gr = 1000/R_Gr
-    # G_Gr_std = 1000/R_Gr_std
+    change_indices = np.where(diffs < 0)[0]  # descending starts here
+    if len(change_indices)==0:
+        change_indices = np.array([len(Vb)-1])
+    Vb_ascend = Vb[:change_indices[0] + 1]
+    Vb_descend = Vb[change_indices[0] + 1:]
+    E_ascend = Vb_ascend/db
+    E_descend = Vb_descend/db
     
-    Vb_ascend = Vb[0:transition_index]
-    Vb_descend = Vb[transition_index:]
-    R_Gr_ascend = R_Gr[0:transition_index]
-    R_Gr_descend = R_Gr[transition_index:]
-    R_Gr_std_ascend = R_Gr_std[0:transition_index]
-    R_Gr_std_descend = R_Gr_std[transition_index:]
-    
-    
-    tb.init_plot_params()
+    plot = 'G' #'R'
     fig, ax = plt.subplots(1,1,figsize=(6,5))
-    ax.errorbar(Vb_descend, R_Gr_descend,color='black',marker='.',ms=5,label=r'$\rightarrow$',elinewidth=0)
-    ax.errorbar(Vb_ascend, R_Gr_ascend,color='r',marker='.',ms=5,label=r'$\leftarrow$',elinewidth=0)
-    # ax.errorbar(Vb_ascend, G_Gr_ascend,color='black',marker='.',ms=5,label=r'$\rightarrow$',elinewidth=0)
-    # ax.errorbar(Vb_descend, G_Gr_descend,color='r',marker='.',ms=5,label=r'$\leftarrow$',elinewidth=0)
-    ax.legend()
-    ax.set_xlabel('V$_{b}$ (V)'), ax.set_ylabel(r'R$_{Gr}$ (k$\Omega$)')
-    ax.set_ylim(1.7,2.4)
-    ax.set_xlim(-.5,7.5)
-    # ax.set_ylim(350,700)
-    # plt.savefig(file.replace('.txt','_G_plot.png'),dpi=500)
+    ascend = R_Gr[:change_indices[0] + 1]
+    descend = R_Gr[change_indices[0] + 1:]
+    std_ascend = R_Gr_std[:change_indices[0] + 1]
+    std_descend = R_Gr_std[change_indices[0] + 1:]
+    ax.set_xlabel('$V_{b}/d$ (V$~$nm$^{-1}$)'), ax.set_ylabel(r'R$_{Gr}$ (k$\Omega$)')
+    # ax.set_ylim(1.6,2.6)
+    # ax.set_xlim(-.05,.25)
+    # ax.axhline(1.83)
+
+        
+    if plot == 'G':
+        ascend = 1000/ascend
+        descend = 1000/descend
+        std_ascend = 1000*R_Gr_std[:change_indices[0] + 1]/(R_Gr[:change_indices[0] + 1])**2
+        std_descend = 1000*R_Gr_std[change_indices[0] + 1:]/(R_Gr[change_indices[0] + 1:])**2
+        ax.set_xlabel('$V_{b}/d$ (V$~$nm$^{-1}$)'), ax.set_ylabel(r'G$_{Gr}$ ($\mu S$)')
+        ax.set_ylim(200,800)
+    
+    
+    ax.errorbar(E_ascend, ascend,yerr=std_ascend,color='r',marker='.',ms=3,label=r'$\rightarrow$')
+    ax.errorbar(E_descend, descend,yerr=std_descend,color='b',marker='.',ms=3,label=r'$\leftarrow$')
+    ax.legend(loc='upper left')
+    plt.savefig(file.replace('.txt','_{}_plot.png'.format(plot)),dpi=500)
     plt.show()
     
 
