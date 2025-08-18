@@ -28,13 +28,13 @@ def main(sample: DualGate, lockin: LockInOE1022D, keithley_b: KeithleySourceMete
     saving_file = make_files(sample,lockin,file_save)
 
     plt.ion()
-    fig,ax1,line1 = init_plot()
+    fig,ax1,lineup,linedown = init_plot()
     ax1.set_ylim(0.5,3.1)
     ax1.set_xlim(np.min(Vb_array)*1.1,1.1*np.max(Vb_array))
     Vb_list, R_Gr_list = [],[]
+    Vb_list_up, Vb_list_down, R_Gr_list_up, R_Gr_list_down = [],[],[],[]
     
     for Vb in Vb_array: # sweep Vb 
-        start = time.time()
         keithley_b.source_voltage = Vb
         V_b_meas = keithley_b.measure_voltage_avg(10)
         I_b_meas = 10**9 * keithley_b.measure_current_avg(20)
@@ -51,10 +51,25 @@ def main(sample: DualGate, lockin: LockInOE1022D, keithley_b: KeithleySourceMete
         R_Gr_std = V_Gr_std/I_Gr
         print(round(V_b_meas,3),round(I_b_meas,3),round(V_Gr,4),round(I_Gr,4),round(R_Gr,3))
         
+        
+        if len(Vb_list) != 0:
+            if Vb >= Vb_list[-1]:
+                Vb_list_up.append(Vb)
+                R_Gr_list_up.append(R_Gr)
+            if Vb <= Vb_list[-1]:
+                Vb_list_down.append(Vb)
+                R_Gr_list_down.append(R_Gr)
+        else:
+            if Vb <0:
+                Vb_list_up.append(Vb)
+                R_Gr_list_up.append(R_Gr)
+            elif Vb>0:
+                Vb_list_down.append(Vb)
+                R_Gr_list_down.append(R_Gr)
         Vb_list.append(Vb)
         R_Gr_list.append(R_Gr) #kOhm
         save_data([Vb,V_b_meas,I_b_meas,R_Gr,R_Gr_std,V_Gr,I_Gr,Vbox],saving_file)
-        update_plot(line1,Vb_list,R_Gr_list,ax1,fig)
+        update_plot(lineup,linedown,Vb_list_up,R_Gr_list_up,Vb_list_down,R_Gr_list_down,ax1,fig)
     plt.ioff()
     plt.show()
     
@@ -66,8 +81,10 @@ def save_data(data_save,saving_file):
     with open(saving_file, 'a') as file:
         file.write(' '.join(f"{d:.9f}" for d in data_save) + '\n') 
         
-def update_plot(line: Line2D, x_data, y_data, ax: plt.Axes, fig: plt.Figure, pause_time: float = 0.05):
-    line.set_data(x_data, y_data)
+def update_plot(lineup: Line2D,linedown: Line2D, xup_data, yup_data, xdown_data, ydown_data, 
+                ax: plt.Axes, fig: plt.Figure, pause_time: float = 0.05):
+    lineup.set_data(xup_data, yup_data)
+    linedown.set_data(xdown_data, ydown_data)
     ax.relim()
     ax.autoscale_view()
     fig.canvas.draw()
@@ -79,9 +96,12 @@ def init_plot():
     fig.canvas.manager.window.move(1920, 100)  # (x, y) position in pixels
     ax1.set_xlabel(r'V$_{b}$ (V)')
     ax1.set_ylabel(r'R$_{Gr}$ (k$\Omega$)')
-    line1 = Line2D([], [], color='blue',marker='.',markersize=4)
-    ax1.add_line(line1)
-    return fig,ax1,line1
+    lineup = Line2D([], [], color='red',marker='.',markersize=3)
+    linedown = Line2D([], [], color='blue',marker='.',markersize=3)
+    ax1.add_line(lineup)
+    ax1.add_line(linedown)
+    # ax1.legend()
+    return fig,ax1,lineup,linedown
 
 def make_files(sample,lockin,file_save):
     if not os.path.exists(sample.data_path+"/GrSensorSingle"):

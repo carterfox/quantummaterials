@@ -58,14 +58,14 @@ def main(sample: DualGate, lockin: LockInOE1022D,
     saving_file = tb.make_rmcd_saving_file(gen_path,'Esweep-Vb')
     
     plt.ion()
-    fig, ax, line = init_main_plot()
+    fig, ax, lineup,linedown = init_main_plot()
     
     keithley_b.enable_source()
     keithley_b.apply_voltage()
-    rmcd_list = []
+    rmcd_list,rmcd_list_up,rmcd_list_down = [],[],[]
     d_b = sample.d_b
     # d_t = sample.d_t
-    
+    E_list,E_list_up,E_list_down = [],[],[]
     for E in E_array:
         V_b = E*d_b*2
         # V_t = -V_b*d_t/d_b
@@ -79,8 +79,24 @@ def main(sample: DualGate, lockin: LockInOE1022D,
         rmcd_data = tb.read_lockin_rmcd_data(lockin)#tb.read_lockin_rmcd_data(lockin)
         rmcd = rmcd_data[4]/rmcd_data[0]*100
         rmcd_list.append(rmcd)
-        save_data(E,V_b,V_b_meas,I_b_meas,rmcd_data,saving_file)
-        update_plot(fig,ax,line,E_array[0:len(rmcd_list)],rmcd_list)
+        save_data(V_b,V_b_meas,I_b_meas,rmcd_data,saving_file)
+        
+        if len(E_list) != 0:
+            if E >= E_list[-1]:
+                E_list_up.append(E)
+                rmcd_list_up.append(rmcd)
+            if E <= E_list[-1]:
+                E_list_down.append(E)
+                rmcd_list_down.append(rmcd)
+        else:
+            if E <0:
+                E_list_up.append(E)
+                rmcd_list_up.append(rmcd)
+            elif Vb>0:
+                E_list_down.append(E)
+                rmcd_list_down.append(rmcd)
+        
+        update_plot(fig,ax,lineup,linedown,E_list_up,E_list_down,rmcd_list_up,rmcd_list_down)
         
     plt.ioff()
     plt.show()
@@ -88,14 +104,17 @@ def main(sample: DualGate, lockin: LockInOE1022D,
     return E_array,rmcd_list
 
 def save_data(V_b,V_b_meas,I_b_meas,rmcd_data,saving_file):
-    values = [E, V_b, V_b_meas, I_b_meas, rmcd]
-    print(" ".join(f"{v:.4f}" for v in values))
+    values = [round(V_b,3),round(V_b_meas,3), round(I_b_meas,4)]
     with open(saving_file, 'a') as file:
-        file.write('{} {} {} '.format(round(V_b,3),round(V_b_meas,3), round(I_b_meas,4)) )
+        file.write(' '.join(f"{v:.4f}" for v in values)+ ' ') 
         file.write(' '.join(f"{d:.9f}" for d in rmcd_data) + '\n') 
+    values.append(round(rmcd_data[4]/rmcd_data[0]*100,3))
+    print(" ".join(f"{v:.4f}" for v in values))
+    
+def update_plot(fig,ax,lineup,linedown,E_list_up,E_list_down,rmcd_list_up,rmcd_list_down):
 
-def update_plot(fig,ax,line,xdata,ydata):
-    line.set_data(xdata,ydata)
+    lineup.set_data(E_list_up,rmcd_list_up)
+    linedown.set_data(E_list_down,rmcd_list_down)
     ax.relim()
     ax.autoscale_view()
     fig.canvas.draw()
@@ -105,20 +124,23 @@ def init_main_plot():
     fig, ax = plt.subplots()
     ax.set_xlabel('E (V/nm)')
     ax.set_ylabel('RMCD %')
-    line = Line2D([], [], color='blue',marker='.')
-    ax.add_line(line)
-    return fig,ax,line
+    lineup = Line2D([], [], color='black',marker='.',label=r'$\rightarrow$')
+    linedown = Line2D([], [], color='red',marker='.',label=r'$\leftarrow$')
+    ax.add_line(lineup)
+    ax.add_line(linedown)
+    ax.legend()
+    return fig,ax,lineup,linedown
 
 if __name__ == "__main__":
     # 
     tb.init_plot_params()
-    # path_d3 = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/d3/RMCD/Esweep/'
-    path_d3 = '/Users/carterfox/My Drive (cdfox@wisc.edu)/StackingTransitions/CrI3/round7/d3/RMCD/Esweep/'
+    path_d3 = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/d3/RMCD/Esweep/'
+    # path_d3 = '/Users/carterfox/My Drive (cdfox@wisc.edu)/StackingTransitions/CrI3/round7/d3/RMCD/Esweep/'
     # sample = DualGate(sample_name='d4', d_b=18.45, d_t=5.67, data_path=path_d4)
     sample = DualGate(sample_name='d3', d_b=9.41, d_t=7.93, data_path=path_d3)
     sample.d_flake=0.7*4
     
-    file = path_d3+'Esweep9_0T_stacked_p1_after_m2T_after_p6.txt'
+    file = path_d3+'sweep2_8-18_2K_0T_after_m2T_m65deg.txt'
     data = np.loadtxt(file)
     Vb, R, dR, Ib, theta_dr = data[:,1], data[:,3], data[:,7], data[:,2], data[:,9]
     rmcd = dR/R*100
