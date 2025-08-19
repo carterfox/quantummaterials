@@ -126,7 +126,7 @@ def plot_arrow_legend(ax,label,x1=None,y1=None,ls=18,yratio=.058,xratio=.12,wrat
     x2 = x1-xlen
     y2 = y1-ylen
     yavg = (y1+y2)/2
-    w = yrange*wratio*.7
+    w = yrange*wratio*.55
     arrow2 = mpatches.Arrow(x1,y1,-xlen,0,width=w,color='red')
     arrow = mpatches.Arrow(x2,y2,xlen,0,width=w,color='black')
     ax.add_patch(arrow), ax.add_patch(arrow2)

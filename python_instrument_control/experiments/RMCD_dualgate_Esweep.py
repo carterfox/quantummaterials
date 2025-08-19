@@ -92,10 +92,9 @@ def main(sample: DualGate, lockin: LockInOE1022D,
             if E <0:
                 E_list_up.append(E)
                 rmcd_list_up.append(rmcd)
-            elif E>0:
+            elif Vb>0:
                 E_list_down.append(E)
                 rmcd_list_down.append(rmcd)
-        E_list.append(E)
         
         update_plot(fig,ax,lineup,linedown,E_list_up,E_list_down,rmcd_list_up,rmcd_list_down)
         
@@ -125,26 +124,55 @@ def init_main_plot():
     fig, ax = plt.subplots()
     ax.set_xlabel('E (V/nm)')
     ax.set_ylabel('RMCD %')
-    lineup = Line2D([], [], color='black',marker='.',ms=3,label=r'$\rightarrow$')
-    linedown = Line2D([], [], color='red',marker='.',ms=3,label=r'$\leftarrow$')
+    lineup = Line2D([], [], color='black',marker='.',label=r'$\rightarrow$')
+    linedown = Line2D([], [], color='red',marker='.',label=r'$\leftarrow$')
     ax.add_line(lineup)
     ax.add_line(linedown)
     ax.legend()
     return fig,ax,lineup,linedown
 
+
+def smooth(arr):
+    """
+    Smooths an array by averaging each element with its neighbors.
+    Keeps the same length as the original array.
+    
+    Parameters:
+    arr (array-like): Input array of values.
+    
+    Returns:
+    np.ndarray: Smoothed array.
+    
+    """
+    if False:
+        arr = np.array(arr, dtype=float)
+        smoothed = np.zeros_like(arr)
+    
+        for i in range(len(arr)):
+            if i == 0:
+                smoothed[i] = (arr[i] + arr[i+1]) / 2
+            elif i == len(arr) - 1:
+                smoothed[i] = (arr[i-1] + arr[i]) / 2
+            else:
+                smoothed[i] = (arr[i-1] + arr[i] + arr[i+1]) / 3
+        return smoothed
+    else:
+        return arr
+
+
 if __name__ == "__main__":
     # 
     tb.init_plot_params()
     # path_d3 = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/d3/RMCD/Esweep/'
-    path_d3 = '/Users/carterfox/My Drive (cdfox@wisc.edu)/StackingTransitions/CrI3/round7/d3/RMCD/Esweep/stacked/'
-    path_d3 = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/d3/RMCD/Esweep/'
+    path_d3 = '/Users/carterfox/My Drive (cdfox@wisc.edu)/StackingTransitions/CrI3/round7/d3/RMCD/Esweep/'
+    # path_d3 = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/d3/RMCD/Esweep/'
     # path_d3 = '/Users/carterfox/My Drive (cdfox@wisc.edu)/StackingTransitions/CrI3/round7/d3/RMCD/Esweep/'
     # sample = DualGate(sample_name='d4', d_b=18.45, d_t=5.67, data_path=path_d4)
     sample = DualGate(sample_name='d3', d_b=9.41, d_t=7.93, data_path=path_d3)
     sample.d_flake=0.7*4
     
-    file = path_d3+'Esweep5_0T_stacked_p1_after_m2T_diffInput_faster.txt'
-    file = path_d3+'sweep2_8-18_2K_0T_after_m2T_m65deg.txt'
+    # file = path_d3+'Esweep5_0T_stacked_p1_after_m2T_diffInput_faster.txt'
+    file = path_d3+'sweep5_8-18_2K_0T_after_m2T_m65deg.txt'
     data = np.loadtxt(file)
     Vb, R, dR, Ib, theta_dr = data[:,1], data[:,3], data[:,7], data[:,2], data[:,9]
     rmcd = dR/R*100
@@ -160,6 +188,8 @@ if __name__ == "__main__":
     # rmcd_ascend = rmcd[0:transition_index]
     # rmcd_descend = rmcd[transition_index:]
     
+
+    
     
     diffs = np.diff(E)
     change_indices = np.where(diffs < 0)[0]  # descending starts here
@@ -172,15 +202,16 @@ if __name__ == "__main__":
     rmcd_descend = rmcd[change_indices[0] + 1:]
     
     
-    ax.plot(E_ascend, rmcd_ascend, color='black', label=r'$\rightarrow$',marker='.',zorder=1)
-    ax.plot(E_descend, rmcd_descend, color='r', label=r'$\leftarrow$',marker='.',zorder=0)
+    ax.plot(smooth(E_ascend), smooth(rmcd_ascend), color='black', label=r'$\rightarrow$',marker='.',ms=5,zorder=1,lw=2)
+    ax.plot(smooth(E_descend), smooth(rmcd_descend), color='r', label=r'$\leftarrow$',marker='.',ms=5,zorder=0,lw=2)
     # ax.plot(E_ascend, rmcd_ascend-rmcd_descend[::-1], color='r', label=r'$\leftarrow$',marker='.')
     
     ax.set_xlabel('E (V/nm)')
     ax.set_ylabel('RMCD %')
     ax.legend()
-    # ax.set_ylim(.5,.8)
-    plt.savefig(file.replace('.txt','_plot.png'),dpi=500)
+    # ax.set_ylim(.85,1.5)
+    ax.set_xlim(-.45,.4)
+    # plt.savefig(file.replace('.txt','_plot.png'),dpi=500)
     plt.show()
     
     # keithleyb = KeithleySourceMeter('GPIB::1','2450')

@@ -128,13 +128,13 @@ def replot_rmcd_bfield_scan(data_file):
     rmcd = dr/r*100
     # s6 sixlayer
     rmcd[np.where(theta_dr>0)] *= -1
-    rmcd[0:8] = rmcd[8] -(rmcd[0:8] - rmcd[8])
-    rmcd[80:96] = rmcd[80] - (rmcd[80:96]-rmcd[80])
-    rmcd[-8:] = rmcd[8] - (rmcd[-8:] - rmcd[8])   
-    dr[np.where(theta_dr>0)] *= -1
-    dr[0:8] = dr[8] -(dr[0:8] - dr[8])
-    dr[80:96] = dr[80] - (dr[80:96]-dr[80])
-    dr[-8:] = dr[8] - (dr[-8:] - dr[8])   
+    # rmcd[0:8] = rmcd[8] -(rmcd[0:8] - rmcd[8])
+    # rmcd[80:96] = rmcd[80] - (rmcd[80:96]-rmcd[80])
+    # rmcd[-8:] = rmcd[8] - (rmcd[-8:] - rmcd[8])   
+    # dr[np.where(theta_dr>0)] *= -1
+    # dr[0:8] = dr[8] -(dr[0:8] - dr[8])
+    # dr[80:96] = dr[80] - (dr[80:96]-dr[80])
+    # dr[-8:] = dr[8] - (dr[-8:] - dr[8])   
 
     diffs = np.diff(b_field)
     try:
@@ -148,9 +148,10 @@ def replot_rmcd_bfield_scan(data_file):
     
     fig, ax = plt.subplots(1,1,figsize=(6,5))
     
-    ax.plot(b_field_ascend, rmcd_ascend, color='black', label=r'$\rightarrow$',marker='.')
-    ax.plot(b_field_descend, rmcd_descend, color='r', label=r'$\leftarrow$',marker='.')
-    ax.set_xlabel('B (T)'), ax.set_ylabel(r'RMCD %')
+    ax.plot(b_field_ascend, rmcd_ascend, color='black', label=r'$\rightarrow$',marker='.',ms=10,lw=3)
+    ax.plot(b_field_descend, rmcd_descend, color='r', label=r'$\leftarrow$',marker='.',ms=10,lw=3)
+    ax.set_xlabel(r'$B$ (T)',fontsize=24)
+    ax.set_ylabel("RMCD %",rotation=90,fontsize=24,labelpad=-10)
     ax.set_xlim(min(b_field),max(b_field))
     # ax.legend(loc='upper left')
     
@@ -160,27 +161,27 @@ def replot_rmcd_bfield_scan(data_file):
 if __name__ == "__main__":
     # 
     # path_d4 = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/d4/RMCD/bfield_scan/'
-    # path_d3 = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/d3/RMCD/bfield_scan/'
-    path_s6 = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/6-18-sample-for-afm-and-rmcd/RMCD/bfield_scan/'
-    file = path_s6+'sixlayer-scan3.txt'
+    path_d3 = '/Users/carterfox/Google Drive/My Drive/StackingTransitions/CrI3/round7/d3/RMCD/bfield_scan/'
+    # path_s6 = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/6-18-sample-for-afm-and-rmcd/RMCD/bfield_scan/'
+    # file = path_s6+'sixlayer-scan3.txt'
     # file = path_s6+'fourlayer-scan1.txt'
     # file = path_s6+'map1_0T.txt'
-    # file = path_d3+'bilayer_scan_p5-nogates.txt'
-    path_s6 = '/Users/carterfox/Library/CloudStorage/GoogleDrive-cdfox@wisc.edu/.shortcut-targets-by-id/1-8q9lGFnGNt4mDzcxXwdk43m1aVWT66q/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/6-18-sample-for-afm-and-rmcd/RMCD/bfield_scan/'
+    file = path_d3+'bilayer_scan_p5-nogates.txt'
+    # path_s6 = '/Users/carterfox/Library/CloudStorage/GoogleDrive-cdfox@wisc.edu/.shortcut-targets-by-id/1-8q9lGFnGNt4mDzcxXwdk43m1aVWT66q/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/6-18-sample-for-afm-and-rmcd/RMCD/bfield_scan/'
     # file = path_s6+'sixlayer-scan3.txt'
     # file = path_s6+'fourlayer-scan1.txt'
     # file = path_s6+'map1_0T.txt'
     # file = path_d3+'map1_0T_after_m2T.txt'
-    file = path_s6+'sixlayer-scan3.txt'
+    # file = path_s6+'sixlayer-scan3.txt'
     tb.init_plot_params()
 
-
-    fig,ax,b_field,theta_dr,dr,r = replot_rmcd_bfield_scan(file)
-    tb.plot_arrow_legend(ax,r'$B_{\perp}$',x1=1.5,y1=-7.9,ls=18,yratio=.058,xratio=.12,wratio=.0872)
     
-    title = file.split('/')[-1].split('.txt')[0]
+    fig,ax,b_field,theta_dr,dr,r = replot_rmcd_bfield_scan(file)
+    tb.plot_arrow_legend(ax,r'B',x1=.8,y1=-12,ls=18,yratio=.058,xratio=.12,wratio=.0872)
+    
+    # title = file.split('/')[-1].split('.txt')[0]
     # plt.title(title)
     
-    plt.savefig(file.replace('.txt','_paper_plot.png'),dpi=500)
-    # plt.savefig(file.replace('.txt','_plot.png'),dpi=500)
+    # plt.savefig(file.replace('.txt','_paper_plot.png'),dpi=500)
+    plt.savefig(file.replace('.txt','_plot.png'),dpi=500)
     plt.show()

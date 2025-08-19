@@ -129,11 +129,12 @@ def plot_rmcd_map(scan_array,x_step,y_step,plot_type='RMCD'):
     # fig.canvas.manager.window.move(1920, 100)
     im = ax.imshow(scan_array, cmap='viridis', interpolation='none')
     cbar=plt.colorbar(im, ax=ax)
-    ax.set_xlabel('$V_x$'),ax.set_ylabel('$V_y$')
+    ax.set_xlabel(r'X ($\mu$m)'),ax.set_ylabel(r'Y ($\mu$m)')
     xticks = np.linspace(0, x_points - 1, num=5, dtype=int)  # 5 ticks evenly spaced
     yticks = np.linspace(0, y_points - 1, num=5, dtype=int)
-    xlabels = [round(0 + (x_points - 1 - i) * x_step, 2) for i in xticks]
-    ylabels = [round(0 + j * y_step, 2) for j in yticks]
+    scale=.2
+    xlabels = [round(0 + (x_points - 1 - i) * x_step*scale, 2) for i in xticks]
+    ylabels = [round(0 + j * y_step*scale, 2) for j in yticks]
     ax.set_xticks(xticks)
     ax.set_yticks(yticks)
     ax.set_xticklabels(xlabels)
@@ -148,7 +149,7 @@ def plot_rmcd_map(scan_array,x_step,y_step,plot_type='RMCD'):
         cbar.set_label(r'$\theta$')
     return fig,ax,im
 
-def replot_rmcd_map(data_file,plot_type='RMCD'):
+def replot_rmcd_map(data_file,plot_type='RMCD',data_file2=None):
     data = np.loadtxt(data_file)
     x,y,r,dr,theta_dr = data[:,0], data[:,1],data[:,2], data[:,6], data[:,8]
     rmcd = dr/r*100
@@ -156,7 +157,14 @@ def replot_rmcd_map(data_file,plot_type='RMCD'):
     x_points,y_points = np.unique(x), np.unique(y)
     xstep = x_points[1]-x_points[0]
     ystep = y_points[1]-y_points[0]
-
+    
+    if file2 != None:
+        data2 = np.loadtxt(data_file2)
+        x2,y2,r2,dr2,theta_dr2 = data2[:,0], data2[:,1],data2[:,2], data2[:,6], data2[:,8]
+        rmcd2 = dr2/r2*100
+        rmcd2[np.where(theta_dr2>0)] *= -1
+        rmcd = rmcd-rmcd2
+    
     if plot_type == 'RMCD':
         grid = rmcd
     elif plot_type == 'R':
@@ -178,11 +186,12 @@ if __name__ == "__main__":
     # file = path_s6+'sixlayer-scan3.txt'
     # file = path_s6+'fourlayer-scan1.txt'
     # file = path_s6+'map1_0T.txt'
-    file = path_d3+'map1_0T_after_m2T.txt'
+    file = path_d3+'map_after_p2T_8-19.txt'
+    file2 = path_d3+'map_after_m2T_8-19.txt'
     tb.init_plot_params()
 
-
-    fig,ax,im = replot_rmcd_map(file,'thetadR')
+    plottype = 'RMCD'
+    fig,ax,im = replot_rmcd_map(file,plottype,data_file2=file2)
 
     # fig,ax,b_field,theta_dr = replot_rmcd_bfield_scan(file)
     # tb.plot_arrow_legend(ax,r'$B_{\perp}$',x1=1.7,y1=-7,ls=18,yratio=.058,xratio=.12,wratio=.0872)
@@ -191,5 +200,5 @@ if __name__ == "__main__":
     plt.title(title)
     plt.xlim(0,40)
     plt.ylim(40,0)
-    plt.savefig(file.replace('.txt','_theta_plot.png'),dpi=500)
+    # plt.savefig(file.replace('.txt','_{}_plot.png'.format(plottype)),dpi=500)
     plt.show()

@@ -131,7 +131,7 @@ if __name__ == "__main__":
     tb.init_plot_params()
     path = '/Users/carterfox/My Drive (cdfox@wisc.edu)/StackingTransitions/CrI3/round7/d3/GrSensorSingle/'    
     # file = path+'sweep3_2K_0T_floatVc.txt'
-    file = path+'sweep1_2K_0T.txt'
+    file = path+'slow-scan1-8-19.txt'
     data = np.loadtxt(file)
     Vb,V_b_meas,I_b_meas,R_Gr,R_Gr_std = data[:,0],data[:,1],data[:,2],data[:,3],data[:,4]
     db = 18.45
@@ -150,14 +150,14 @@ if __name__ == "__main__":
     E_ascend = Vb_ascend/db
     E_descend = Vb_descend/db
     
-    plot = 'G' #'R'
+    plot = 'R' #'R'
     fig, ax = plt.subplots(1,1,figsize=(6,5))
     ascend = R_Gr[:change_indices[0] + 1]
     descend = R_Gr[change_indices[0] + 1:]
     std_ascend = R_Gr_std[:change_indices[0] + 1]
     std_descend = R_Gr_std[change_indices[0] + 1:]
     ax.set_xlabel('$V_{b}/d$ (V$~$nm$^{-1}$)'), ax.set_ylabel(r'R$_{Gr}$ (k$\Omega$)')
-    # ax.set_ylim(1.6,2.6)
+    ax.set_ylim(0,1.6)
     # ax.set_xlim(-.05,.25)
     # ax.axhline(1.83)
 
