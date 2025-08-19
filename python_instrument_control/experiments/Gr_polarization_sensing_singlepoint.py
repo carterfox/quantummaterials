@@ -29,7 +29,7 @@ def main(sample: DualGate, lockin: LockInOE1022D, keithley_b: KeithleySourceMete
 
     plt.ion()
     fig,ax1,lineup,linedown = init_plot()
-    ax1.set_ylim(0.5,3.1)
+    ax1.set_ylim(0,1.6)
     ax1.set_xlim(np.min(Vb_array)*1.1,1.1*np.max(Vb_array))
     Vb_list, R_Gr_list = [],[]
     Vb_list_up, Vb_list_down, R_Gr_list_up, R_Gr_list_down = [],[],[],[]
@@ -71,6 +71,7 @@ def main(sample: DualGate, lockin: LockInOE1022D, keithley_b: KeithleySourceMete
         save_data([Vb,V_b_meas,I_b_meas,R_Gr,R_Gr_std,V_Gr,I_Gr,Vbox],saving_file)
         update_plot(lineup,linedown,Vb_list_up,R_Gr_list_up,Vb_list_down,R_Gr_list_down,ax1,fig)
     plt.ioff()
+    plt.savefig(saving_file.replace('.txt','_R_plot.png'),dpi=500)
     plt.show()
     
     return Vb_list, R_Gr_list
@@ -131,7 +132,7 @@ if __name__ == "__main__":
     tb.init_plot_params()
     path = '/Users/carterfox/My Drive (cdfox@wisc.edu)/StackingTransitions/CrI3/round7/d3/GrSensorSingle/'    
     # file = path+'sweep3_2K_0T_floatVc.txt'
-    file = path+'sweep1_2K_0T.txt'
+    file = path+'faster-scan-8-19_2K_0T.txt'
     data = np.loadtxt(file)
     Vb,V_b_meas,I_b_meas,R_Gr,R_Gr_std = data[:,0],data[:,1],data[:,2],data[:,3],data[:,4]
     db = 18.45

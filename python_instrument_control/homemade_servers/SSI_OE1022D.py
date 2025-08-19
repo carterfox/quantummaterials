@@ -14,6 +14,7 @@ import os
 import pyvisa
 import time
 import logging
+import matplotlib.pyplot as plt
 
 
 class LockInOE1022D():
@@ -65,7 +66,7 @@ class LockInOE1022D():
     # --- Data Reading and storage ---
     def read_single(self, channel=1, param=2):
         """Read a single parameter (e.g., R, X, Y, θ)"""
-        raw = self.query(f"OUTPD? {channel},{param}")
+        raw = self.query(f"SNAPD? {channel},{param}")
         clean = float(raw.replace('\x00','').strip())
         return clean
 
@@ -216,4 +217,30 @@ class LockInOE1022D():
             self.write(f"SWVTD {channel},{waveform_type}")
         except Exception as e:
             logging.error(f"Error configuring SINE OUT: {e}")
+            
+    def read_continuous(self, channel=1, param=2, interval=0.01):
+        plt.ion()
+        fig, ax = plt.subplots(figsize=(8, 4))
+        ax.set_xlabel("Time (s)")
+        ax.set_ylabel(self.parameters[param])
+        line, = ax.plot([], [], 'b.-')
+        fig.canvas.manager.window.move(1920, 100)  # optional: position window
+        values, times = [], []
+        start_time = time.time()
+
+        try:
+            while True:
+                val = self.read_single(channel=channel, param=param)
+                times.append(time.time() - start_time)
+                values.append(val)
+                line.set_data(times, values)
+                ax.relim()
+                ax.autoscale_view()
+                fig.canvas.draw()
+                fig.canvas.flush_events()
+                # plt.pause(0.01)
+                time.sleep(interval)
+        except KeyboardInterrupt:
+            plt.ioff()
+            # plt.show()
         

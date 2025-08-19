@@ -144,7 +144,7 @@ if __name__ == "__main__":
     sample.d_flake=0.7*4
     
     file = path_d3+'Esweep5_0T_stacked_p1_after_m2T_diffInput_faster.txt'
-    file = path_d3+'sweep2_8-18_2K_0T_after_m2T_m65deg.txt'
+    file = path_d3+'sweep6_8-18_2K_0T_after_m2T_m65deg.txt'
     data = np.loadtxt(file)
     Vb, R, dR, Ib, theta_dr = data[:,1], data[:,3], data[:,7], data[:,2], data[:,9]
     rmcd = dR/R*100
