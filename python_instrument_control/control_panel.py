@@ -75,22 +75,34 @@ if __name__ == "__main__":
     sample = DualGate(sample_name='d3', d_b=9.41, d_t=7.93, data_path=path_d3)
     sample.Rbox = 2e6
     lockin = get_lockin(delay=1.5,num_avgs=100)
-    keithley_b = get_keithley('GPIB::1','2450')
-    keithley_b.compliance_current = 10e-9
-    keithley_b.apply_voltage(compliance_current=keithley_b.compliance_current)
+    # keithley_b = get_keithley('GPIB::1','2450')
+    # keithley_b.compliance_current = 5e-9
+    # keithley_b.apply_voltage(compliance_current=keithley_b.compliance_current)
     # keithley_b.enable_source()
-    # Vb_array1 = np.arange(0,-7.5,-0.5)
-    Vb_array2 = np.arange(-7.,7.6,.02)
-    # Vb_array3 = np.arange(7.0,-.5,-0.5)
+    # # Vb_array1 = np.arange(0,-7.2,-0.2)
+    # opticool = get_opticool()
+    # # Vb_array2 = np.arange(-7.,7.6,.1)
+    # Vb_array = np.arange(-7.,.5,0.5)
     # Vb_array_full = np.concatenate((Vb_array1,Vb_array2,Vb_array3))
-    Vb_array_full = np.concatenate((Vb_array2,Vb_array2[::-1]))
-    # Vb_array_full = np.ones(500)*(-7)
+    # Vb_array_full = np.concatenate((Vb_array2,Vb_array2[::-1]))
+    # Vb_array_full2 = np.concatenate((Vb_array3,Vb_array3[::-1]))
+    # Vb_array_full = np.ones(10)*(0)
     try:
         Vsin=0.1
-        Vblist,Rgrlist = Gr_polarization_sensing_singlepoint.main(sample,lockin,keithley_b,
-                                                    Vb_array_full,Vsin, 'slow-scan2-8-19.txt')
+        # Vblist,Rgrlist = Gr_polarization_sensing_singlepoint.main(sample,lockin,keithley_b,
+                                                    # Vb_array,Vsin, 'goingback.txt')
+        
+        # time.sleep(3)
+        # Vblist,Rgrlist = Gr_polarization_sensing_singlepoint.main(sample,lockin,keithley_b,
+        #                                             Vb_array_full2,Vsin, 'fast_scan1-295K.txt')
         
         # E,rmcd = RMCD_dualgate_Esweep.main(sample, lockin, keithley_b, E_array, 'goingback.txt')
+        # arr = np.arange(0,-7.2,-.2)
+        # for v in arr:
+        #     keithley_b.source_voltage = v
+        #     time.sleep(2)
+        #     print(v)
+        # keithley_b.disable_source()
         
     except Exception as e:
         traceback.print_exc()
