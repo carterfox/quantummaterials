@@ -14,9 +14,10 @@ class AndorCamSpec:
         self.n_avg = n_avg
 
         # Camera setup
-        # we want the cooler to stay on when we do measurements, but we want it to turn off after. 
-        # but we dont want it to turn off after each measurement. So we cannot close the connection each time.
-        # this means i need to ammend the structure so servers aren't closed every time
+        # we want the cooler to stay on when we do measurements and only turn off after 
+        # all the measurements are done and we decide it is time to turn it off.
+        # To accomplish that, the control panel has 'open_instruments' and leave_servers_open' booleans
+        # that ask if the servers should be left opened and if they should be left open.
         
         self.cam.set_cooler(True)
         self.cam.set_temperature(temperature)

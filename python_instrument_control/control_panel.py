@@ -22,8 +22,9 @@ from homemade_servers.KeithleySourceMeter import KeithleySourceMeter
 from devices.dualgate import DualGate
 from experiments import RMCD_bfield_scan, RMCD_mapping, RMCD_dualgate_Esweep
 from experiments import PMT_continuous_read, Gr_polarization_sensing, Gr_polarization_sensing_singlepoint
-
+tb.init_plot_params()
 servers = []
+labdata = 'D:/LabData/XiaoWang_Group_data_2024on/'
 ### functions for getting instruments
 def get_lockin(resource_name='ASRL12::INSTR', R_chan=1, dR_chan=2, num_avgs=25,delay=1):  
     lockin = LockInOE1022D(resource_name)
@@ -62,42 +63,35 @@ def close_all():
     for server in servers:
         server.close()
     servers.clear
+    print('exited all servers safely')
     
         
 
 ##run experiments here by running the file 
 if __name__ == "__main__":
     
-    tb.init_plot_params()
-    path_d3 = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/d3'
-    # path_d4 = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/d4'
-    # sample = DualGate(sample_name='d4', d_b=18.45, d_t=5.67, data_path=path_d4)
-    sample = DualGate(sample_name='d3', d_b=9.41, d_t=7.93, data_path=path_d3)
+    open_servers = True #can be changed to False after servers have been opened
+    if open_servers:
+        lockin = get_lockin(delay=1.5,num_avgs=50)
+        keithley_b = get_keithley('GPIB::1','2450')
+    leave_servers_open = True
+    
+    sample = DualGate(sample_name='d3', d_b=9.41, d_t=7.93, data_path=labdata+'StackingTransitions/CrI3/round7/d3')
     sample.Rbox = 2e6
-    lockin = get_lockin(delay=.75,num_avgs=50)
-    keithley_b = get_keithley('GPIB::1','2450')
     keithley_b.compliance_current = 6e-9
     keithley_b.apply_voltage(compliance_current=keithley_b.compliance_current)
-    # keithley_b.enable_source()
-    Vsin=0.1
-    # Vb_array = np.zeros(10)
     Vb_array = np.arange(-6.2,7,.02)
     Vb_full = np.concatenate((Vb_array,Vb_array[::-1]))
     try:
         
         Vblist,Rgrlist = Gr_polarization_sensing_singlepoint.main(sample,lockin,keithley_b, 
-                          Vb_full,Vsin,"slow-scan1_295K_8-25.txt")
-        # keithley_b.source_voltage = 0
-        # time.sleep(1)
-        # print(keithley_b.measure_voltage_avg(10))
-        # print(keithley_b.measure_current_avg(10))
+                          Vb_full,Vsin=0.1,file_save="slow-scan3_295K_8-25.txt")
         
-    except Exception as e:
-        traceback.print_exc()
+        
+    except Exception as e: traceback.print_exc()
     finally:
-        close_all()
-        print('exited safely')
-        
+        if leave_servers_open: print('experiment done. servers left open')
+        else: close_all()
         
         
         
