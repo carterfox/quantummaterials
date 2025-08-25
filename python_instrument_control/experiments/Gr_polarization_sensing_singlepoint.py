@@ -29,7 +29,7 @@ def main(sample: DualGate, lockin: LockInOE1022D, keithley_b: KeithleySourceMete
 
     plt.ion()
     fig,ax1,lineup,linedown = init_plot()
-    ax1.set_ylim(0,1.6)
+    ax1.set_ylim(0,2)
     ax1.set_xlim(np.min(Vb_array)*1.1,1.1*np.max(Vb_array))
     Vb_list, R_Gr_list = [],[]
     Vb_list_up, Vb_list_down, R_Gr_list_up, R_Gr_list_down = [],[],[],[]
@@ -119,7 +119,7 @@ def make_Gr_resistance_saving_file(filename,Rbox,delay,freq,Vb,num_avg,file='Vb'
         header = '#Vb_set(V) Vb_meas(V) Ib_meas(nA) R_Gr(kOhm) R_Gr_std(kOhm) V_Gr(uV) I_Gr(nA) Vbox(uV)'
         with open(filename, 'a') as file:
             header1 = '# Rbox (Ohm) = {}'.format(Rbox)
-            header2 = '# Lockin wait time (ms) = {}'.format(delay)
+            header2 = '# Lockin wait time (s) = {}'.format(delay)
             header3 = '# Lockin averages = {}'.format(num_avg)
             file.write(header1 + '\n') 
             file.write(header2 + '\n') 
@@ -131,8 +131,9 @@ def make_Gr_resistance_saving_file(filename,Rbox,delay,freq,Vb,num_avg,file='Vb'
 if __name__ == "__main__":
     tb.init_plot_params()
     path = '/Users/carterfox/My Drive (cdfox@wisc.edu)/StackingTransitions/CrI3/round7/d3/GrSensorSingle/'    
+    path = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/d3/GrSensorSingle/'
     # file = path+'sweep3_2K_0T_floatVc.txt'
-    file = path+'slow-scan1-8-19.txt'
+    file = path+'fast-scan-8-21-2K_0T.txt'
     data = np.loadtxt(file)
     Vb,V_b_meas,I_b_meas,R_Gr,R_Gr_std = data[:,0],data[:,1],data[:,2],data[:,3],data[:,4]
     db = 18.45
@@ -158,7 +159,7 @@ if __name__ == "__main__":
     std_ascend = R_Gr_std[:change_indices[0] + 1]
     std_descend = R_Gr_std[change_indices[0] + 1:]
     ax.set_xlabel('$V_{b}/d$ (V$~$nm$^{-1}$)'), ax.set_ylabel(r'R$_{Gr}$ (k$\Omega$)')
-    ax.set_ylim(0,1.6)
+    ax.set_ylim(0,2.5)
     # ax.set_xlim(-.05,.25)
     # ax.axhline(1.83)
 

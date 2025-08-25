@@ -74,38 +74,42 @@ if __name__ == "__main__":
     # sample = DualGate(sample_name='d4', d_b=18.45, d_t=5.67, data_path=path_d4)
     sample = DualGate(sample_name='d3', d_b=9.41, d_t=7.93, data_path=path_d3)
     sample.Rbox = 2e6
-    lockin = get_lockin(delay=1.5,num_avgs=100)
-    # keithley_b = get_keithley('GPIB::1','2450')
-    # keithley_b.compliance_current = 5e-9
-    # keithley_b.apply_voltage(compliance_current=keithley_b.compliance_current)
+    lockin = get_lockin(delay=.75,num_avgs=50)
+    keithley_b = get_keithley('GPIB::1','2450')
+    keithley_b.compliance_current = 6e-9
+    keithley_b.apply_voltage(compliance_current=keithley_b.compliance_current)
     # keithley_b.enable_source()
-    # # Vb_array1 = np.arange(0,-7.2,-0.2)
-    # opticool = get_opticool()
-    # # Vb_array2 = np.arange(-7.,7.6,.1)
-    # Vb_array = np.arange(-7.,.5,0.5)
-    # Vb_array_full = np.concatenate((Vb_array1,Vb_array2,Vb_array3))
-    # Vb_array_full = np.concatenate((Vb_array2,Vb_array2[::-1]))
-    # Vb_array_full2 = np.concatenate((Vb_array3,Vb_array3[::-1]))
-    # Vb_array_full = np.ones(10)*(0)
+    Vsin=0.1
+    # Vb_array = np.zeros(10)
+    Vb_array = np.arange(-6.2,7,.02)
+    Vb_full = np.concatenate((Vb_array,Vb_array[::-1]))
     try:
-        Vsin=0.1
-        # Vblist,Rgrlist = Gr_polarization_sensing_singlepoint.main(sample,lockin,keithley_b,
-                                                    # Vb_array,Vsin, 'goingback.txt')
         
-        # time.sleep(3)
-        # Vblist,Rgrlist = Gr_polarization_sensing_singlepoint.main(sample,lockin,keithley_b,
-        #                                             Vb_array_full2,Vsin, 'fast_scan1-295K.txt')
-        
-        # E,rmcd = RMCD_dualgate_Esweep.main(sample, lockin, keithley_b, E_array, 'goingback.txt')
-        # arr = np.arange(0,-7.2,-.2)
-        # for v in arr:
-        #     keithley_b.source_voltage = v
-        #     time.sleep(2)
-        #     print(v)
-        # keithley_b.disable_source()
+        Vblist,Rgrlist = Gr_polarization_sensing_singlepoint.main(sample,lockin,keithley_b, 
+                          Vb_full,Vsin,"slow-scan1_295K_8-25.txt")
+        # keithley_b.source_voltage = 0
+        # time.sleep(1)
+        # print(keithley_b.measure_voltage_avg(10))
+        # print(keithley_b.measure_current_avg(10))
         
     except Exception as e:
         traceback.print_exc()
     finally:
         close_all()
         print('exited safely')
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+
+

@@ -22,7 +22,7 @@ class RotationMount():
         pos_step = int(pos_deg*self.steps_per_deg)
         self.stage.move_to(pos_step)
     
-    def move_to(self,move_deg):
+    def move_by(self,move_deg):
         move_step = int(move_deg*self.steps_per_deg)
         self.stage.move_by(move_step)
     

@@ -1,0 +1,72 @@
+import com.andor.mm.ScriptingInterface.MicrospectroscopyPlugin;
+import com.andor.mm.plugin.util.AndorCommon;
+import java.util.Calendar;
+
+/***************************************************************************************************
+ * 
+ * 	What this script does:
+ * 	
+ *		1. Sets some acquisition parameters (FVB, No. Detector Pix, Pixel Width) 
+ *		2. Move a stageXY device in a square taking a background at each position
+ *		3. Save each acquisition as ASCII (includes metadata about camera, spectrograph and stage
+ *		
+ *		
+ *		
+ *		NOTE: In order for this code to work, the Microspectroscopy plugin must be running
+ * 
+ ***************************************************************************************************/
+
+
+NUM_POINTS = 4;
+ACQ_TYPE = AndorCommon.SIGNAL;
+
+Calendar cal = Calendar.getInstance();
+day = cal.get(Calendar.DAY_OF_MONTH);
+month = cal.get(Calendar.MONTH);
+year = cal.get(Calendar.YEAR);
+hour = cal.get(Calendar.HOUR);
+minute = cal.get(Calendar.MINUTE);
+date_time = day + "_" + (month+1) + "_" + year + "_" + hour + "_" + minute;
+
+//Set acq properties
+
+/*mmc.setProperty("Andor Shamrock", "No. of Detector Pixels", 1024);
+mmc.setProperty("Andor Shamrock", "Detector Pixel Width (um)", 16);
+mmc.setProperty("Andor Shamrock", "Centre wavelength", 300);
+mmc.setProperty("Andor", "ReadMode", "FVB");
+mmc.updateSystemStateCache();*/
+
+//Start plugin and get its core object
+
+core = MicrospectroscopyPlugin.getPluginCore();
+
+//Get XYStage device
+stageXY = mmc.getXYStageDevice();
+
+double [] xPoints = {0, -5000,  -5000,  0};
+double [] yPoints = {0,   0,   -5000, -5000};
+
+
+for (i = 0; i < NUM_POINTS; i++) {
+
+	mmc.waitForDevice(stageXY);
+	mmc.setXYPosition(stageXY, xPoints[i], yPoints[i]);
+	
+	print("Stage's XY position now at: " + "(" + xPoints[i] + "," + yPoints[i] + ")");
+
+	mmc.waitForDevice(core.getCameraDevice());
+	core.TakeAcquisition(ACQ_TYPE);
+	core.waitForData();
+	
+	core.SaveAsASCII(ACQ_TYPE , AndorCommon.ACQTYPES[ACQ_TYPE] + "_" + stageXY + "_X=" + xPoints[i] + "_Y=" + yPoints[i] + "_" + date_time + ".asc", "\t");
+}
+
+//Reset StageXY
+originX = 0;
+originY = 0;
+
+mmc.waitForDevice(stageXY);
+mmc.setXYPosition(stageXY, originX, originY);
+
+print("Experiment Complete!");
+
