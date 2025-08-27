@@ -18,14 +18,16 @@ logging.basicConfig(level=logging.INFO, format='%(levelname)s - %(message)s')
 from homemade_servers.SSI_OE1022D import LockInOE1022D
 from homemade_servers.QDopticool import Opticool
 from homemade_servers.H11890PMT import HamamatsuH11890
+from homemade_servers.AndorCameraSpectrometer import AndorCamSpec
 from homemade_servers.KeithleySourceMeter import KeithleySourceMeter
 from devices.dualgate import DualGate
+from devices.optical import Optical
 from experiments import RMCD_bfield_scan, RMCD_mapping, RMCD_dualgate_Esweep
 from experiments import PMT_continuous_read, Gr_polarization_sensing, Gr_polarization_sensing_singlepoint
+if 'servers' not in globals(): servers = []
 tb.init_plot_params()
-servers = []
 labdata = 'D:/LabData/XiaoWang_Group_data_2024on/'
-### functions for getting instruments
+
 def get_lockin(resource_name='ASRL12::INSTR', R_chan=1, dR_chan=2, num_avgs=25,delay=1):  
     lockin = LockInOE1022D(resource_name)
     lockin.R_chan, lockin.dR_chan = R_chan, dR_chan
@@ -54,6 +56,11 @@ def get_ANC300(resource_name='ASRL11'):
     servers.append(ANC)
     return ANC
 
+def get_AndorCamSpec(temperature=-85):
+    andor = AndorCamSpec(temperature=temperature)
+    servers.append(andor)
+    return andor
+
 def get_PMT():
     PMT = HamamatsuH11890()
     servers.append(PMT)
@@ -65,33 +72,30 @@ def close_all():
     servers.clear
     print('exited all servers safely')
     
-        
+def exit_session():
+    if leave_servers_open: print('experiment done. servers left open')
+    else: close_all()
+    
 
-##run experiments here by running the file 
 if __name__ == "__main__":
+    leave_servers_open = False
     
-    open_servers = True #can be changed to False after servers have been opened
-    if open_servers:
-        lockin = get_lockin(delay=1.5,num_avgs=50)
-        keithley_b = get_keithley('GPIB::1','2450')
-    leave_servers_open = True
+    sample = Optical(sample_name='TaIrTe4-d1', data_path=labdata+'Tairan/rmcd0827')
+    lockin = get_lockin(delay=2.,num_avgs=50)
+    opticool, temp, field = get_opticool()
+    lockin.delay = 0.2
+    ANC = get_ANC300()
     
-    sample = DualGate(sample_name='d3', d_b=9.41, d_t=7.93, data_path=labdata+'StackingTransitions/CrI3/round7/d3')
-    sample.Rbox = 2e6
-    keithley_b.compliance_current = 6e-9
-    keithley_b.apply_voltage(compliance_current=keithley_b.compliance_current)
-    Vb_array = np.arange(-6.2,7,.02)
-    Vb_full = np.concatenate((Vb_array,Vb_array[::-1]))
     try:
+        print('test')
+        bfield_array = np.array([-1000,0,1000])
+        bfield_array_full = np.concatenate((bfield_array,bfield_array[::-1]))
+        # RMCD_bfield_scan.main(sample, lockin, opticool, bfield_array_full, file_save='bfieldscan1_1000.txt')
+        # RMCD_mapping.main(sample, lockin, ANC, x_start=0, x_end=5,points=6,file_save='mapping1.txt')
+        lockin.read_continuous(channel=1,param=2,save_to=labdata+'Tairan/rmcd0827/test2.txt')
         
-        Vblist,Rgrlist = Gr_polarization_sensing_singlepoint.main(sample,lockin,keithley_b, 
-                          Vb_full,Vsin=0.1,file_save="slow-scan3_295K_8-25.txt")
-        
-        
-    except Exception as e: traceback.print_exc()
-    finally:
-        if leave_servers_open: print('experiment done. servers left open')
-        else: close_all()
+    except Exception: traceback.print_exc()
+    finally: exit_session()
         
         
         

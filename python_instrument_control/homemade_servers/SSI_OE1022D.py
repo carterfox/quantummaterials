@@ -218,7 +218,7 @@ class LockInOE1022D():
         except Exception as e:
             logging.error(f"Error configuring SINE OUT: {e}")
             
-    def read_continuous(self, channel=1, param=2, interval=0.01):
+    def read_continuous(self, channel=1, param=2, interval=0.01,save_to=None):
         plt.ion()
         fig, ax = plt.subplots(figsize=(8, 4))
         ax.set_xlabel("Time (s)")
@@ -242,5 +242,10 @@ class LockInOE1022D():
                 time.sleep(interval)
         except KeyboardInterrupt:
             plt.ioff()
+            if save_to!=None:
+                with open(save_to, 'a') as file:
+                    file.write('#'+self.parameters[param] + '\n') 
+                    for val in values:
+                        file.write(str(val) + '\n') 
             # plt.show()
         

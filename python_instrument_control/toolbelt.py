@@ -38,7 +38,7 @@ def read_lockin_rmcd_data(lockin: LockInOE1022D):
 def make_rmcd_saving_file(filename,experiment):
     
     if experiment == 'bscan':
-        header = "#B(Oe) R(V) R_std(V) thetaR(deg) thetaR_std(deg) dR(V) dR_std(V) thetadR(deg) thetadR_std(deg)"
+        header = "#B(T) R(V) R_std(V) thetaR(deg) thetaR_std(deg) dR(V) dR_std(V) thetadR(deg) thetadR_std(deg)"
     elif experiment == 'mapping':
         header = "#X(V) Y(V) R_mean(V) R_std(V) thetaR_mean(deg) thetaR_std(deg) dR_mean(V) dR_std(V) thetadR_mean(deg) thetadR_std(deg)"
     elif experiment == 'Esweep-Vb':

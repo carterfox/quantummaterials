@@ -68,6 +68,11 @@ def main(sample, lockin: LockInOE1022D, ANC: ANC300, x_start, x_end, y_start=Non
     
     scannerx = ANC.submodules['axis1']
     scannery = ANC.submodules['axis2']
+    scannerx.mode('off')
+    scannery.mode('off')
+    
+    if not os.path.exists(sample.data_path+"/RMCD/mapping"):
+        os.makedirs(sample.data_path+"/RMCD/mapping")
     
     gen_path = sample.data_path+'/RMCD/mapping/'+file_save    
     saving_file = tb.make_rmcd_saving_file(gen_path,'mapping')
@@ -83,6 +88,13 @@ def main(sample, lockin: LockInOE1022D, ANC: ANC300, x_start, x_end, y_start=Non
     
     plt.ion()
     fig,ax,im = plot_rmcd_map(scan_array,stepx,stepy,'RMCD')
+    fig.canvas.manager.window.move(1920, 100)
+    plt.show(block=False)
+    try:
+        fig.canvas.manager.window.raise_()  # Works on Qt
+        fig.canvas.manager.window.activateWindow()
+    except Exception as e:
+        print("Window raise failed:", e)
 
     for j in tqdm(range(y_points)):
         y = round(y_start + j * stepy,2)
@@ -130,11 +142,13 @@ def plot_rmcd_map(scan_array,x_step,y_step,plot_type='RMCD'):
     im = ax.imshow(scan_array, cmap='viridis', interpolation='none')
     cbar=plt.colorbar(im, ax=ax)
     ax.set_xlabel(r'X ($\mu$m)'),ax.set_ylabel(r'Y ($\mu$m)')
-    xticks = np.linspace(0, x_points - 1, num=5, dtype=int)  # 5 ticks evenly spaced
-    yticks = np.linspace(0, y_points - 1, num=5, dtype=int)
+    print(x_points)
+    xticks = np.linspace(0, x_points - 1, num=5)  # 5 ticks evenly spaced
+    yticks = np.linspace(0, y_points - 1, num=5)
     scale=.2
     xlabels = [round(0 + (x_points - 1 - i) * x_step*scale, 2) for i in xticks]
     ylabels = [round(0 + j * y_step*scale, 2) for j in yticks]
+    print(xticks,xlabels)
     ax.set_xticks(xticks)
     ax.set_yticks(yticks)
     ax.set_xticklabels(xlabels)

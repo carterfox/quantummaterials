@@ -7,7 +7,7 @@ Created on Thu Aug  7 16:37:09 2025
 
 import MultiPyVu as mpv
 import sys
-
+import logging 
 class Opticool(mpv.Client):
     def __init__(self, host='169.254.170.239', port=5000):
         try:
@@ -33,6 +33,7 @@ class Opticool(mpv.Client):
                 super().__exit__(None, None, None)
             finally:
                 self._connected = False
+                logging.info('Disconnecting from Opticool')
 
     def __del__(self):
         # Ensure cleanup if disconnect wasn't called
