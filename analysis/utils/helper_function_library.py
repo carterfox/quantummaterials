@@ -44,7 +44,7 @@ def init_plot_params():
     # "text.usetex": True,
     # "font.family": "Helvetica"})
     
-def init_fig(figtype=None,figsize=(6,5)):
+def init_fig(figtype=None,figsize=(7,5)):
     fig, ax = plt.subplots(1,1,figsize=figsize)
     if figtype == 'RMCD':
         ax.set_xlabel(r'$B$ (T)',fontsize=24)

@@ -20,6 +20,24 @@ from typing import Union
 import astropy.constants as cont
 import astropy.units as uu
 
+
+def create_axes_with_exact_size(ax_width_in, ax_height_in, margins_in=(0.1,0.1), dpi=500,proj='rectilinear'):
+    """
+    Create a figure where the axes area is exactly ax_width_in × ax_height_in inches.
+    margins_in = (horizontal_margin, vertical_margin) in inches
+    """
+    fig_width = ax_width_in + 2 * margins_in[0]
+    fig_height = ax_height_in + 2 * margins_in[1]
+
+    fig = plt.figure(figsize=(fig_width, fig_height), dpi=dpi)
+    ax = fig.add_axes([
+        margins_in[0] / fig_width,  # left
+        margins_in[1] / fig_height,  # bottom
+        ax_width_in / fig_width,    # width
+        ax_height_in / fig_height   # height
+    ],projection=proj)
+    return fig, ax
+
 def make_bfield_list(b_start,b_end,b_step):
     bfield_list = np.append(np.arange(b_start,b_end,b_step),np.arange(b_end,b_start-b_step,-1*b_step))
     return bfield_list

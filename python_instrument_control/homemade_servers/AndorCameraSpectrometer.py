@@ -1,6 +1,7 @@
 import numpy as np
 import pylablib as pll
 from pylablib.devices import Andor
+
 import logging
 import time
 
@@ -11,8 +12,12 @@ class AndorCamSpec:
         self.cam = Andor.AndorSDK2Camera(temperature=temperature,fan_mode='full',)
         self.spec = Andor.ShamrockSpectrograph()
         self.excitation_nm = excitation_nm
-        self.n_avg = n_avg
+        self.n_avg = self.set_accumulations(n_avg)
+        self.central_wavelength = 550
+        self.grating = 3
+        self.configure_spectrometer(grating=self.grating, central_wl=self.central_wavelength)
 
+        
         # Camera setup
         # we want the cooler to stay on when we do measurements and only turn off after 
         # all the measurements are done and we decide it is time to turn it off.
@@ -21,7 +26,7 @@ class AndorCamSpec:
         
         self.cam.set_cooler(True)
         self.cam.set_temperature(temperature)
-        self.cam.set_exposure(exposure)
+        self.set_exposure(exposure)
         self.cam.set_read_mode('fvb')
         self.cam.set_acquisition_mode('accum')
         logging.info('Connected to Andor CamSpec. Temp = ',self.cam.get_temperature())
@@ -38,10 +43,16 @@ class AndorCamSpec:
         self.spec.close()
         logging.info('Disconnecting from Andor CamSpec')
         
-    def configure_spectrometer(self, grating=1, central_wl=550, slit_width=50):
+    def set_exposure(self,exposure_time):
+        self.cam.set_exposure(exposure_time)
+        
+    def set_accumulations(self,accumulations):
+        self.n_avg = accumulations
+        
+    def configure_spectrometer(self, grating=3, central_wl=550):
         self.spec.set_grating(grating)
         self.spec.set_central_wavelength(central_wl)
-        self.spec.set_slit_width(slit_width)
+        # self.spec.set_slit_width(slit_width)
 
     def acquire_spectrum(self):
         spectra = [self.cam.get_spectrum() for _ in range(self.n_avg)]
@@ -56,6 +67,10 @@ class AndorCamSpec:
         excitation_cm = 1e7 / self.excitation_nm
         measured_cm = 1e7 / np.array(wavelengths_nm)
         return excitation_cm - measured_cm
+
+    # def remove_spikes(self,data):
+        #insert later... 
+        # return filtered_data
 
     def run(self, subtract_dark=False):
         wavelengths = self.cam.get_wavelengths()
@@ -76,3 +91,7 @@ class AndorCamSpec:
         }
 
         return raman_shift, spectrum, metadata
+    
+    
+    
+    

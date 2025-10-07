@@ -164,35 +164,24 @@ if __name__ == "__main__":
     # 
     tb.init_plot_params()
     # path_d3 = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/d3/RMCD/Esweep/'
-    path_d3 = '/Users/carterfox/My Drive (cdfox@wisc.edu)/StackingTransitions/CrI3/round7/d3/RMCD/Esweep/'
+    path_d3 = '/Users/carterfox/My Drive (cdfox@wisc.edu)/StackingTransitions/CrI3/round7/d3/RMCD/Esweep/stacked/'
     # path_d3 = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/d3/RMCD/Esweep/'
     # path_d3 = '/Users/carterfox/My Drive (cdfox@wisc.edu)/StackingTransitions/CrI3/round7/d3/RMCD/Esweep/'
     # sample = DualGate(sample_name='d4', d_b=18.45, d_t=5.67, data_path=path_d4)
     sample = DualGate(sample_name='d3', d_b=9.41, d_t=7.93, data_path=path_d3)
     sample.d_flake=0.7*4
     
+    file = path_d3+'sweep8_8-18_2K_0T_after_m2T_m65deg.txt'
+    # file = path_d3+'sweep5_8-18_2K_0T_after_m2T_m65deg.txt'
     # file = path_d3+'Esweep5_0T_stacked_p1_after_m2T_diffInput_faster.txt'
-    file = path_d3+'sweep5_8-18_2K_0T_after_m2T_m65deg.txt'
-    file = path_d3+'Esweep5_0T_stacked_p1_after_m2T_diffInput_faster.txt'
-    file = path_d3+'sweep6_8-18_2K_0T_after_m2T_m65deg.txt'
+    # file = path_d3+'sweep6_8-18_2K_0T_after_m2T_m65deg.txt'
     data = np.loadtxt(file)
     Vb, R, dR, Ib, theta_dr = data[:,1], data[:,3], data[:,7], data[:,2], data[:,9]
     rmcd = dR/R*100
+    rmcd[np.where(theta_dr>0)] *= -1
     E = tb.E_dualgate(Vb, 0, sample,no_middle_gr=True)
     
     fig,ax = plt.subplots()
-    # diffs = np.diff(E)
-    # try: transition_index = np.where((diffs[:-1] >= 0) & (diffs[1:] <= 0))[0][0]+2
-    # except: transition_index=len(E)
-        
-    # E_ascend = E[0:transition_index]
-    # E_descend = E[transition_index:]
-    # rmcd_ascend = rmcd[0:transition_index]
-    # rmcd_descend = rmcd[transition_index:]
-    
-
-    
-    
     diffs = np.diff(E)
     change_indices = np.where(diffs < 0)[0]  # descending starts here
     if len(change_indices)==0:
@@ -203,17 +192,20 @@ if __name__ == "__main__":
     E_ascend = np.append(E[change_indices[-1]:],E[:change_indices[0] + 1])
     rmcd_descend = rmcd[change_indices[0] + 1:]
     
+    center=rmcd_ascend[0]
+    delta_rmcd_ascend = rmcd_ascend - center
+    delta_rmcd_descend = rmcd_descend - center
     
-    ax.plot(smooth(E_ascend), smooth(rmcd_ascend), color='black', label=r'$\rightarrow$',marker='.',ms=5,zorder=1,lw=2)
-    ax.plot(smooth(E_descend), smooth(rmcd_descend), color='r', label=r'$\leftarrow$',marker='.',ms=5,zorder=0,lw=2)
+    ax.plot(smooth(E_ascend), smooth(delta_rmcd_ascend), color='black', label=r'$\rightarrow$',marker='.',ms=5,zorder=1,lw=2)
+    ax.plot(smooth(E_descend), smooth(delta_rmcd_descend), color='r', label=r'$\leftarrow$',marker='.',ms=5,zorder=0,lw=2)
     # ax.plot(E_ascend, rmcd_ascend-rmcd_descend[::-1], color='r', label=r'$\leftarrow$',marker='.')
     
     ax.set_xlabel('E (V/nm)')
-    ax.set_ylabel('RMCD %')
+    ax.set_ylabel('$\DeltaRMCD %')
     ax.legend()
     # ax.set_ylim(.85,1.5)
     ax.set_xlim(-.45,.4)
-    # plt.savefig(file.replace('.txt','_plot.png'),dpi=500)
+    plt.savefig(file.replace('.txt','_plot.png'),dpi=500)
     plt.show()
     
     # keithleyb = KeithleySourceMeter('GPIB::1','2450')

@@ -18,9 +18,11 @@ class RotationMount():
         self.stage = Thorlabs.KinesisMotor(str(serial_number))
         self.steps_per_deg = 1919.59
         
-    def move_to(self,pos_deg):
+    def move_to(self,pos_deg,wait=True):
         pos_step = int(pos_deg*self.steps_per_deg)
         self.stage.move_to(pos_step)
+        if wait:
+            self.wait_for_stop()
     
     def move_by(self,move_deg):
         move_step = int(move_deg*self.steps_per_deg)
