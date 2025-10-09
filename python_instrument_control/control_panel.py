@@ -92,7 +92,7 @@ if __name__ == "__main__":
         bfield_array_full = np.concatenate((bfield_array,bfield_array[::-1]))
         # RMCD_bfield_scan.main(sample, lockin, opticool, bfield_array_full, file_save='bfieldscan1_1000.txt')
         # RMCD_mapping.main(sample, lockin, ANC, x_start=0, x_end=5,points=6,file_save='mapping1.txt')
-        lockin.read_continuous(channel=1,param=2,save_to=labdata+'Tairan/rmcd0827/test2.txt')
+        # lockin.read_continuous(channel=1,param=2,save_to=labdata+'Tairan/rmcd0827/test2.txt')
         
     except Exception: traceback.print_exc()
     finally: exit_session()
