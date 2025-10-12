@@ -104,43 +104,17 @@ def list_visa_resources():
 if __name__ == "__main__":
     leave_servers_open = True
     
-    serial = 1245
+    cam_spec = get_AndorCamSpec()
+    waveplate = get_rotation_stage('27268499')
+    initial_pos = waveplate.get_pos()
     
-    waveplate = get_rotation_stage(serial)
-    # cam_spec = get_AndorCamSpec()
-    # sample = Optical('test', 'test')
-    # lockin = get_lockin()
-    # opticool = get_opticool()
-    
-    # angles = np.array([0,10])
+    if initial_pos != 0:
+        waveplate.move_to(initial_pos)
+    angles = np.arange(0, 91, 2.5)
     
     try:
-        
-        # exposure_time = 3
-        # averages = 3
-        # angles = [0,10,20]        
-        # data = RMCD_bfield_scan.main(sample, lockin, opticool, bfield_array, file_save)
-        waveplate.move_to(20)
-        
-        # data = raman_basic.angle_sweep(cam_spec, waveplate, exposure_time, averages, angles)
-        
-        
+        all_data, summed_spectra_data = raman_basic.angle_sweep(cam_spec, waveplate, exposure_time=300, averages=3, angles=angles)
+        print(all_data)
         
     except Exception: traceback.print_exc()
     finally: exit_session()
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-
-
