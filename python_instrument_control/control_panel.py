@@ -102,32 +102,19 @@ def list_visa_resources():
 
 
 if __name__ == "__main__":
-    leave_servers_open = False
+    leave_servers_open = True
     
-    # waveplate = get_rotation_stage()
     cam_spec = get_AndorCamSpec()
+    waveplate = get_rotation_stage('27268499')
+    initial_pos = waveplate.get_pos()
     
-    angles = np.array([0,10])
+    if initial_pos != 0:
+        waveplate.move_to(initial_pos)
+    angles = np.arange(0, 91, 2.5)
     
     try:
-        all_data, summed_spectra_data = raman_basic.angle_sweep(cam_spec, None, exposure_time=.1, averages=2, angles=angles)
+        all_data, summed_spectra_data = raman_basic.angle_sweep(cam_spec, waveplate, exposure_time=300, averages=3, angles=angles)
         print(all_data)
         
     except Exception: traceback.print_exc()
     finally: exit_session()
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-
-
