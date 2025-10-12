@@ -48,15 +48,6 @@ def get_opticool(opticool_ip='169.254.170.239', port=5000):
     servers.append(opticool)
     return opticool, current_temp, current_field
 
-def get_andor_camspec(temperature=-85):
-    if len(servers) !=0:
-        for s in servers:
-            if 'AndorCamSpec' in str(s):
-                return s
-    else:
-        cam_spec = AndorCamSpec(temperature=temperature)
-        servers.append(cam_spec)
-        return cam_spec
 
 def get_rotation_stage(serial):
     rot = RotationMount(serial)
@@ -75,9 +66,14 @@ def get_ANC300(resource_name='ASRL11'):
     return ANC
 
 def get_AndorCamSpec(temperature=-85):
-    andor = AndorCamSpec(temperature=temperature)
-    servers.append(andor)
-    return andor
+    if len(servers)!=0:
+        for s in servers:
+            if 'AndorCameraSpectrometer' in str(s):
+                return s
+    else:
+        andor = AndorCamSpec(temperature=temperature)
+        servers.append(andor)
+        return andor
 
 def get_PMT():
     PMT = HamamatsuH11890()
@@ -103,9 +99,9 @@ def list_visa_resources():
 
 if __name__ == "__main__":
     leave_servers_open = True
-    
+
     cam_spec = get_AndorCamSpec()
-  #  waveplate = get_rotation_stage('27268499')
+    # waveplate = get_rotation_stage('27268499')
   #  initial_pos = waveplate.get_pos()
     
  #   if initial_pos != 0:
