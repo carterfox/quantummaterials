@@ -38,8 +38,15 @@ class AndorCamSpec:
 
     def close(self):
         self.spec.close()
+        logging.info('Disconnecting from Spectrometer')
+
+        while True:
+            ret,temp = self.sdk.GetTemperature()
+            if temp < -20:
+                break
+            time.sleep(1)
+            logging.info('Disconnecting from Camera. Temperature = {}'.format(temp))
         self.sdk.ShutDown()
-        logging.info('Disconnecting from Andor CamSpec')
         
     def set_exposure(self,exposure_time):
         self.sdk.SetExposureTime(exposure_time)
@@ -49,6 +56,7 @@ class AndorCamSpec:
         self.sdk.StartAcquisition()
         self.sdk.WaitForAcquisition()
         ret, fullFrameBuffer = self.sdk.GetMostRecentImage(self.xpixels)
+        self.sdk.AbortAcquisition()
         return np.ctypeslib.as_array(fullFrameBuffer)
     
     def acquire_multiple_images(self,num_images):

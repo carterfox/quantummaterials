@@ -130,17 +130,13 @@ def make_Gr_resistance_saving_file(filename,Rbox,delay,freq,Vb,num_avg,file='Vb'
 
 if __name__ == "__main__":
     tb.init_plot_params()
-<<<<<<< Updated upstream
     # path = '/Users/carterfox/My Drive (cdfox@wisc.edu)/StackingTransitions/CrI3/round7/d3/GrSensorSingle/295K/measurements2/'    
     path = '/Users/carterfox/My Drive (cdfox@wisc.edu)/StackingTransitions/CrI3/round7/d3/GrSensorSingle/2K/'    
     # path = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/d3/GrSensorSingle/'
     file = path+'measurements1/sweep1_2K_0T.txt'
     # file = path+'slow-scan2_295K_8-25.txt'
-=======
-    path = '/Users/carterfox/My Drive (cdfox@wisc.edu)/StackingTransitions/CrI3/round7/d3/GrSensorSingle/2K/'    
     # file = path+'sweep3_2K_0T_floatVc.txt'
     file = path+'sweep1_2K_0T.txt'
->>>>>>> Stashed changes
     data = np.loadtxt(file)
     Vb,V_b_meas,I_b_meas,R_Gr,R_Gr_std = data[:,0],data[:,1],data[:,2],data[:,3],data[:,4]
     db = 18.45
@@ -166,14 +162,7 @@ if __name__ == "__main__":
     std_ascend = R_Gr_std[:change_indices[0] + 1]
     std_descend = R_Gr_std[change_indices[0]:]
     ax.set_xlabel('$V_{b}/d$ (V$~$nm$^{-1}$)'), ax.set_ylabel(r'R$_{Gr}$ (k$\Omega$)')
-<<<<<<< Updated upstream
-    # ax.set_ylim(0.15,1.65)
-    # ax.set_xlim(-.05,.25)
-=======
-    # ax.set_ylim(0.15,1)
     ax.set_xlim(-.45,.4)
->>>>>>> Stashed changes
-    # ax.axhline(1.83)
 
         
     if plot == 'G':
@@ -182,12 +171,6 @@ if __name__ == "__main__":
         # std_ascend = 1000*R_Gr_std[:change_indices[0] + 1]/(R_Gr[:change_indices[0] + 1])**2
         # std_descend = 1000*R_Gr_std[change_indices[0] + 1:]/(R_Gr[change_indices[0] + 1:])**2
         ax.set_xlabel('$V_{b}/d$ (V$~$nm$^{-1}$)'), ax.set_ylabel(r'G$_{Gr}$ ($\mu S$)')
-<<<<<<< Updated upstream
-        ax.set_ylim(500,1800)
-=======
-        # ax.set_ylim(200,2200)
->>>>>>> Stashed changes
-    
     
     ax.errorbar(E_ascend, ascend,yerr=std_ascend,color='r',marker='.',ms=3,label=r'$\rightarrow$')
     ax.errorbar(E_descend, descend,yerr=std_descend,color='b',marker='.',ms=3,label=r'$\leftarrow$')

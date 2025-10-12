@@ -201,20 +201,12 @@ if __name__ == "__main__":
     file = path_d3+'sweep8_8-18_2K_0T_after_m2T_m65deg.txt'
     # file = path_d3+'sweep5_8-18_2K_0T_after_m2T_m65deg.txt'
     # file = path_d3+'Esweep5_0T_stacked_p1_after_m2T_diffInput_faster.txt'
-<<<<<<< Updated upstream
-    # file = path_d3+'sweep6_8-18_2K_0T_after_m2T_m65deg.txt'
-=======
-    file = path_d3+'sweep2_8-18_2K_0T_after_p2T_m114deg.txt'
->>>>>>> Stashed changes
     data = np.loadtxt(file)
     Vb, R, R_std, dR, dR_std, Ib, theta_dr = data[:,1], data[:,3], data[:,4], data[:,7],  data[:,8], data[:,2], data[:,9]
     rmcd = dR/R*100
-<<<<<<< Updated upstream
     rmcd[np.where(theta_dr>0)] *= -1
-=======
     num_samples=100
     rmcd_std = tb.A_over_B_error_prop(dR, R, dR_std, R_std)*100/np.sqrt(num_samples)
->>>>>>> Stashed changes
     E = tb.E_dualgate(Vb, 0, sample,no_middle_gr=True)
     
     fig,ax = plt.subplots()
@@ -234,13 +226,10 @@ if __name__ == "__main__":
     delta_rmcd_ascend = rmcd_ascend - center
     delta_rmcd_descend = rmcd_descend - center
     
-<<<<<<< Updated upstream
     ax.plot(smooth(E_ascend), smooth(delta_rmcd_ascend), color='black', label=r'$\rightarrow$',marker='.',ms=5,zorder=1,lw=2)
     ax.plot(smooth(E_descend), smooth(delta_rmcd_descend), color='r', label=r'$\leftarrow$',marker='.',ms=5,zorder=0,lw=2)
-=======
     ax.errorbar(smooth(E_ascend), smooth(rmcd_ascend),yerr=smooth_err(rmcd_std_ascend), color='black', label=r'$\rightarrow$',marker='.',ms=5,zorder=1,lw=2,elinewidth=1)
     ax.errorbar(smooth(E_descend), smooth(rmcd_descend), yerr=smooth_err(rmcd_std_descend),color='r', label=r'$\leftarrow$',marker='.',ms=5,zorder=0,lw=2,elinewidth=1)
->>>>>>> Stashed changes
     # ax.plot(E_ascend, rmcd_ascend-rmcd_descend[::-1], color='r', label=r'$\leftarrow$',marker='.')
     
     ax.set_xlabel('E (V/nm)')
@@ -248,11 +237,7 @@ if __name__ == "__main__":
     ax.legend()
     # ax.set_ylim(.85,1.5)
     ax.set_xlim(-.45,.4)
-<<<<<<< Updated upstream
-    plt.savefig(file.replace('.txt','_plot.png'),dpi=500)
-=======
     plt.savefig(file.replace('.txt','_plot.svg'),dpi=500,bbox_inches='tight')
->>>>>>> Stashed changes
     plt.show()
     
     # keithleyb = KeithleySourceMeter('GPIB::1','2450')

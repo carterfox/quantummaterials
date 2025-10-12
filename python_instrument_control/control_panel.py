@@ -105,16 +105,17 @@ if __name__ == "__main__":
     leave_servers_open = True
     
     cam_spec = get_AndorCamSpec()
-    waveplate = get_rotation_stage('27268499')
-    initial_pos = waveplate.get_pos()
+  #  waveplate = get_rotation_stage('27268499')
+  #  initial_pos = waveplate.get_pos()
     
-    if initial_pos != 0:
-        waveplate.move_to(initial_pos)
-    angles = np.arange(0, 91, 2.5)
+ #   if initial_pos != 0:
+      #  waveplate.move_to(initial_pos)
+ #   angles = np.arange(0, 91, 2.5)
     
     try:
-        all_data, summed_spectra_data = raman_basic.angle_sweep(cam_spec, waveplate, exposure_time=300, averages=3, angles=angles)
-        print(all_data)
+       # all_data, summed_spectra_data = raman_basic.angle_sweep(cam_spec, waveplate, exposure_time=300, averages=3, angles=angles)
+     #   print(all_data)
+         print('test')
         
     except Exception: traceback.print_exc()
     finally: exit_session()
