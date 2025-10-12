@@ -4,7 +4,7 @@ import logging
 import time
 import pylablib as pll
 from pylablib.devices import Andor
-
+from tqdm import tqdm
 
 class AndorCamSpec:
     def __init__(self, exposure=1.0, temperature=-85, accumulations=3, excitation_nm=632.8):
@@ -30,30 +30,41 @@ class AndorCamSpec:
         self.configure_spectrometer(grating=self.grating, central_wl=self.central_wavelength)
         self.accumulations = accumulations
         
+        ret, START_TEMP = self.sdk.GetTemperature()    
+        TARGET_TEMP = -80
+        progress_bar = tqdm(total=START_TEMP - TARGET_TEMP,
+        bar_format="{l_bar}{bar}",leave=False)
         while True:
             ret,temp = self.sdk.GetTemperature()
-            if temp < -80:
+            clamped_temp = min(max(temp, TARGET_TEMP), START_TEMP)
+            cooled = START_TEMP - clamped_temp
+            progress_bar.n = cooled
+            progress_bar.set_description(f"Temp: {temp:.1f}°C / Target: {TARGET_TEMP}°C")
+            progress_bar.refresh()
+            if temp <= TARGET_TEMP:
                 break
-            print('Still Cooling. Temperature = {} C'.format(temp))
             time.sleep(1)
-        
-        # Camera setup
-        # we want the cooler to stay on when we do measurements and only turn off after 
-        # all the measurements are done and we decide it is time to turn it off.
-        # To accomplish that, the control panel has 'open_instruments' and leave_servers_open' booleans
-        # that ask if the servers should be left opened and if they should be left open.
-        logging.info('Connected to Andor CamSpec. Temp = ',self.sdk.GetTemperature())
+        logging.info('Connected to Andor CamSpec. Temp = {}'.format(temp))
 
     def close(self):
         self.spec.close()
         logging.info('Disconnecting from Spectrometer')
-
+        ret, START_TEMP = self.sdk.GetTemperature()    
+        TARGET_TEMP = -20
+        progress_bar = tqdm(total=TARGET_TEMP - START_TEMP,
+        bar_format="{l_bar}{bar}",leave=False)
+        ret=self.sdk.CoolerOFF()
         while True:
             ret,temp = self.sdk.GetTemperature()
-            if temp < -20:
+            clamped_temp =min(max(temp, START_TEMP), TARGET_TEMP)
+            warmed = clamped_temp - START_TEMP
+            progress_bar.n = warmed
+            progress_bar.set_description(f"Temp: {temp:.1f}°C / Target: {TARGET_TEMP}°C")
+            progress_bar.refresh()
+            if temp >= TARGET_TEMP:
                 break
             time.sleep(1)
-            logging.info('Disconnecting from Camera. Temperature = {}'.format(temp))
+        logging.info('Disconnecting from Camera. Temperature = {}'.format(temp))
         self.sdk.ShutDown()
         
     def set_exposure(self,exposure_time):
