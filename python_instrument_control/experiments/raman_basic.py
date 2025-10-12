@@ -10,8 +10,9 @@ tb.init_plot_params()
 
 
 
-def angle_sweep(cam_spec: AndorCamSpec, waveplate, exposure_time,averages,angles):
+def angle_sweep(cam_spec: AndorCamSpec, waveplate: RotationMount, exposure_time,averages,angles):
     cam_spec.set_exposure(exposure_time)
+
     # raman_shifts = cam_spec.raman_shifts
     # raman_range_cm = (10,600)
     # mask = (raman_shifts >= raman_range_cm[0]) & (raman_shifts <= raman_range_cm[1])
