@@ -99,9 +99,9 @@ def list_visa_resources():
 
 if __name__ == "__main__":
     leave_servers_open = True
-
-    cam_spec = get_AndorCamSpec()
-    # waveplate = get_rotation_stage('27268499')
+    if len(servers)==0:
+        cam_spec = get_AndorCamSpec()
+        waveplate = get_rotation_stage('27268499')
   #  initial_pos = waveplate.get_pos()
     
  #   if initial_pos != 0:
