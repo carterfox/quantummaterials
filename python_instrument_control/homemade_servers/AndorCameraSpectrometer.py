@@ -29,12 +29,20 @@ class AndorCamSpec:
         self.grating = 3
         self.configure_spectrometer(grating=self.grating, central_wl=self.central_wavelength)
         self.accumulations = accumulations
+        
+        while True:
+            ret,temp = self.sdk.GetTemperature()
+            if temp < -80:
+                break
+            print('Still Cooling. Temperature = {} C'.format(temp))
+            time.sleep(1)
+        
         # Camera setup
         # we want the cooler to stay on when we do measurements and only turn off after 
         # all the measurements are done and we decide it is time to turn it off.
         # To accomplish that, the control panel has 'open_instruments' and leave_servers_open' booleans
         # that ask if the servers should be left opened and if they should be left open.
-        # logging.info('Connected to Andor CamSpec. Temp = ',self.sdk.GetTemperature())
+        logging.info('Connected to Andor CamSpec. Temp = ',self.sdk.GetTemperature())
 
     def close(self):
         self.spec.close()
