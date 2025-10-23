@@ -22,6 +22,7 @@ class HamamatsuH11890:
     
     def __init__(self, dll_path="h11890api.dll", device_index=0):
         try:
+            dll_path = 'C:/Users/Public/OneDrive/Documents/quantummaterials/python_instrument_control/homemade_servers/'+dll_path
             self.lib = WinDLL(dll_path)
             self.devices = (H11890_INF * 16)()
             self.num_devices = 0
@@ -91,7 +92,9 @@ class HamamatsuH11890:
         if remove_first:
             num_gates += 1
         self.configure_gate(gate_time_ms, num_gates)
-        self.start_counting(correction=True)
+        # time.sleep(.2)
+        self.start_counting()
+        # time.sleep(.2)
         results = self.read_clean_data(remove_first)
         self.stop_counting()
         
@@ -102,7 +105,8 @@ class HamamatsuH11890:
         while True:
             try:
                 gate, photons, is_old = self.read_data()
-                print(gate,photons,is_old)
+                # print(gate,photons,is_old)
+                # print(gate,photons,is_old)
                 if not is_old:
                     if remove_first:
                         remove_first = False

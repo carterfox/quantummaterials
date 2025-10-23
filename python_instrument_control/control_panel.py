@@ -25,7 +25,7 @@ from homemade_servers.ThorlabsKCube import RotationMount
 from devices.dualgate import DualGate
 from devices.optical import Optical
 from experiments import RMCD_bfield_scan, RMCD_mapping, RMCD_dualgate_Esweep
-from experiments import raman_basic
+from experiments import raman_basic, SHG_polarization_scan
 from experiments import PMT_continuous_read, Gr_polarization_sensing, Gr_polarization_sensing_singlepoint
 tb.init_plot_params()
 if 'servers' not in globals(): 
@@ -105,19 +105,33 @@ if __name__ == "__main__":
     ###### add it to servers_to_close if you want them to close each time. 
     ###### at this point only cam_spec should not be in it
     waveplate = get_rotation_stage('27268499')
-    cam_spec = get_AndorCamSpec()
-    servers_to_close = [waveplate]
+    polarizer = get_rotation_stage('27261255')
+    data_path ='I:/.shortcut-targets-by-id/1-8q9lGFnGNt4mDzcxXwdk43m1aVWT66q/XiaoWang_Group_data_2024on/ChenS/sample_argonne_10/devices/'
+    sample = Optical('d2', data_path)
+    # cam_spec = get_AndorCamSpec()
+    pmt = get_PMT()
+    servers_to_close = [pmt,waveplate,polarizer]
     ######
-    
-    initial_pos = waveplate.get_pos()
-    if initial_pos != 0:
-        waveplate.move_to(initial_pos)
-    angles = np.arange(0, 91, 2.5)
+    waveplate.home=5
+    polarizer.home=0
+    angles = np.arange(0,91,3)
+    exc_stage_angles = angles
+    det_stage_angles = angles*2
+    # initial_pos = waveplate.get_pos()
+    # if initial_pos != 0:
+    #     waveplate.move_to(initial_pos)
+    # angles = np.arange(0, 91, 2.5)
     
     try:
-       all_data, summed_spectra_data = raman_basic.angle_sweep(cam_spec, waveplate, exposure_time=300, averages=3, angles=angles)
-       print(all_data)
-       print('test')
+        SHG_polarization_scan.main(sample, pmt, waveplate, polarizer,
+                                   exc_stage_angles,det_stage_angles, 
+                                    rotating='both',laser_power=3,
+                                    gate_time_ms=200,num_gates=20,file_save='d2.txt')
+        
+        # PMT_continuous_read.main(pmt, gate_time_ms=200, num_gates=20)
+        # all_data, summed_spectra_data = raman_basic.angle_sweep(cam_spec, waveplate, exposure_time=300, averages=3, angles=angles)
+       # print(all_data)
+        print('')
         
     except Exception: traceback.print_exc()
     finally: exit_session()

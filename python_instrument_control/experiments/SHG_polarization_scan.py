@@ -24,9 +24,9 @@ from homemade_servers.ThorlabsKCube import RotationMount
 from devices.optical import Optical
 
 def main(sample: Optical, pmt: HamamatsuH11890, 
-         exc_stage_hwp: RotationMount=None, det_stage_hwp: RotationMount=None, 
+         exc_stage_hwp: RotationMount=None, det_stage_pol: RotationMount=None, 
          exc_stage_angles=None, det_stage_angles=None, rotating='exc', 
-         gate_time_ms=200, num_gates=10, laser_power=0, file_save='shgdata.txt'):   
+         gate_time_ms=200, num_gates=10, laser_power=0, file_save='shgdata.txt',home_after=True):   
     '''
     Run a second harmonic generation (SHG) experiment with optional rotation stages and live polar plotting.
 
@@ -38,7 +38,7 @@ def main(sample: Optical, pmt: HamamatsuH11890,
         The photomultiplier tube (PMT) used for signal detection.
     exc_stage_hwp : RotationMount, optional
         Rotation stage for the excitation half wave plate (default is None).
-    det_stage_hwp : RotationMount, optional
+    det_stage_pol : RotationMount, optional
         Rotation stage for the detection polarizer (default is None).
     exc_stage_angles : list or array-like
         List of angles for the excitation half wave plate stage. Give the raw values given to the stage. Must match length of `det_stage_angles`.
@@ -70,8 +70,9 @@ def main(sample: Optical, pmt: HamamatsuH11890,
     ### initiate plot, file, and move stages to start positions
     plt.ion()
     fig,ax,line = make_polar_plot()
-    file_path = make_data_file(sample,laser_power,gate_time_ms,num_gates,file_save)
-    update_rotation_stages(exc_stage_hwp,det_stage_hwp,exc_stage_angles[0],det_stage_angles[0])      
+    fig.canvas.manager.window.move(1920, 60)
+    file_path = make_data_file(sample,exc_stage_hwp,det_stage_pol,laser_power,gate_time_ms,num_gates,file_save)
+    exc_real_angle, det_real_angle = update_rotation_stages(exc_stage_hwp,det_stage_pol,exc_stage_angles[0],det_stage_angles[0])      
         
     
     ### turn on PMT high voltage
@@ -81,27 +82,33 @@ def main(sample: Optical, pmt: HamamatsuH11890,
     ### loop through angles. update plot and file    
     for exc_stage_ang,det_stage_ang in zip(exc_stage_angles,det_stage_angles):
         
-        update_rotation_stages(exc_stage_hwp,det_stage_hwp,exc_stage_ang,det_stage_ang)
+        exc_real_angle, det_real_angle = update_rotation_stages(exc_stage_hwp,det_stage_pol,exc_stage_ang,det_stage_ang)
         
         data = pmt.run_collection(gate_time_ms,num_gates,remove_first=True)
         means.append(np.mean(data))
         std_errs.append(np.std(data)/np.sqrt(num_gates))
-        
-        
-        update_saved_data(file_path,exc_stage_ang,det_stage_ang,means,std_errs)
+        angs_exc.append(exc_stage_ang)
+        angs_det.append(det_stage_ang)
+        print(exc_stage_ang,det_stage_ang,means[-1])
+        update_saved_data(file_path,exc_stage_ang,det_stage_ang,means[-1],std_errs[-1])
         update_polar_plot(fig,ax,line,angs_exc,angs_det,means,rotating)
     
     ### turn off PMT hv and interactive plotting
     pmt.set_hv(on=False)
     time.sleep(.5)
     plt.ioff()
+    plt.savefig(file_path.replace('.txt','plot.png'),dpi=500)
     plt.show()
     
+    if home_after:
+        exc_real_angle, det_real_angle = update_rotation_stages(exc_stage_hwp, det_stage_pol,0,0)
+        print('returning to {}deg, {}deg',exc_real_angle, det_real_angle)
+        
     return means
 
 
 
-def make_data_file(sample,laser_power,gate_time_ms,num_gates,file_save):
+def make_data_file(sample,waveplate,polarizer,laser_power,gate_time_ms,num_gates,file_save):
     if not os.path.exists(sample.data_path+"/SHG"):
         os.makedirs(sample.data_path+"/SHG")
     file_path = sample.data_path+'/SHG/'+file_save
@@ -112,25 +119,32 @@ def make_data_file(sample,laser_power,gate_time_ms,num_gates,file_save):
     
     with open(file_path, "a") as f:
         f.write(f"# Sample Name: {sample.sample_name}\n")
+        # f.write(f"# Waveplate Home: {waveplate.home}\n")
+        # f.write(f"# Polarizer Home: {polarizer.home}\n")
         f.write(f"# Laser Power: {laser_power} mW\n")
         f.write(f"# Gate Time: {gate_time_ms} ms\n")
         f.write(f"# Num Gates: {num_gates}\n")
-        f.write("# PolarizerStageAngle\tAnalyzerStageAngle\tCountsMean\tCountsStd\n")
+        f.write("# PolarizerHWPStageAngle\tAnalyzerStageAngle\tCountsMean\tCountsStd\n")
     return file_path
 
 def update_saved_data(file_path,exc_stage_ang,det_stage_ang,means,std_errs):
     with open(file_path, 'a') as f:
         data_save = [exc_stage_ang,det_stage_ang,means,std_errs]
-        f.write(' '.join(d for d in data_save) + '\n') 
+        f.write(' '.join(f"{d:.2f}" for d in data_save) + '\n') 
     
     
 def update_rotation_stages(exc_hwp: RotationMount, det_hwp: RotationMount,exc_angle,det_angle):
+    exc_home,det_home =None,None
     if exc_hwp != None:
+        exc_home = exc_hwp.home
+        exc_angle = exc_angle+exc_home
         exc_hwp.move_to(exc_angle)
     if det_hwp != None:
+        det_home = det_hwp.home
+        det_angle = det_angle+det_home
         det_hwp.move_to(det_angle)
     time.sleep(.5)
-    return None
+    return exc_angle,det_angle
     
 def make_polar_plot():
     fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
@@ -152,12 +166,15 @@ def update_polar_plot(fig,ax,line,angles_exc_list,angles_det_list, counts_mean_l
         angles = np.array(angles_exc_list)*2
     elif rotating=='det':
         angles = np.array(angles_det_list)
+    # print(angles,np.array(counts_mean_list))
+    angles = angles*np.pi/180
     line.set_data(angles, np.array(counts_mean_list))
     ax.relim()
     ax.autoscale_view()
     fig.canvas.draw()
     fig.canvas.flush_events()
-    plt.pause(0.05)
+    plt.pause(0.1)
+    
     return None
         
     
