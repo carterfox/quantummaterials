@@ -114,7 +114,7 @@ if __name__ == "__main__":
     ######
     waveplate.home=5
     polarizer.home=0
-    angles = np.arange(0,91,3)
+    angles = np.arange(0,181,3)
     exc_stage_angles = angles
     det_stage_angles = angles*2
     # initial_pos = waveplate.get_pos()
@@ -124,11 +124,11 @@ if __name__ == "__main__":
     
     try:
         SHG_polarization_scan.main(sample, pmt, waveplate, polarizer,
-                                   exc_stage_angles,det_stage_angles, 
+                                    exc_stage_angles,det_stage_angles, 
                                     rotating='both',laser_power=3,
-                                    gate_time_ms=200,num_gates=20,file_save='d2.txt')
+                                    gate_time_ms=400,num_gates=15,file_save='d4-fine.txt')
         
-        # PMT_continuous_read.main(pmt, gate_time_ms=200, num_gates=20)
+        # PMT_continuous_read.main(pmt, gate_time_ms=300, num_gates=0)
         # all_data, summed_spectra_data = raman_basic.angle_sweep(cam_spec, waveplate, exposure_time=300, averages=3, angles=angles)
        # print(all_data)
         print('')

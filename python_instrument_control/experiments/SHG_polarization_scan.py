@@ -102,7 +102,7 @@ def main(sample: Optical, pmt: HamamatsuH11890,
     
     if home_after:
         exc_real_angle, det_real_angle = update_rotation_stages(exc_stage_hwp, det_stage_pol,0,0)
-        print('returning to {}deg, {}deg',exc_real_angle, det_real_angle)
+        print('returning to {}\u00b0, {}\u00b0'.format(exc_real_angle, det_real_angle))
         
     return means
 
