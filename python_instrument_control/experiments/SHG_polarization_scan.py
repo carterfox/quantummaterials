@@ -1,0 +1,165 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Oct 14 13:55:45 2025
+SHG polarization scanning
+@author: carterfox
+
+experiment file for measuring SHG while rotating HWPs in the incident and/or detection path
+
+"""
+
+from typing import Union
+import numpy as np
+import logging
+import time
+import os
+import matplotlib as mpl
+from matplotlib.lines import Line2D
+import matplotlib.pyplot as plt
+import toolbelt as tb
+from tqdm import tqdm
+from homemade_servers.H11890PMT import HamamatsuH11890
+from homemade_servers.ThorlabsKCube import RotationMount
+from devices.optical import Optical
+
+def main(sample: Optical, pmt: HamamatsuH11890, 
+         exc_stage_hwp: RotationMount=None, det_stage_hwp: RotationMount=None, 
+         exc_stage_angles=None, det_stage_angles=None, rotating='exc', 
+         gate_time_ms=200, num_gates=10, laser_power=0, file_save='shgdata.txt'):   
+    '''
+    Run a second harmonic generation (SHG) experiment with optional rotation stages and live polar plotting.
+
+    Parameters
+    ----------
+    sample : Optical
+        The sample under test.
+    pmt : HamamatsuH11890
+        The photomultiplier tube (PMT) used for signal detection.
+    exc_stage_hwp : RotationMount, optional
+        Rotation stage for the excitation half wave plate (default is None).
+    det_stage_hwp : RotationMount, optional
+        Rotation stage for the detection polarizer (default is None).
+    exc_stage_angles : list or array-like
+        List of angles for the excitation half wave plate stage. Give the raw values given to the stage. Must match length of `det_stage_angles`.
+    det_stage_angles : list or array-like
+        List of angles for the detection polarizer stage. Give the raw values given to the stage. Must match length of `exc_stage_angles`.
+    rotating : str, optional
+        Indicates which stage is rotating ('exc' or 'det'). Used for plotting (default is 'exc').
+    gate_time_ms : int, optional
+        Integration time per gate in milliseconds (default is 200).
+    num_gates : int, optional
+        Number of gates to average per measurement (default is 10).
+    laser_power : float, optional
+        Laser power in mW used during the experiment (default is 0).
+    file_save : str, optional
+        Filename for saving the SHG data (default is 'shgdata.txt').
+
+    Returns
+    -------
+    means : list of float
+        List of mean PMT signals collected at each angle step.
+
+    Notes
+    -----
+    Assumes rotation stage in the excitation path rotates a half wave plate.
+    Assumes rotation stage in the detection path rotates a polarizer
+    '''
+
+
+    ### initiate plot, file, and move stages to start positions
+    plt.ion()
+    fig,ax,line = make_polar_plot()
+    file_path = make_data_file(sample,laser_power,gate_time_ms,num_gates,file_save)
+    update_rotation_stages(exc_stage_hwp,det_stage_hwp,exc_stage_angles[0],det_stage_angles[0])      
+        
+    
+    ### turn on PMT high voltage
+    pmt.set_hv(on=True)    
+    means, std_errs, angs_exc, angs_det, = [], [], [], []
+    
+    ### loop through angles. update plot and file    
+    for exc_stage_ang,det_stage_ang in zip(exc_stage_angles,det_stage_angles):
+        
+        update_rotation_stages(exc_stage_hwp,det_stage_hwp,exc_stage_ang,det_stage_ang)
+        
+        data = pmt.run_collection(gate_time_ms,num_gates,remove_first=True)
+        means.append(np.mean(data))
+        std_errs.append(np.std(data)/np.sqrt(num_gates))
+        
+        
+        update_saved_data(file_path,exc_stage_ang,det_stage_ang,means,std_errs)
+        update_polar_plot(fig,ax,line,angs_exc,angs_det,means,rotating)
+    
+    ### turn off PMT hv and interactive plotting
+    pmt.set_hv(on=False)
+    time.sleep(.5)
+    plt.ioff()
+    plt.show()
+    
+    return means
+
+
+
+def make_data_file(sample,laser_power,gate_time_ms,num_gates,file_save):
+    if not os.path.exists(sample.data_path+"/SHG"):
+        os.makedirs(sample.data_path+"/SHG")
+    file_path = sample.data_path+'/SHG/'+file_save
+    
+    while os.path.exists(file_path):  
+        print('file already exists. making a new one with add on to name')
+        file_path = file_path.replace(".txt", "_new.txt")
+    
+    with open(file_path, "a") as f:
+        f.write(f"# Sample Name: {sample.sample_name}\n")
+        f.write(f"# Laser Power: {laser_power} mW\n")
+        f.write(f"# Gate Time: {gate_time_ms} ms\n")
+        f.write(f"# Num Gates: {num_gates}\n")
+        f.write("# PolarizerStageAngle\tAnalyzerStageAngle\tCountsMean\tCountsStd\n")
+    return file_path
+
+def update_saved_data(file_path,exc_stage_ang,det_stage_ang,means,std_errs):
+    with open(file_path, 'a') as f:
+        data_save = [exc_stage_ang,det_stage_ang,means,std_errs]
+        f.write(' '.join(d for d in data_save) + '\n') 
+    
+    
+def update_rotation_stages(exc_hwp: RotationMount, det_hwp: RotationMount,exc_angle,det_angle):
+    if exc_hwp != None:
+        exc_hwp.move_to(exc_angle)
+    if det_hwp != None:
+        det_hwp.move_to(det_angle)
+    time.sleep(.5)
+    return None
+    
+def make_polar_plot():
+    fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
+    ax.set_rlabel_position(-10)
+    ax.set_xticks(np.arange(0, np.radians(360),np.radians(30)))
+    line = Line2D([], [], color='b',marker='.')
+    ax.add_line(line)
+    return fig,ax,line
+
+def update_polar_plot(fig,ax,line,angles_exc_list,angles_det_list, counts_mean_list,rotating='exc'):
+    
+    '''
+    angles are doubled if plotting the angles given to excitation path stage rotating have wave plate
+    '''
+    
+    if rotating=='exc':
+        angles = np.array(angles_exc_list)*2
+    if rotating=='both':
+        angles = np.array(angles_exc_list)*2
+    elif rotating=='det':
+        angles = np.array(angles_det_list)
+    line.set_data(angles, np.array(counts_mean_list))
+    ax.relim()
+    ax.autoscale_view()
+    fig.canvas.draw()
+    fig.canvas.flush_events()
+    plt.pause(0.05)
+    return None
+        
+    
+    
+    

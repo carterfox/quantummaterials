@@ -15,8 +15,11 @@ class AndorCamSpec:
         self.codes = atmcd_codes
         ret = self.sdk.Initialize("") 
         (ret, iSerialNumber) = self.sdk.GetCameraSerialNumber()
+        
         ret = self.sdk.CoolerON()
         ret = self.sdk.SetTemperature(temperature)
+        # ret = self.sdk.SetCoolerMode(1)
+        # print(ret)
         ret = self.sdk.SetAcquisitionMode(self.codes.Acquisition_Mode.SINGLE_SCAN)
         ret = self.sdk.SetReadMode(self.codes.Read_Mode.FULL_VERTICAL_BINNING)
         ret = self.sdk.SetTriggerMode(self.codes.Trigger_Mode.INTERNAL)

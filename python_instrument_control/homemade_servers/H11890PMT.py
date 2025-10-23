@@ -201,6 +201,9 @@ class HamamatsuH11890:
         self.num_gates=rn
 
     def close(self):
+        hv = self.get_hv()
+        if hv:
+            self.set_hv(False)
         self.lib.H11890CloseDevices(self.devices)
 
     def __del__(self):
