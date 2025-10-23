@@ -27,8 +27,10 @@ from devices.optical import Optical
 from experiments import RMCD_bfield_scan, RMCD_mapping, RMCD_dualgate_Esweep
 from experiments import raman_basic
 from experiments import PMT_continuous_read, Gr_polarization_sensing, Gr_polarization_sensing_singlepoint
-if 'servers' not in globals(): servers = []
 tb.init_plot_params()
+if 'servers' not in globals(): 
+    global servers
+    servers = []
 labdata = 'D:/LabData/XiaoWang_Group_data_2024on/'
 
 def get_lockin(resource_name='ASRL15::INSTR', R_chan=1, dR_chan=2, num_avgs=25,delay=1):  
@@ -66,29 +68,30 @@ def get_ANC300(resource_name='ASRL11'):
     return ANC
 
 def get_AndorCamSpec(temperature=-85):
-    if len(servers)!=0:
-        for s in servers:
-            if 'AndorCameraSpectrometer' in str(s):
-                return s
-    else:
-        andor = AndorCamSpec(temperature=temperature)
-        servers.append(andor)
-        return andor
+    # if len(servers)!=0:
+    #     for s in servers:
+    #         if 'AndorCameraSpectrometer' in str(s):
+    #             return s
+    # else:
+    andor = AndorCamSpec(temperature=temperature)
+    servers.append(andor)
+    return andor
 
 def get_PMT():
     PMT = HamamatsuH11890()
     servers.append(PMT)
     return PMT
 
-def close_all():
-    for server in servers:
-        server.close()
-    servers.clear
-    print('exited all servers safely')
+# def close_all():
+#     for server in servers:
+#         server.close()
+#     servers.clear()
+#     print('exited all servers safely')
     
 def exit_session():
-    if leave_servers_open: print('experiment done. servers left open')
-    else: close_all()
+    for s in servers_to_close:
+        s.close()
+        
     
 def list_visa_resources():
     rm = pyvisa.ResourceManager()
@@ -98,20 +101,23 @@ def list_visa_resources():
 
 
 if __name__ == "__main__":
-    leave_servers_open = True
-    if len(servers)==0:
-        cam_spec = get_AndorCamSpec()
-        waveplate = get_rotation_stage('27268499')
-  #  initial_pos = waveplate.get_pos()
     
- #   if initial_pos != 0:
-      #  waveplate.move_to(initial_pos)
- #   angles = np.arange(0, 91, 2.5)
+    ###### add it to servers_to_close if you want them to close each time. 
+    ###### at this point only cam_spec should not be in it
+    waveplate = get_rotation_stage('27268499')
+    cam_spec = get_AndorCamSpec()
+    servers_to_close = [waveplate]
+    ######
+    
+    initial_pos = waveplate.get_pos()
+    if initial_pos != 0:
+        waveplate.move_to(initial_pos)
+    angles = np.arange(0, 91, 2.5)
     
     try:
-       # all_data, summed_spectra_data = raman_basic.angle_sweep(cam_spec, waveplate, exposure_time=300, averages=3, angles=angles)
-     #   print(all_data)
-         print('test')
+       all_data, summed_spectra_data = raman_basic.angle_sweep(cam_spec, waveplate, exposure_time=300, averages=3, angles=angles)
+       print(all_data)
+       print('test')
         
     except Exception: traceback.print_exc()
     finally: exit_session()

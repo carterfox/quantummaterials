@@ -17,6 +17,7 @@ class RotationMount():
     def __init__(self, serial_number):
         self.stage = Thorlabs.KinesisMotor(str(serial_number))
         self.steps_per_deg = 1919.59
+        logging.info('Connected to Rotation Stage')
         
     def move_to(self,pos_deg,wait=True):
         pos_step = int(pos_deg*self.steps_per_deg)
@@ -32,6 +33,9 @@ class RotationMount():
         pos_steps = self.stage.get_position()
         pos_deg = pos_steps/self.steps_per_deg
         return pos_deg
+
+    def home(self):
+        self.stage.home()
     
     def close(self):
         self.stage.close()
