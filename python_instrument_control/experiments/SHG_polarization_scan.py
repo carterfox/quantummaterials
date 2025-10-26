@@ -177,6 +177,38 @@ def update_polar_plot(fig,ax,line,angles_exc_list,angles_det_list, counts_mean_l
     
     return None
         
+
+if __name__ == "__main__":
+    # 
+    tb.init_plot_params()
+    path = '/Users/carterfox/My Drive (cdfox@wisc.edu)/XiaoWang_Group_data_2024on/ChenS/sample_argonne_10/devices/SHG/'
+    file = path+'d3-thick.txt'
     
+    data = np.loadtxt(file,comments='#')
+    hwp,pol,means,stds = data[:,0]*np.pi/180,data[:,1]*np.pi/180,data[:,2],data[:,3]
+    
+    fig, ax = plt.subplots(figsize=(5,5),subplot_kw={'projection': 'polar'})
+    # ax.set_rlabel_position(-10)
+    ax.set_xticks(np.arange(0, np.radians(360),np.radians(60)))
+    ax.set_yticklabels([])
+    
+    ax.plot(pol      ,means,color='C0',ms=12)
+    ax.plot(pol+np.pi,means,color='C0',ms=12)
+    x=47
+    y=x+60
+    z=y+60
+    ax.axvline(x*np.pi/180,c='C1'),ax.axvline((x+180)*np.pi/180,c='C1')
+    ax.axvline(y*np.pi/180,c='C1'),ax.axvline((y+180)*np.pi/180,c='C1')
+    ax.axvline(z*np.pi/180,c='C1'),ax.axvline((z+180)*np.pi/180,c='C1')
+    
+    ax.set_title('SHG Intensity ($I_{||}$) \n')
+    
+    plt.show()
+    
+    
+
+
+
+
     
     
