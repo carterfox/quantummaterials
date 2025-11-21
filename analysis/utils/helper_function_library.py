@@ -639,17 +639,21 @@ def plotseveralSHG(title,files,labels,ms=10,el=.4,append=False,order=None,factor
 
 ## SHG CD
 
-def CD(A,B,errA,errB,absolute=False):
+def CD(A,B,errA,errB,num_gates,absolute=False):
     CD = (A-B)/(A+B)*100
     if absolute:
         CD = abs(CD)
-    CD_err = np.sqrt( (2*B*errA/(A+B)**2)**2 + (2*A*errB/(A+B)**2)**2 )*100
+    CD_err = np.sqrt( (2*B*errA/(A+B)**2)**2 + (2*A*errB/(A+B)**2)**2 )*100/np.sqrt(num_gates)
     return CD, CD_err
 
 def get_CD_data(file):
-    data = np.loadtxt(file,comments='#',skiprows=7)[:,1]
+    try:
+        data = np.loadtxt(file,comments='#',skiprows=4)[:,1]
+    except:
+        data = np.loadtxt(file,comments='#',skiprows=7)[:,1]
+    num_gates = len(data)
     mean,std = np.mean(data),np.std(data)
-    return mean,std
+    return mean,std,num_gates
 
 #%% TEM data analysis
 
