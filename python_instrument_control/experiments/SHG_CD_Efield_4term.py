@@ -24,67 +24,40 @@ def main(sample: FourTerminal, keithley_x: KeithleySourceMeter, keithley_y: Keit
     
     plt.ion()
     fig,ax1,line1,ax2,line2 = init_main_plot()
-    fig.canvas.manager.window.move(1720, 60)
     file_path = make_data_file(sample,qwp_angles,laser_power,gate_time_ms,num_gates,file_save)
-    qwp_real_angle = update_rotation_stage(qwp_rotstage,qwp_angles[0])      
         
-    keithley_x.enable_source()
-    keithley_x.apply_voltage()
-    keithley_y.enable_source()
-    keithley_y.apply_voltage()
-    
-    ### turn on PMT then initiate a bunch of litsts
+    #### turn on PMT, set keithleys, then initiate a bunch of litsts. angle_ind controls qwp setting (C1 vs C2)
     # pmt.set_hv(on=True)   
-    Ex_list, Ey_list, SHG_C1_means, SHG_C1_stds, SHG_C2_means, SHG_C2_stds, SHG_total_list, SHG_CD_list = [],[],[],[],[],[],[],[]
+    set_keithleys(keithley_x,keithley_y)
+    Ex_list, Ey_list, SHG_total_list, SHG_CD_list, SHG_C_vals, SHG_C_stds, angle_ind = [],[],[],[],  [[],[]] , [[],[]], 0
     
     for (Ex,Ey) in zip(Ex_array,Ey_array):
         
-        #### go to first qwp angle
-        qwp_real_angle = update_rotation_stage(qwp_rotstage,qwp_angles[0])     
+        #### go to first qwp angle. set voltages in each keithley 
+        qwp_real_angle = update_rotation_stage(qwp_rotstage,qwp_angles[angle_ind])     
+        Vx,Vy,Vx_meas,Vy_meas,Ix_meas,Iy_meas = set_voltages(sample,keithley_x,keithley_y,Ex,Ey)
         
-        #### set voltages in each keithley 
-        Vx = Ex*sample.channel_width
-        Vy = Ey*sample.channel_width
-        keithley_x.source_voltage = Vx
-        Vx_meas = keithley_x.measure_voltage_avg(10)
-        Ix_meas = 10**9 * keithley_x.measure_current_avg(20)
-        keithley_y.source_voltage = Vy
-        Vy_meas = keithley_y.measure_voltage_avg(10)
-        Iy_meas = 10**9 * keithley_y.measure_current_avg(20)
-        
-        #### measure SHG data at first qwp angle
-        # data_C1 = pmt.run_collection(gate_time_ms,num_gates,remove_first=True)
-        data_C1 = np.random.randint(low=0,high=10,size=(num_gates))
-        SHG_C1_means.append(np.mean(data_C1))
-        SHG_C1_stds.append(np.std(data_C1)/np.sqrt(num_gates))
+        #### measure SHG data at both qwp angles
+        for i in range(2):
+            if i==1: angle_ind = int(not angle_ind)
+            update_rotation_stage(qwp_rotstage,qwp_angles[angle_ind]) 
+            # data = pmt.run_collection(gate_time_ms,num_gates,remove_first=True)
+            data = np.random.randint(low=0,high=10,size=(num_gates))
+            SHG_C_vals[angle_ind].append(np.mean(data)), SHG_C_stds[angle_ind].append(np.mean(np.std(data)/np.sqrt(num_gates)))
 
-        #### move to second qwp angle and measure SHG data at the second qwp angle
-        qwp_real_angle = update_rotation_stage(qwp_rotstage,qwp_angles[1])    
-        # data_C2 = pmt.run_collection(gate_time_ms,num_gates,remove_first=True)
-        data_C2 = np.random.randint(low=0,high=10,size=(num_gates))
-        SHG_C2_means.append(np.mean(data_C2))
-        SHG_C2_stds.append(np.std(data_C1)/np.sqrt(num_gates))
-        
-        #### compute total SGH and SHG-CD
-        SHG_total = SHG_C1_means[-1] + SHG_C2_means[-1]
-        SHG_CD = (SHG_C1_means[-1] - SHG_C2_means[-1])/SHG_total*100
-        SHG_total_list.append(SHG_total)
-        SHG_CD_list.append(SHG_CD)
-        
-        Ex_list.append(Ex)
-        Ey_list.append(Ey)
-        
-        #### plot data and return to first qwp angle 
+        #### compute total SGH and SHG-CD. plot and save data    
+        SHG_C1, SHG_C1_std, SHG_C2, SHG_C2_std, SHG_total, SHG_CD = get_SHG_vals(SHG_C_vals,SHG_C_stds)
+        SHG_total_list.append(SHG_total), SHG_CD_list.append(SHG_CD), Ex_list.append(Ex), Ey_list.append(Ey)
         update_plot(fig,ax1,ax2,line1,line2,Ex_list,Ey_list,SHG_total_list,SHG_CD_list)
-        update_saved_data(file_path,Vx,Vy,SHG_C1_means[-1],SHG_C1_stds[-1],SHG_C2_means[-1],SHG_C2_stds[-1],Ix_meas,Iy_meas)
-        qwp_real_angle = update_rotation_stage(qwp_rotstage,qwp_angles[0])   
-        
+        update_saved_data(file_path,Vx,Vy,SHG_C1,SHG_C1_std,SHG_C2,SHG_C2_std,Ix_meas,Iy_meas)
+   
     ### turn off PMT hv and interactive plotting
     # pmt.set_hv(on=False)
     time.sleep(.5)
     plt.ioff()
     plt.savefig(file_path.replace('.txt','plot.png'),dpi=500)
     plt.show()
+    
     return SHG_total_list,SHG_CD_list
     
 
@@ -109,6 +82,7 @@ def init_main_plot():
     line2 = Line2D([], [], color='C2',marker='.')
     ax1.add_line(line1)
     ax2.add_line(line2)
+    fig.canvas.manager.window.move(1720, 60)
     return fig,ax1,line1,ax2,line2
 
 def make_data_file(sample,qwp_angles,laser_power,gate_time_ms,num_gates,file_save):
@@ -140,4 +114,34 @@ def update_rotation_stage(qwp_rotstage: RotationMount,qwp_angle):
     qwp_angle = qwp_angle+qwp_home
     qwp_rotstage.move_to(qwp_angle)
     time.sleep(.5)
-    return qwp_angle
+    return None
+
+def set_voltages(sample,keithley_x,keithley_y,Ex,Ey):
+    Vx, Vy = Ex*sample.channel_width, Ey*sample.channel_width
+    if keithley_x != None:
+        keithley_x.source_voltage = Vx
+        Vx_meas = keithley_x.measure_voltage_avg(10)
+        Ix_meas = 10**9 * keithley_x.measure_current_avg(20)
+    else: Vx_meas, Ix_meas = 0,0
+    if keithley_y != None:
+        keithley_y.source_voltage = Vy
+        Vy_meas = keithley_y.measure_voltage_avg(10)
+        Iy_meas = 10**9 * keithley_y.measure_current_avg(20)
+    else: Vy_meas, Iy_meas = 0,0
+    return Vx, Vy, Vx_meas,Vy_meas,Ix_meas,Iy_meas
+
+def get_SHG_vals(SHG_C_vals,SHG_C_stds):
+    SHG_C1, SHG_C2 = SHG_C_vals[0][-1], SHG_C_vals[1][-1]
+    SHG_C1_std, SHG_C2_std = SHG_C_stds[0][-1], SHG_C_stds[1][-1]
+    SHG_total = SHG_C1 + SHG_C2
+    SHG_diff = SHG_C1 - SHG_C2
+    SHG_CD = SHG_diff/SHG_total*100
+    return SHG_C1, SHG_C1_std, SHG_C2, SHG_C2_std, SHG_total, SHG_CD
+
+def set_keithleys(keithley_x,keithley_y):
+    if keithley_x != None:
+        keithley_x.enable_source()
+        keithley_x.apply_voltage()
+    if keithley_y != None:
+        keithley_y.enable_source()
+        keithley_y.apply_voltage()
