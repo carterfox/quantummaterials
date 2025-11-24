@@ -24,7 +24,7 @@ def main(sample: FourTerminal, keithley_x: KeithleySourceMeter, keithley_y: Keit
     
     plt.ion()
     fig,ax1,line1,ax2,line2 = init_main_plot()
-    fig.canvas.manager.window.move(1920, 60)
+    fig.canvas.manager.window.move(1720, 60)
     file_path = make_data_file(sample,qwp_angles,laser_power,gate_time_ms,num_gates,file_save)
     qwp_real_angle = update_rotation_stage(qwp_rotstage,qwp_angles[0])      
         
@@ -34,7 +34,7 @@ def main(sample: FourTerminal, keithley_x: KeithleySourceMeter, keithley_y: Keit
     keithley_y.apply_voltage()
     
     ### turn on PMT then initiate a bunch of litsts
-    pmt.set_hv(on=True)   
+    # pmt.set_hv(on=True)   
     Ex_list, Ey_list, SHG_C1_means, SHG_C1_stds, SHG_C2_means, SHG_C2_stds, SHG_total_list, SHG_CD_list = [],[],[],[],[],[],[],[]
     
     for (Ex,Ey) in zip(Ex_array,Ey_array):
@@ -43,8 +43,8 @@ def main(sample: FourTerminal, keithley_x: KeithleySourceMeter, keithley_y: Keit
         qwp_real_angle = update_rotation_stage(qwp_rotstage,qwp_angles[0])     
         
         #### set voltages in each keithley 
-        Vx = Ex/sample.channel_width
-        Vy = Ey/sample.channel_width
+        Vx = Ex*sample.channel_width
+        Vy = Ey*sample.channel_width
         keithley_x.source_voltage = Vx
         Vx_meas = keithley_x.measure_voltage_avg(10)
         Ix_meas = 10**9 * keithley_x.measure_current_avg(20)
@@ -53,13 +53,15 @@ def main(sample: FourTerminal, keithley_x: KeithleySourceMeter, keithley_y: Keit
         Iy_meas = 10**9 * keithley_y.measure_current_avg(20)
         
         #### measure SHG data at first qwp angle
-        data_C1 = pmt.run_collection(gate_time_ms,num_gates,remove_first=True)
+        # data_C1 = pmt.run_collection(gate_time_ms,num_gates,remove_first=True)
+        data_C1 = np.random.randint(low=0,high=10,size=(num_gates))
         SHG_C1_means.append(np.mean(data_C1))
         SHG_C1_stds.append(np.std(data_C1)/np.sqrt(num_gates))
 
         #### move to second qwp angle and measure SHG data at the second qwp angle
         qwp_real_angle = update_rotation_stage(qwp_rotstage,qwp_angles[1])    
-        data_C2 = pmt.run_collection(gate_time_ms,num_gates,remove_first=True)
+        # data_C2 = pmt.run_collection(gate_time_ms,num_gates,remove_first=True)
+        data_C2 = np.random.randint(low=0,high=10,size=(num_gates))
         SHG_C2_means.append(np.mean(data_C2))
         SHG_C2_stds.append(np.std(data_C1)/np.sqrt(num_gates))
         
@@ -78,7 +80,7 @@ def main(sample: FourTerminal, keithley_x: KeithleySourceMeter, keithley_y: Keit
         qwp_real_angle = update_rotation_stage(qwp_rotstage,qwp_angles[0])   
         
     ### turn off PMT hv and interactive plotting
-    pmt.set_hv(on=False)
+    # pmt.set_hv(on=False)
     time.sleep(.5)
     plt.ioff()
     plt.savefig(file_path.replace('.txt','plot.png'),dpi=500)
@@ -98,10 +100,10 @@ def update_plot(fig,ax1,ax2,line1,line2,Ex_list,Ey_list,SHG_total_list,SHG_CD_li
     fig.canvas.flush_events()
 
 def init_main_plot():
-    fig, (ax1,ax2) = plt.subplots(1,2)
-    ax1.set_xlabel(r'E_x (V/nm)')
-    ax2.set_xlabel(r'E_x (V/nm)')
-    ax1.set_ylabel('SHG Intensity (I_L+I_R)')
+    fig, (ax1,ax2) = plt.subplots(1,2,figsize=(8,4))
+    ax1.set_xlabel(r'$E_x$ (V/nm)')
+    ax2.set_xlabel(r'$E_x$ (V/nm)')
+    ax1.set_ylabel(r'SHG Intensity ($I_L+I_R$)')
     ax2.set_ylabel(r'SHG-CD ($\%$)')
     line1 = Line2D([], [], color='C0',marker='.')
     line2 = Line2D([], [], color='C2',marker='.')

@@ -9,24 +9,25 @@ Created on Sun Aug  3 12:32:27 2025
 # import MultiPyVu as mpv
 import numpy as np
 import matplotlib.pyplot as plt
-from qcodes_contrib_drivers.drivers.Attocube.ANC300 import ANC300
+# from qcodes_contrib_drivers.drivers.Attocube.ANC300 import ANC300
 import toolbelt as tb
 import traceback
 import logging
 import pyvisa
 import time
 logging.basicConfig(level=logging.INFO, format='%(levelname)s - %(message)s')
-from homemade_servers.SSI_OE1022D import LockInOE1022D
-from homemade_servers.QDopticool import Opticool
+# from homemade_servers.SSI_OE1022D import LockInOE1022D
+# from homemade_servers.QDopticool import Opticool
 from homemade_servers.H11890PMT import HamamatsuH11890
-from homemade_servers.AndorCameraSpectrometer import AndorCamSpec
+# from homemade_servers.AndorCameraSpectrometer import AndorCamSpec
 from homemade_servers.KeithleySourceMeter import KeithleySourceMeter
 from homemade_servers.ThorlabsKCube import RotationMount
-from devices.dualgate import DualGate
-from devices.optical import Optical
-from experiments import RMCD_bfield_scan, RMCD_mapping, RMCD_dualgate_Esweep
-from experiments import raman_basic, SHG_polarization_scan
-from experiments import PMT_continuous_read, Gr_polarization_sensing, Gr_polarization_sensing_singlepoint
+# from devices.dualgate import DualGate
+# from devices.optical import Optical
+from devices.transport import FourTerminal
+# from experiments import RMCD_bfield_scan, RMCD_mapping, RMCD_dualgate_Esweep
+from experiments import raman_basic, SHG_polarization_scan, SHG_CD_Efield_4term
+# from experiments import PMT_continuous_read, Gr_polarization_sensing, Gr_polarization_sensing_singlepoint
 tb.init_plot_params()
 if 'servers' not in globals(): 
     global servers
@@ -68,11 +69,6 @@ def get_ANC300(resource_name='ASRL11'):
     return ANC
 
 def get_AndorCamSpec(temperature=-85):
-    # if len(servers)!=0:
-    #     for s in servers:
-    #         if 'AndorCameraSpectrometer' in str(s):
-    #             return s
-    # else:
     andor = AndorCamSpec(temperature=temperature)
     servers.append(andor)
     return andor
@@ -104,33 +100,30 @@ if __name__ == "__main__":
     
     ###### add it to servers_to_close if you want them to close each time. 
     ###### at this point only cam_spec should not be in it
-    waveplate = get_rotation_stage('27268499')
-    polarizer = get_rotation_stage('27261255')
-    data_path ='I:/.shortcut-targets-by-id/1-8q9lGFnGNt4mDzcxXwdk43m1aVWT66q/XiaoWang_Group_data_2024on/ChenS/sample_argonne_10/devices/'
-    sample = Optical('d2', data_path)
-    # cam_spec = get_AndorCamSpec()
-    pmt = get_PMT()
-    servers_to_close = [pmt,waveplate,polarizer]
+    data_path="I:/.shortcut-targets-by-id/1-8q9lGFnGNt4mDzcxXwdk43m1aVWT66q/XiaoWang_Group_data_2024on/StackingTransitions/NbOI2/Lvgroup/Efield-samples-for-optics/90deg_3L3L_4term_S1"
+    sample = FourTerminal('4termNbOI290degS1', 5, data_path)
+    qwp = get_rotation_stage('27261255')
+    qwp.home = 0
+    qwp_C1 = 43.5 ##
+    qwp_C2 = -46.5
+    keithley_b = get_keithley('GPIB0::1::INSTR')
+    keithley_t = get_keithley('GPIB1::16::INSTR')
+    pmt=None
+    #cam_spec = get_AndorCamSpec()
+    servers_to_close = [qwp,keithley_b,keithley_t]
     ######
-    waveplate.home=5
-    polarizer.home=0
-    angles = np.arange(0,181,3)
-    exc_stage_angles = angles
-    det_stage_angles = angles*2
-    # initial_pos = waveplate.get_pos()
-    # if initial_pos != 0:
-    #     waveplate.move_to(initial_pos)
-    # angles = np.arange(0, 91, 2.5)
+    #initial_pos = waveplate.get_pos()
+    #if initial_pos != 0:
+    #    waveplate.move_to(initial_pos)
+    angles = np.arange(0, 91, 2.5)
+    Ex=np.array([0,1,2])
+    Ey=np.array([0,2,3])
     
     try:
-        SHG_polarization_scan.main(sample, pmt, waveplate, polarizer,
-                                    exc_stage_angles,det_stage_angles, 
-                                    rotating='both',laser_power=3,
-                                    gate_time_ms=400,num_gates=15,file_save='d4-fine.txt')
-        
-        # PMT_continuous_read.main(pmt, gate_time_ms=300, num_gates=0)
+        SHG_CD_Efield_4term.main(sample, keithley_b, keithley_t, pmt, qwp, 
+                                 qwp_angles=(qwp_C1,qwp_C2), Ex_array=Ex, Ey_array=Ey)
         # all_data, summed_spectra_data = raman_basic.angle_sweep(cam_spec, waveplate, exposure_time=300, averages=3, angles=angles)
-       # print(all_data)
+        # print(all_data)
         print('')
         
     except Exception: traceback.print_exc()
