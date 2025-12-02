@@ -74,16 +74,19 @@ def update_plot(fig,ax1,ax2,line1,line2,Ex_list,Ey_list,SHG_total_list,SHG_CD_li
     fig.canvas.flush_events()
 
 def init_main_plot():
-    fig, (ax1,ax2) = plt.subplots(1,2,figsize=(8,4))
-    ax1.set_xlabel(r'$E_x$ (kV/cm)')
+    # fig, (ax1,ax2) = plt.subplots(2,1,figsize=(4,8),gridspec_kw={'width_ratios': [1, 1]})
+    fig, (ax1,ax2) = plt.subplots(2,1,figsize=(6,6),sharex=True)
+    # ax1.set_xlabel(r'$E_x$ (kV/cm)')
     ax2.set_xlabel(r'$E_x$ (kV/cm)')
     ax1.set_ylabel(r'SHG Intensity ($I_L+I_R$)')
     ax2.set_ylabel(r'SHG-CD ($\%$)')
     line1 = Line2D([], [], color='C0',marker='.')
-    line2 = Line2D([], [], color='C2',marker='.')
+    line2 = Line2D([], [], color='C0',marker='.')
     ax1.add_line(line1)
     ax2.add_line(line2)
-    fig.canvas.manager.window.move(1720, 60)
+    try:
+        fig.canvas.manager.window.move(1720, 60)
+    except: None
     return fig,ax1,line1,ax2,line2
 
 def make_data_file(sample,qwp_angles,laser_power,gate_time_ms,num_gates,file_save):
@@ -153,6 +156,30 @@ def get_SGH_CD_std(x, y, sigma_x, sigma_y):
     denominator = (x + y)**2
     return 100 * 2 * numerator / denominator
 
+def replot(Ex_list,Ey_list,SHG_total,SHG_CD,SHG_CD_std,absolute=True):
+    fig, (ax1,ax2) = plt.subplots(2,1,figsize=(6,6),sharex=True)
+    ax2.set_xlabel(r'$E_x$ (kV/cm)')
+    ax1.set_ylabel(r'SHG Intensity ($I_L+I_R$)')
+    ax2.set_ylabel(r'SHG-CD ($\%$)')
+
+    diffs = np.diff(Ex_list)
+    try: transition_index = np.where((diffs[:-1] >= 0) & (diffs[1:] <= 0))[0][0]+1
+    except: transition_index=len(Ex_list)
+    
+    Ex_list_ascend,Ex_list_descend = Ex_list[0:transition_index],Ex_list[transition_index:]
+    SHG_CD_ascend,SHG_CD_descend = SHG_CD[0:transition_index],SHG_CD[transition_index:]
+    SHG_total_ascend,SHG_total_descend = SHG_total[0:transition_index],SHG_total[transition_index:]    
+    
+    if absolute: SHG_CD_ascend,SHG_CD_descend = np.abs(SHG_CD_ascend),np.abs(SHG_CD_descend)
+    
+    ax1.plot(Ex_list_ascend, SHG_total_ascend, color='black', label=r'$\rightarrow$',marker='.',ms=10,lw=3)
+    ax1.plot(Ex_list_descend, SHG_total_descend, color='r', label=r'$\leftarrow$',marker='.',ms=10,lw=3)
+   
+    ax2.plot(Ex_list_ascend, SHG_CD_ascend, color='black', label=r'$\rightarrow$',marker='.',ms=10,lw=3)
+    ax2.plot(Ex_list_descend, SHG_CD_descend, color='r', label=r'$\leftarrow$',marker='.',ms=10,lw=3)
+    tb.plot_arrow_legend(ax2,r'$E_x$',x1=36.6,y1=9.3,ls=18,yratio=.058,xratio=.12,wratio=.0872)
+    
+
 if __name__ == "__main__":
 
     tb.init_plot_params()
@@ -161,15 +188,17 @@ if __name__ == "__main__":
     sample = FourTerminal('NbOI290deg4termS1', 5, path_d1)
     w = sample.channel_width
     
-    file_path = path_d1+'test.txt'
+    file_path = path_d1+'fullscanx1_yfloat_new.txt'
     
     data = np.loadtxt(file_path,comments='#')
     Vx,Vy,SHG_C1,SHG_C1_std,SHG_C2,SHG_C2_std,SHG_CD,SHG_CD_std,Ix,Iy = data[:,0],data[:,1],np.array(data[:,2]),np.array(data[:,3]),np.array(data[:,4]),np.array(data[:,5]),np.array(data[:,6]),np.array(data[:,7]),data[:,8],data[:,9]
-    Ex_list, Ey_list = Vx/w, Vy/w
+    Ex_list, Ey_list = Vx/w*10, Vy/w*10
     SHG_total = SHG_C1 + SHG_C2
     
-    fig,ax1,line1,ax2,line2 = init_main_plot()
-    update_plot(fig,ax1,ax2,line1,line2,Ex_list,Ey_list,SHG_total,SHG_CD)
+    replot(Ex_list,Ey_list,SHG_total,SHG_CD,SHG_CD_std,absolute=True)
+    plt.savefig(file_path.replace('.txt','plot.png'),dpi=500)
+    # ax2.set_ylim(-8,0)
+    plt.show()
     
     
     
