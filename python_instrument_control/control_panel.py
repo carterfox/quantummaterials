@@ -107,21 +107,30 @@ if __name__ == "__main__":
     qwp_C1 = 43.5 ##
     qwp_C2 = -46.5
     keithley_b = get_keithley('GPIB0::1::INSTR')
-    keithley_t = get_keithley('GPIB1::16::INSTR')
-    pmt=None
+    keithley_b.compliance_current = 100*10**(-6)
+    keithley_t = None#get_keithley('GPIB1::16::INSTR')
+    # keithley_t.compliance_current = 100*10**(-6)
+
+    pmt=get_PMT()
     #cam_spec = get_AndorCamSpec()
-    servers_to_close = [qwp,keithley_b,keithley_t]
+    servers_to_close = [pmt,qwp,keithley_b]
     ######
     #initial_pos = waveplate.get_pos()
     #if initial_pos != 0:
     #    waveplate.move_to(initial_pos)
-    angles = np.arange(0, 91, 2.5)
-    Ex=np.array([0,1,2])
-    Ey=np.array([0,2,3])
+    # angles = np.arange(0, 91, 2.5)
+    Ex = np.arange(-4.5,.25,.25)
+    #Ex = np.append(Ex,np.flip(Ex))
+    Ey=np.zeros_like(Ex)
+    
+    # filesave = 'fullscanx1_yfloat.txt'
+    filesave = 'fullscanx2_yfloat.txt'
     
     try:
-        SHG_CD_Efield_4term.main(sample, keithley_b, keithley_t, pmt, qwp, 
-                                 qwp_angles=(qwp_C1,qwp_C2), Ex_array=Ex, Ey_array=Ey)
+        SHG_total_list,SHG_CD_list = SHG_CD_Efield_4term.main(sample, keithley_b, keithley_t, pmt, qwp, 
+                                  qwp_angles=(qwp_C1,qwp_C2), Ex_array=Ex, Ey_array=Ey,
+                                  gate_time_ms=200,num_gates=40,laser_power=1.5,file_save=filesave)
+        # PMT_continuous_read.main(pmt, 200, 0)
         # all_data, summed_spectra_data = raman_basic.angle_sweep(cam_spec, waveplate, exposure_time=300, averages=3, angles=angles)
         # print(all_data)
         print('')
