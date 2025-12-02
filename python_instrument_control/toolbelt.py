@@ -108,6 +108,23 @@ def line(x,m,b):
     return m*x+b
 
 
+def CD(A,B,errA,errB,num_gates,absolute=False):
+    CD = (A-B)/(A+B)*100
+    if absolute:
+        CD = abs(CD)
+    CD_err = np.sqrt( (2*B*errA/(A+B)**2)**2 + (2*A*errB/(A+B)**2)**2 )*100/np.sqrt(num_gates)
+    return CD, CD_err
+
+def get_CD_data(file):
+    try:
+        data = np.loadtxt(file,comments='#',skiprows=4)[:,1]
+    except:
+        data = np.loadtxt(file,comments='#',skiprows=7)[:,1]
+    num_gates = len(data)
+    mean,std = np.mean(data),np.std(data)
+    return mean,std,num_gates
+
+
 def init_plot_params():
     mpl.rcParams.update(mpl.rcParamsDefault)
     fontsize = 18
