@@ -38,6 +38,7 @@ def main(sample: FourTerminal, keithley_x: KeithleySourceMeter, keithley_y: Keit
         qwp_real_angle = update_rotation_stage(qwp_rotstage,qwp_angles[angle_ind])     
         Vx,Vy,Vx_meas,Vy_meas,Ix_meas,Iy_meas = set_voltages(sample,keithley_x,keithley_y,Ex,Ey)
         #### measure SHG data at both qwp angles
+        time.sleep(1)
         for i in range(2):
             if i==1: angle_ind = int(not angle_ind)
             update_rotation_stage(qwp_rotstage,qwp_angles[angle_ind]) 
