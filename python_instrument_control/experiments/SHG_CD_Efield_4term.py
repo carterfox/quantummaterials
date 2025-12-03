@@ -156,30 +156,42 @@ def get_SGH_CD_std(x, y, sigma_x, sigma_y):
     denominator = (x + y)**2
     return 100 * 2 * numerator / denominator
 
-def replot(Ex_list,Ey_list,SHG_total,SHG_CD,SHG_CD_std,absolute=True):
+def replot(Ex_list,Ey_list,SHG_total,SHG_total_std,SHG_CD,SHG_CD_std,E='x',absolute=True):
     fig, (ax1,ax2) = plt.subplots(2,1,figsize=(6,6),sharex=True)
-    ax2.set_xlabel(r'$E_x$ (kV/cm)')
+    
+    if E=='x': 
+        E_list = Ex_list
+        colord = 'r'
+    elif E == 'y':
+        E_list = Ey_list
+        colord = 'b'
+    ax2.set_xlabel(r'$E_{}$  (kV/cm)'.format(E))
     ax1.set_ylabel(r'SHG Intensity ($I_L+I_R$)')
     ax2.set_ylabel(r'SHG-CD ($\%$)')
-
-    diffs = np.diff(Ex_list)
-    try: transition_index = np.where((diffs[:-1] >= 0) & (diffs[1:] <= 0))[0][0]+1
-    except: transition_index=len(Ex_list)
     
-    Ex_list_ascend,Ex_list_descend = Ex_list[0:transition_index],Ex_list[transition_index:]
+
+    diffs = np.diff(E_list)
+    try: transition_index = np.where((diffs[:-1] >= 0) & (diffs[1:] <= 0))[0][0]+2
+    except: transition_index=len(E_list)
+    
+    E_list_ascend,E_list_descend = E_list[0:transition_index],E_list[transition_index:]
     SHG_CD_ascend,SHG_CD_descend = SHG_CD[0:transition_index],SHG_CD[transition_index:]
+    SHG_CD_std_ascend,SHG_CD_std_descend = SHG_CD_std[0:transition_index],SHG_CD_std[transition_index:]
     SHG_total_ascend,SHG_total_descend = SHG_total[0:transition_index],SHG_total[transition_index:]    
+    SHG_total_std_ascend,SHG_total_std_descend = SHG_total_std[0:transition_index],SHG_total_std[transition_index:]    
     
     if absolute: SHG_CD_ascend,SHG_CD_descend = np.abs(SHG_CD_ascend),np.abs(SHG_CD_descend)
     
     ms=8
     lw=2.5
-    ax1.plot(Ex_list_ascend, SHG_total_ascend, color='black', label=r'$\rightarrow$',marker='.',ms=ms,lw=lw)
-    ax1.plot(Ex_list_descend, SHG_total_descend, color='r', label=r'$\leftarrow$',marker='.',ms=ms,lw=lw)
+    elw=1.
+    ax1.errorbar(E_list_ascend, SHG_total_ascend, yerr=SHG_total_std_ascend,color='black',  label=r'$\rightarrow$',marker='.',elinewidth=elw,ms=ms)
+    ax1.errorbar(E_list_descend, SHG_total_descend, yerr=SHG_total_std_descend,color=colord,  label=r'$\leftarrow$',marker='.',elinewidth=elw,ms=ms)
    
-    ax2.plot(Ex_list_ascend, SHG_CD_ascend, color='black', label=r'$\rightarrow$',marker='.',ms=ms,lw=lw)
-    ax2.plot(Ex_list_descend, SHG_CD_descend, color='r', label=r'$\leftarrow$',marker='.',ms=ms,lw=lw)
-    tb.plot_arrow_legend(ax2,r'$E_x$',x1=-36.6,y1=10.8,ls=18,yratio=.058,xratio=.12,wratio=.0872)
+    ax2.errorbar(E_list_ascend, SHG_CD_ascend, yerr=SHG_CD_std_ascend,color='black',  label=r'$\rightarrow$',marker='.',elinewidth=elw,ms=ms)
+    ax2.errorbar(E_list_descend, SHG_CD_descend, yerr=SHG_CD_std_descend,color=colord,  label=r'$\leftarrow$',marker='.',elinewidth=elw,ms=ms)
+    
+    tb.plot_arrow_legend(ax2,r'$E_{}$'.format(E),x1=0.6,y1=-33.8,ls=18,yratio=.058,xratio=.12,wratio=.0872,colord=colord)
     
     # ax2.set_ylim(-10,10)
     
@@ -192,14 +204,15 @@ if __name__ == "__main__":
     sample = FourTerminal('NbOI290deg4termS1', 5, path_d1)
     w = sample.channel_width
     
-    file_path = path_d1+'fullscanx1_yfloat.txt'
+    file_path = path_d1+'fullscany1_xfloat.txt'
     
     data = np.loadtxt(file_path,comments='#')
     Vx,Vy,SHG_C1,SHG_C1_std,SHG_C2,SHG_C2_std,SHG_CD,SHG_CD_std,Ix,Iy = data[:,0],data[:,1],np.array(data[:,2]),np.array(data[:,3]),np.array(data[:,4]),np.array(data[:,5]),np.array(data[:,6]),np.array(data[:,7]),data[:,8],data[:,9]
     Ex_list, Ey_list = Vx/w*10, Vy/w*10
     SHG_total = SHG_C1 + SHG_C2
+    SHG_total_std = np.sqrt(SHG_C1_std**2 + SHG_C2_std**2)
     
-    replot(Ex_list,Ey_list,SHG_total,SHG_CD,SHG_CD_std,absolute=False)
+    replot(Ex_list,Ey_list,SHG_total,SHG_total_std,SHG_CD,SHG_CD_std,E='y',absolute=False)
     plt.savefig(file_path.replace('.txt','plot.png'),dpi=500)
     # ax2.set_ylim(-8,0)
     plt.show()

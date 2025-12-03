@@ -150,7 +150,7 @@ def init_plot_params():
     # "text.usetex": True,
     # "font.family": "Helvetica"})
     
-def plot_arrow_legend(ax,label,x1=None,y1=None,ls=18,yratio=.058,xratio=.12,wratio=.0872):
+def plot_arrow_legend(ax,label,x1=None,y1=None,ls=18,yratio=.058,xratio=.12,wratio=.0872,colora='black',colord='red'):
     xrange = ax.get_xlim()[1] - ax.get_xlim()[0]
     yrange = ax.get_ylim()[1] - ax.get_ylim()[0]
     if x1 == None and y1 == None:
@@ -162,8 +162,8 @@ def plot_arrow_legend(ax,label,x1=None,y1=None,ls=18,yratio=.058,xratio=.12,wrat
     y2 = y1-ylen
     yavg = (y1+y2)/2
     w = yrange*wratio*.55
-    arrow2 = mpatches.Arrow(x1,y1,-xlen,0,width=w,color='red')
-    arrow = mpatches.Arrow(x2,y2,xlen,0,width=w,color='black')
+    arrow2 = mpatches.Arrow(x1,y1,-xlen,0,width=w,color=colord)
+    arrow = mpatches.Arrow(x2,y2,xlen,0,width=w,color=colora)
     ax.add_patch(arrow), ax.add_patch(arrow2)
     ax.text(x1,yavg,r'$+$'+label,fontsize=ls,va='center',ha='left')
     ax.text(x2,yavg,r'$-$'+label+r'  ',fontsize=ls,va='center',ha='right')
