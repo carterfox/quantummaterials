@@ -26,8 +26,8 @@ from homemade_servers.ThorlabsKCube import RotationMount
 # from devices.optical import Optical
 from devices.transport import FourTerminal
 # from experiments import RMCD_bfield_scan, RMCD_mapping, RMCD_dualgate_Esweep
-from experiments import raman_basic, SHG_polarization_scan, SHG_CD_Efield_4term
-# from experiments import PMT_continuous_read, Gr_polarization_sensing, Gr_polarization_sensing_singlepoint
+from experiments import SHG_polarization_scan, SHG_CD_Efield_4term, PMT_continuous_read
+# from experiments import raman_basic, Gr_polarization_sensing, Gr_polarization_sensing_singlepoint
 tb.init_plot_params()
 if 'servers' not in globals(): 
     global servers
@@ -85,6 +85,7 @@ def get_PMT():
 #     print('exited all servers safely')
     
 def exit_session():
+    time.sleep(.1)
     for s in servers_to_close:
         s.close()
         
@@ -106,34 +107,34 @@ if __name__ == "__main__":
     qwp.home = 0
     qwp_C1 = 43.5 ##
     qwp_C2 = -46.5
-    keithley_b = get_keithley('GPIB0::1::INSTR')
-    keithley_b.compliance_current = 100*10**(-6)
-    keithley_t = None#get_keithley('GPIB1::16::INSTR')
-    # keithley_t.compliance_current = 100*10**(-6)
+    keithley_b = None #get_keithley('GPIB0::1::INSTR')
+    # keithley_b.compliance_current = 100*10**(-6)
+    keithley_t = get_keithley('GPIB1::16::INSTR')
+    keithley_t.compliance_current = 100*10**(-6)
 
     pmt=get_PMT()
-    #cam_spec = get_AndorCamSpec()
-    servers_to_close = [pmt,qwp,keithley_b]
-    ######
-    #initial_pos = waveplate.get_pos()
-    #if initial_pos != 0:
-    #    waveplate.move_to(initial_pos)
-    # angles = np.arange(0, 91, 2.5)
-    Ex = np.arange(-4.5,.25,.25)
-    #Ex = np.append(Ex,np.flip(Ex))
-    Ey=np.zeros_like(Ex)
+    servers_to_close = [pmt,qwp,keithley_t]
+    # servers_to_close = [pmt,qwp]
+
+    Ey = np.arange(-12,.1,1)
+    # Ey = np.append(Ey,np.flip(Ey))
+    # Ey = np.arange(-11,-12.1,-0.5)
+    # Ey = np.ones(5)*(0)
+    Ex=np.zeros_like(Ey)
     
-    # filesave = 'fullscanx1_yfloat.txt'
-    filesave = 'fullscanx2_yfloat.txt'
+    filesave = 'goingback.txt'
+    # filesave = 'test.txt'
     
     try:
-        SHG_total_list,SHG_CD_list = SHG_CD_Efield_4term.main(sample, keithley_b, keithley_t, pmt, qwp, 
-                                  qwp_angles=(qwp_C1,qwp_C2), Ex_array=Ex, Ey_array=Ey,
-                                  gate_time_ms=200,num_gates=40,laser_power=1.5,file_save=filesave)
-        # PMT_continuous_read.main(pmt, 200, 0)
-        # all_data, summed_spectra_data = raman_basic.angle_sweep(cam_spec, waveplate, exposure_time=300, averages=3, angles=angles)
-        # print(all_data)
-        print('')
+        res = SHG_CD_Efield_4term.main(sample, keithley_b, keithley_t, pmt, qwp,
+                        qwp_angles=(qwp_C1,qwp_C2), Ex_array=Ex, Ey_array=Ey,
+                        gate_time_ms=200,num_gates=40,laser_power=1.5,file_save=filesave)
+        # qwp.move_to(qwp_C2)
+        # pmt.set_hv(True)
+        # for x in range(0,15):
+        #     a = pmt.run_collection(num_gates=20)
+        #     print(np.mean(a))
+        # pmt.set_hv(False)
         
     except Exception: traceback.print_exc()
     finally: exit_session()

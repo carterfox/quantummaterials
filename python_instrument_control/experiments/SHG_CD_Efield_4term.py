@@ -37,8 +37,8 @@ def main(sample: FourTerminal, keithley_x: KeithleySourceMeter, keithley_y: Keit
         #### go to first qwp angle. set voltages in each keithley 
         qwp_real_angle = update_rotation_stage(qwp_rotstage,qwp_angles[angle_ind])     
         Vx,Vy,Vx_meas,Vy_meas,Ix_meas,Iy_meas = set_voltages(sample,keithley_x,keithley_y,Ex,Ey)
-        #### measure SHG data at both qwp angles
         time.sleep(1)
+        #### measure SHG data at both qwp angles
         for i in range(2):
             if i==1: angle_ind = int(not angle_ind)
             update_rotation_stage(qwp_rotstage,qwp_angles[angle_ind]) 
@@ -65,8 +65,8 @@ def main(sample: FourTerminal, keithley_x: KeithleySourceMeter, keithley_y: Keit
 
 def update_plot(fig,ax1,ax2,line1,line2,Ex_list,Ey_list,SHG_total_list,SHG_CD_list,SHG_CD_std_list):
     #currently just using Ex
-    line1.set_data(np.array(Ex_list)*10,SHG_total_list)
-    line2.set_data(np.array(Ex_list)*10,SHG_CD_list)
+    line1.set_data(np.array(Ey_list)*10,SHG_total_list)
+    line2.set_data(np.array(Ey_list)*10,SHG_CD_list)
     ax1.relim()
     ax2.relim()
     ax1.autoscale_view()
