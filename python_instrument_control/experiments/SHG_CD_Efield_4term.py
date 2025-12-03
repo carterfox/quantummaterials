@@ -172,12 +172,16 @@ def replot(Ex_list,Ey_list,SHG_total,SHG_CD,SHG_CD_std,absolute=True):
     
     if absolute: SHG_CD_ascend,SHG_CD_descend = np.abs(SHG_CD_ascend),np.abs(SHG_CD_descend)
     
-    ax1.plot(Ex_list_ascend, SHG_total_ascend, color='black', label=r'$\rightarrow$',marker='.',ms=10,lw=3)
-    ax1.plot(Ex_list_descend, SHG_total_descend, color='r', label=r'$\leftarrow$',marker='.',ms=10,lw=3)
+    ms=8
+    lw=2.5
+    ax1.plot(Ex_list_ascend, SHG_total_ascend, color='black', label=r'$\rightarrow$',marker='.',ms=ms,lw=lw)
+    ax1.plot(Ex_list_descend, SHG_total_descend, color='r', label=r'$\leftarrow$',marker='.',ms=ms,lw=lw)
    
-    ax2.plot(Ex_list_ascend, SHG_CD_ascend, color='black', label=r'$\rightarrow$',marker='.',ms=10,lw=3)
-    ax2.plot(Ex_list_descend, SHG_CD_descend, color='r', label=r'$\leftarrow$',marker='.',ms=10,lw=3)
-    tb.plot_arrow_legend(ax2,r'$E_x$',x1=36.6,y1=9.3,ls=18,yratio=.058,xratio=.12,wratio=.0872)
+    ax2.plot(Ex_list_ascend, SHG_CD_ascend, color='black', label=r'$\rightarrow$',marker='.',ms=ms,lw=lw)
+    ax2.plot(Ex_list_descend, SHG_CD_descend, color='r', label=r'$\leftarrow$',marker='.',ms=ms,lw=lw)
+    tb.plot_arrow_legend(ax2,r'$E_x$',x1=-36.6,y1=10.8,ls=18,yratio=.058,xratio=.12,wratio=.0872)
+    
+    # ax2.set_ylim(-10,10)
     
 
 if __name__ == "__main__":
@@ -188,14 +192,14 @@ if __name__ == "__main__":
     sample = FourTerminal('NbOI290deg4termS1', 5, path_d1)
     w = sample.channel_width
     
-    file_path = path_d1+'fullscanx1_yfloat_new.txt'
+    file_path = path_d1+'fullscanx1_yfloat.txt'
     
     data = np.loadtxt(file_path,comments='#')
     Vx,Vy,SHG_C1,SHG_C1_std,SHG_C2,SHG_C2_std,SHG_CD,SHG_CD_std,Ix,Iy = data[:,0],data[:,1],np.array(data[:,2]),np.array(data[:,3]),np.array(data[:,4]),np.array(data[:,5]),np.array(data[:,6]),np.array(data[:,7]),data[:,8],data[:,9]
     Ex_list, Ey_list = Vx/w*10, Vy/w*10
     SHG_total = SHG_C1 + SHG_C2
     
-    replot(Ex_list,Ey_list,SHG_total,SHG_CD,SHG_CD_std,absolute=True)
+    replot(Ex_list,Ey_list,SHG_total,SHG_CD,SHG_CD_std,absolute=False)
     plt.savefig(file_path.replace('.txt','plot.png'),dpi=500)
     # ax2.set_ylim(-8,0)
     plt.show()
