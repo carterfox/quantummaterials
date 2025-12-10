@@ -23,7 +23,7 @@ from homemade_servers.H11890PMT import HamamatsuH11890
 from homemade_servers.KeithleySourceMeter import KeithleySourceMeter
 from homemade_servers.ThorlabsKCube import RotationMount
 # from devices.dualgate import DualGate
-# from devices.optical import Optical
+from devices.optical import Optical
 from devices.transport import FourTerminal
 # from experiments import RMCD_bfield_scan, RMCD_mapping, RMCD_dualgate_Esweep
 from experiments import SHG_polarization_scan, SHG_CD_Efield_4term, PMT_continuous_read
@@ -101,40 +101,46 @@ if __name__ == "__main__":
     
     ###### add it to servers_to_close if you want them to close each time. 
     ###### at this point only cam_spec should not be in it
-    data_path="I:/.shortcut-targets-by-id/1-8q9lGFnGNt4mDzcxXwdk43m1aVWT66q/XiaoWang_Group_data_2024on/StackingTransitions/NbOI2/Lvgroup/Efield-samples-for-optics/90deg_3L3L_4term_S1"
-    sample = FourTerminal('4termNbOI290degS1', 5, data_path)
+    data_path="I:/.shortcut-targets-by-id/1-8q9lGFnGNt4mDzcxXwdk43m1aVWT66q/XiaoWang_Group_data_2024on/StackingTransitions/NbOI2/Lvgroup/Efield-samples-for-optics/90deg_3L3L_4term_S2/"
+    sample = FourTerminal('4termNbOI290degS2', 5, data_path)
     qwp = get_rotation_stage('27261255')
     qwp.home = 0
-    qwp_C1 = 43.5 ##
-    qwp_C2 = -46.5
-    keithley_b = None #get_keithley('GPIB0::1::INSTR')
-    # keithley_b.compliance_current = 100*10**(-6)
-    keithley_t = get_keithley('GPIB1::16::INSTR')
-    keithley_t.compliance_current = 100*10**(-6)
-
-    pmt=get_PMT()
-    servers_to_close = [pmt,qwp,keithley_t]
-    # servers_to_close = [pmt,qwp]
-
-    Ey = np.arange(-12,.1,1)
-    # Ey = np.append(Ey,np.flip(Ey))
-    # Ey = np.arange(-11,-12.1,-0.5)
-    # Ey = np.ones(5)*(0)
-    Ex=np.zeros_like(Ey)
+    qwp_C1,qwp_C2 = 43.5, -46.5
+    center = (qwp_C1+qwp_C2)/2
     
-    filesave = 'goingback.txt'
-    # filesave = 'test.txt'
+    keithley_b = get_keithley('GPIB0::1::INSTR')
+    keithley_b.compliance_current = 10*10**(-6)
+    # keithley_b.disable_source()
+    keithley_t = get_keithley('GPIB1::16::INSTR')
+    keithley_t.compliance_current = 10*10**(-6)
+    # keithley_t.enable_source()
+    pmt=get_PMT()
+    servers_to_close = [pmt,qwp,keithley_b,keithley_t]
+    
     
     try:
-        res = SHG_CD_Efield_4term.main(sample, keithley_b, keithley_t, pmt, qwp,
-                        qwp_angles=(qwp_C1,qwp_C2), Ex_array=Ex, Ey_array=Ey,
-                        gate_time_ms=200,num_gates=40,laser_power=1.5,file_save=filesave)
-        # qwp.move_to(qwp_C2)
+        Ey=np.arange(-15.,15.01,.25)
+        Ey = np.append(Ey,np.flip(Ey))
+        xrange = np.array([-8,-4,0,4,8])
+
+        for x in xrange:
+            filesave = 'fastscany_slowscany_fixx{}ascend.txt'.format(str(x).replace('-','m').replace('.','p'))
+            Ex=np.ones_like(Ey)*x
+            res = SHG_CD_Efield_4term.main(sample, keithley_b, keithley_t, pmt, qwp, qwp_angles=(qwp_C1,qwp_C2), 
+                                        Ex_array=Ex, Ey_array=Ey,gate_time_ms=200,num_gates=15,laser_power=1,file_save=filesave)
+        for x in np.flip(xrange):
+            filesave = 'fastscany_slowscany_fixx{}descend.txt'.format(str(x).replace('-','m').replace('.','p'))
+            Ex=np.ones_like(Ey)*x
+            res = SHG_CD_Efield_4term.main(sample, keithley_b, keithley_t, pmt, qwp, qwp_angles=(qwp_C1,qwp_C2), 
+                                        Ex_array=Ex, Ey_array=Ey,gate_time_ms=200,num_gates=15,laser_power=1,file_save=filesave)
         # pmt.set_hv(True)
-        # for x in range(0,15):
-        #     a = pmt.run_collection(num_gates=20)
-        #     print(np.mean(a))
+        # a=pmt.run_collection()
+        # print(np.mean(a))
         # pmt.set_hv(False)
+        # print('')
+        # PMT_continuous_read.main(pmt, gate_time_ms=200, num_gates=0)
         
     except Exception: traceback.print_exc()
     finally: exit_session()
+    
+    
