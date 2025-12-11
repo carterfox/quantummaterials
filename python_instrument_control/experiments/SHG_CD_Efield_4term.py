@@ -152,11 +152,11 @@ def set_keithleys(keithley_x,keithley_y):
         keithley_y.apply_voltage(compliance_current=keithley_y.compliance_current)
 
 def get_SGH_CD_std(x, y, sigma_x, sigma_y):
-    numerator = math.sqrt((y**2) * (sigma_x**2) + (x**2) * (sigma_y**2))
+    numerator = np.sqrt((y**2) * (sigma_x**2) + (x**2) * (sigma_y**2))
     denominator = (x + y)**2
     return 100 * 2 * numerator / denominator
 
-def replot(Ex_list,Ey_list,SHG_total,SHG_total_std,SHG_CD,SHG_CD_std,E='x',absolute=True):
+def replot(Ex_list,Ey_list,SHG_total,SHG_total_std,SHG_CD,SHG_CD_std,E='x',absolute=True,x=None):
     fig, (ax1,ax2) = plt.subplots(2,1,figsize=(6,6),sharex=True)
     
     if E=='x': 
@@ -180,6 +180,12 @@ def replot(Ex_list,Ey_list,SHG_total,SHG_total_std,SHG_CD,SHG_CD_std,E='x',absol
     SHG_total_ascend,SHG_total_descend = SHG_total[0:transition_index],SHG_total[transition_index:]    
     SHG_total_std_ascend,SHG_total_std_descend = SHG_total_std[0:transition_index],SHG_total_std[transition_index:]    
     
+    # E_list_ascend,E_list_descend =  np.append(E_list[62:] , E_list[0:21]) , E_list[21:62]
+    # SHG_CD_ascend,SHG_CD_descend = np.append(SHG_CD[62:] , SHG_CD[0:21]) , SHG_CD[21:62]
+    # SHG_CD_std_ascend,SHG_CD_std_descend = np.append(SHG_CD_std[62:] , SHG_CD_std[0:21]) , SHG_CD_std[21:62]
+    # SHG_total_ascend,SHG_total_descend = np.append(SHG_total[62:] , SHG_total[0:21]) , SHG_total[21:62] 
+    # SHG_total_std_ascend,SHG_total_std_descend = np.append(SHG_total_std[62:] , SHG_total_std[0:21]) , SHG_total_std[21:62] 
+
     if absolute: SHG_CD_ascend,SHG_CD_descend = np.abs(SHG_CD_ascend),np.abs(SHG_CD_descend)
     
     ms=8
@@ -190,31 +196,36 @@ def replot(Ex_list,Ey_list,SHG_total,SHG_total_std,SHG_CD,SHG_CD_std,E='x',absol
    
     ax2.errorbar(E_list_ascend, SHG_CD_ascend, yerr=SHG_CD_std_ascend,color='black',  label=r'$\rightarrow$',marker='.',elinewidth=elw,ms=ms)
     ax2.errorbar(E_list_descend, SHG_CD_descend, yerr=SHG_CD_std_descend,color=colord,  label=r'$\leftarrow$',marker='.',elinewidth=elw,ms=ms)
-    
-    tb.plot_arrow_legend(ax2,r'$E_{}$'.format(E),x1=0.6,y1=-33.8,ls=18,yratio=.058,xratio=.12,wratio=.0872,colord=colord)
-    
-    # ax2.set_ylim(-10,10)
+
+    tb.plot_arrow_legend(ax1,r'$E_{}$'.format(E),x1=127,y1=700,ls=10,yratio=.058,xratio=.12,wratio=.0872,colord=colord)
+    # tb.plot_arrow_legend(ax1,,x1=146,y1=600,ls=12,yratio=.058,xratio=.12,wratio=.0872,colord=colord)
+    # ax2.text(74,14,r'$E_x$={}$\rightarrow$'.format(x),fontsize=12)
+    # ax2.set_ylim(-8,17)
+    # ax1.set_ylim(450,2550)
     
 
 if __name__ == "__main__":
 
     tb.init_plot_params()
     # path_d3 = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/d3/RMCD/Esweep/'
-    path_d1 = '/Users/carterfox/My Drive (cdfox@wisc.edu)/StackingTransitions/NbOI2/Lvgroup/Efield-samples-for-optics/90deg_3L3L_4term_S1/SHG-CD-Efield/'
+    path_d1 = '/Users/carterfox/My Drive (cdfox@wisc.edu)/StackingTransitions/NbOI2/Lvgroup/Efield-samples-for-optics/90deg_3L3L_4term_S2/SHG-CD-Efield/'
     sample = FourTerminal('NbOI290deg4termS1', 5, path_d1)
     w = sample.channel_width
     
-    file_path = path_d1+'fullscany1_xfloat.txt'
+    file_path = path_d1+'fullscany4_floatx1.txt'
+    # file_old = '/Users/carterfox/Library/CloudStorage/GoogleDrive-cdfox@wisc.edu/.shortcut-targets-by-id/1-8q9lGFnGNt4mDzcxXwdk43m1aVWT66q/XiaoWang_Group_data_2024on/StackingTransitions/NbOI2/Lvgroup/Efield-samples-for-optics/90deg_3L3L/SHG/CD-Efield/stacked_scan7_EfieldSHG-CD_close_to_elec.txt'
     
     data = np.loadtxt(file_path,comments='#')
+    # Vx = data[:,0]
+    # Vy=0
+    # SHG_C1,SHG_C2,SHG_C1_std,SHG_C2_std,SHG_CD = np.array(data[:,2]),np.array(data[:,3]),np.array(data[:,4]),np.array(data[:,5]),np.array(data[:,8])
     Vx,Vy,SHG_C1,SHG_C1_std,SHG_C2,SHG_C2_std,SHG_CD,SHG_CD_std,Ix,Iy = data[:,0],data[:,1],np.array(data[:,2]),np.array(data[:,3]),np.array(data[:,4]),np.array(data[:,5]),np.array(data[:,6]),np.array(data[:,7]),data[:,8],data[:,9]
     Ex_list, Ey_list = Vx/w*10, Vy/w*10
     SHG_total = SHG_C1 + SHG_C2
     SHG_total_std = np.sqrt(SHG_C1_std**2 + SHG_C2_std**2)
-    
-    replot(Ex_list,Ey_list,SHG_total,SHG_total_std,SHG_CD,SHG_CD_std,E='y',absolute=False)
+    SHG_CD_std = get_SGH_CD_std(SHG_C1,SHG_C2,SHG_C1_std,SHG_C2_std)
+    replot(Ex_list,Ey_list,SHG_total,SHG_total_std,SHG_CD,SHG_CD_std,E='y',absolute=False,x=None)
     plt.savefig(file_path.replace('.txt','plot.png'),dpi=500)
-    # ax2.set_ylim(-8,0)
     plt.show()
     
     

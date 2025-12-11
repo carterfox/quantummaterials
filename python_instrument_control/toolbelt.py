@@ -165,8 +165,9 @@ def plot_arrow_legend(ax,label,x1=None,y1=None,ls=18,yratio=.058,xratio=.12,wrat
     arrow2 = mpatches.Arrow(x1,y1,-xlen,0,width=w,color=colord)
     arrow = mpatches.Arrow(x2,y2,xlen,0,width=w,color=colora)
     ax.add_patch(arrow), ax.add_patch(arrow2)
-    ax.text(x1,yavg,r'$+$'+label,fontsize=ls,va='center',ha='left')
-    ax.text(x2,yavg,r'$-$'+label+r'  ',fontsize=ls,va='center',ha='right')
+    if label != None:
+        ax.text(x1,yavg,r'$+$'+label,fontsize=ls,va='center',ha='left')
+        ax.text(x2,yavg,r'$-$'+label+r'  ',fontsize=ls,va='center',ha='right')
     return ax
 
 def plot_rmcd_state(ax,state,x,y,xstep=0.1,h='right',f=18):
