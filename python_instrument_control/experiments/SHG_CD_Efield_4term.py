@@ -31,12 +31,12 @@ def main(sample: FourTerminal, keithley_x: KeithleySourceMeter, keithley_y: Keit
     pmt.set_hv(on=True)   
     set_keithleys(keithley_x,keithley_y)
     Ex_list, Ey_list, SHG_total_list, SHG_CD_list, SHG_CD_std_list, SHG_C_vals, SHG_C_stds, angle_ind = [],[],[],[],[],  [[],[]] , [[],[]], 0
-    
+    print('Ex   Ix  Ey Iy  angind  counts')
     for (Ex,Ey) in zip(Ex_array,Ey_array):
-        
         #### go to first qwp angle. set voltages in each keithley 
         qwp_real_angle = update_rotation_stage(qwp_rotstage,qwp_angles[angle_ind])     
         Vx,Vy,Vx_meas,Vy_meas,Ix_meas,Iy_meas = set_voltages(sample,keithley_x,keithley_y,Ex,Ey)
+        time.sleep(.1)
         #### measure SHG data at both qwp angles
         for i in range(2):
             if i==1: angle_ind = int(not angle_ind)
@@ -44,14 +44,13 @@ def main(sample: FourTerminal, keithley_x: KeithleySourceMeter, keithley_y: Keit
             data = pmt.run_collection(gate_time_ms,num_gates,remove_first=True)
             # data = np.random.randint(low=0,high=10,size=(num_gates))
             SHG_C_vals[angle_ind].append(np.mean(data)), SHG_C_stds[angle_ind].append(np.mean(np.std(data)/np.sqrt(num_gates)))
-            print(Ex,round(Ix_meas,2),Ey,round(Iy_meas,2),angle_ind,np.mean(data))
-
+            print(round(Ex,2),round(Ix_meas,2),round(Ey,2),round(Iy_meas,2),angle_ind,round(np.mean(data),1))
         #### compute total SGH and SHG-CD. plot and save data    
         SHG_C1, SHG_C1_std, SHG_C2, SHG_C2_std, SHG_total, SHG_CD, SHG_CD_std = get_SHG_vals(SHG_C_vals,SHG_C_stds)
         SHG_total_list.append(SHG_total), SHG_CD_list.append(SHG_CD), SHG_CD_std_list.append(SHG_CD_std), Ex_list.append(Ex), Ey_list.append(Ey)
         update_plot(fig,ax1,ax2,line1,line2,Ex_list,Ey_list,SHG_total_list,SHG_CD_list,SHG_CD_std_list)
         update_saved_data(file_path,Vx,Vy,SHG_C1,SHG_C1_std,SHG_C2,SHG_C2_std,SHG_CD,SHG_CD_std,Ix_meas,Iy_meas)
-   
+
     ### turn off PMT hv and interactive plotting
     pmt.set_hv(on=False)
     time.sleep(.5)
@@ -64,8 +63,8 @@ def main(sample: FourTerminal, keithley_x: KeithleySourceMeter, keithley_y: Keit
 
 def update_plot(fig,ax1,ax2,line1,line2,Ex_list,Ey_list,SHG_total_list,SHG_CD_list,SHG_CD_std_list):
     #currently just using Ex
-    line1.set_data(np.array(Ex_list)*10,SHG_total_list)
-    line2.set_data(np.array(Ex_list)*10,SHG_CD_list)
+    line1.set_data(np.array(Ey_list)*10,SHG_total_list)
+    line2.set_data(np.array(Ey_list)*10,SHG_CD_list)
     ax1.relim()
     ax2.relim()
     ax1.autoscale_view()
@@ -77,7 +76,7 @@ def init_main_plot():
     # fig, (ax1,ax2) = plt.subplots(2,1,figsize=(4,8),gridspec_kw={'width_ratios': [1, 1]})
     fig, (ax1,ax2) = plt.subplots(2,1,figsize=(6,6),sharex=True)
     # ax1.set_xlabel(r'$E_x$ (kV/cm)')
-    ax2.set_xlabel(r'$E_x$ (kV/cm)')
+    ax2.set_xlabel(r'$E_y$ (kV/cm)')
     ax1.set_ylabel(r'SHG Intensity ($I_L+I_R$)')
     ax2.set_ylabel(r'SHG-CD ($\%$)')
     line1 = Line2D([], [], color='C0',marker='.')
@@ -85,7 +84,7 @@ def init_main_plot():
     ax1.add_line(line1)
     ax2.add_line(line2)
     try:
-        fig.canvas.manager.window.move(1720, 60)
+        fig.canvas.manager.window.move(1800, 60)
     except: None
     return fig,ax1,line1,ax2,line2
 
@@ -125,12 +124,12 @@ def set_voltages(sample,keithley_x,keithley_y,Ex,Ey):
     if keithley_x != None:
         keithley_x.source_voltage = Vx
         Vx_meas = keithley_x.measure_voltage_avg(10)
-        Ix_meas = 10**9 * keithley_x.measure_current_avg(20)
+        Ix_meas = 10**9 * keithley_x.measure_current_avg(10)
     else: Vx_meas, Ix_meas = 0,0
     if keithley_y != None:
         keithley_y.source_voltage = Vy
         Vy_meas = keithley_y.measure_voltage_avg(10)
-        Iy_meas = 10**9 * keithley_y.measure_current_avg(20)
+        Iy_meas = 10**9 * keithley_y.measure_current_avg(10)
     else: Vy_meas, Iy_meas = 0,0
     return Vx, Vy, Vx_meas,Vy_meas,Ix_meas,Iy_meas
 
