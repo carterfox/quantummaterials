@@ -34,7 +34,7 @@ def main(sample: FourTerminal, keithley_x: KeithleySourceMeter, keithley_y: Keit
     print('Ex   Ix  Ey Iy  angind  counts')
     for (Ex,Ey) in zip(Ex_array,Ey_array):
         #### go to first qwp angle. set voltages in each keithley 
-        qwp_real_angle = update_rotation_stage(qwp_rotstage,qwp_angles[angle_ind])     
+        # qwp_real_angle = update_rotation_stage(qwp_rotstage,qwp_angles[angle_ind])     
         Vx,Vy,Vx_meas,Vy_meas,Ix_meas,Iy_meas = set_voltages(sample,keithley_x,keithley_y,Ex,Ey)
         time.sleep(.1)
         #### measure SHG data at both qwp angles
@@ -116,19 +116,19 @@ def update_rotation_stage(qwp_rotstage: RotationMount,qwp_angle):
     qwp_home = qwp_rotstage.home
     qwp_angle = qwp_angle+qwp_home
     qwp_rotstage.move_to(qwp_angle)
-    time.sleep(.5)
+    # time.sleep(.5)
     return None
 
 def set_voltages(sample,keithley_x,keithley_y,Ex,Ey):
     Vx, Vy = Ex*sample.channel_width, Ey*sample.channel_width
     if keithley_x != None:
         keithley_x.source_voltage = Vx
-        Vx_meas = keithley_x.measure_voltage_avg(10)
+        Vx_meas = 0#keithley_x.measure_voltage_avg(10)
         Ix_meas = 10**9 * keithley_x.measure_current_avg(10)
     else: Vx_meas, Ix_meas = 0,0
     if keithley_y != None:
         keithley_y.source_voltage = Vy
-        Vy_meas = keithley_y.measure_voltage_avg(10)
+        Vy_meas = 0#keithley_y.measure_voltage_avg(10)
         Iy_meas = 10**9 * keithley_y.measure_current_avg(10)
     else: Vy_meas, Iy_meas = 0,0
     return Vx, Vy, Vx_meas,Vy_meas,Ix_meas,Iy_meas
@@ -207,11 +207,11 @@ if __name__ == "__main__":
 
     tb.init_plot_params()
     # path_d3 = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/d3/RMCD/Esweep/'
-    path_d1 = '/Users/carterfox/My Drive (cdfox@wisc.edu)/StackingTransitions/NbOI2/Lvgroup/Efield-samples-for-optics/90deg_3L3L_4term_S2/SHG-CD-Efield/'
+    path_d1 = '/Users/carterfox/My Drive (cdfox@wisc.edu)/StackingTransitions/NbOI2/Lvgroup/Efield-samples-for-optics/90deg_3L3L_4term_S2/SHG-CD-Efield/fastscanyslowx/'
     sample = FourTerminal('NbOI290deg4termS1', 5, path_d1)
     w = sample.channel_width
     
-    file_path = path_d1+'fullscany4_floatx1.txt'
+    file_path = path_d1+'fastscany_slowscany_fixx4ascend.txt'
     # file_old = '/Users/carterfox/Library/CloudStorage/GoogleDrive-cdfox@wisc.edu/.shortcut-targets-by-id/1-8q9lGFnGNt4mDzcxXwdk43m1aVWT66q/XiaoWang_Group_data_2024on/StackingTransitions/NbOI2/Lvgroup/Efield-samples-for-optics/90deg_3L3L/SHG/CD-Efield/stacked_scan7_EfieldSHG-CD_close_to_elec.txt'
     
     data = np.loadtxt(file_path,comments='#')
@@ -224,7 +224,7 @@ if __name__ == "__main__":
     SHG_total_std = np.sqrt(SHG_C1_std**2 + SHG_C2_std**2)
     SHG_CD_std = get_SGH_CD_std(SHG_C1,SHG_C2,SHG_C1_std,SHG_C2_std)
     replot(Ex_list,Ey_list,SHG_total,SHG_total_std,SHG_CD,SHG_CD_std,E='y',absolute=False,x=None)
-    plt.savefig(file_path.replace('.txt','plot.png'),dpi=500)
+    # plt.savefig(file_path.replace('.txt','plot.png'),dpi=500)
     plt.show()
     
     
