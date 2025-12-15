@@ -50,7 +50,6 @@ def main(sample: FourTerminal, keithley_x: KeithleySourceMeter, keithley_y: Keit
         SHG_total_list.append(SHG_total), SHG_CD_list.append(SHG_CD), SHG_CD_std_list.append(SHG_CD_std), Ex_list.append(Ex), Ey_list.append(Ey)
         update_plot(fig,ax1,ax2,line1,line2,Ex_list,Ey_list,SHG_total_list,SHG_CD_list,SHG_CD_std_list)
         update_saved_data(file_path,Vx,Vy,SHG_C1,SHG_C1_std,SHG_C2,SHG_C2_std,SHG_CD,SHG_CD_std,Ix_meas,Iy_meas)
-
     ### turn off PMT hv and interactive plotting
     pmt.set_hv(on=False)
     time.sleep(.5)

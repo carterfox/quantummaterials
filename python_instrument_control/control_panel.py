@@ -26,8 +26,8 @@ from homemade_servers.ThorlabsKCube import RotationMount
 from devices.optical import Optical
 from devices.transport import FourTerminal
 # from experiments import RMCD_bfield_scan, RMCD_mapping, RMCD_dualgate_Esweep
-from experiments import SHG_polarization_scan, SHG_CD_Efield_4term, PMT_continuous_read
-# from experiments import raman_basic, Gr_polarization_sensing, Gr_polarization_sensing_singlepoint
+from experiments import SHG_CD_Efield_4term, PMT_continuous_read
+# from experiments import raman_basic, Gr_polarization_sensing, Gr_polarization_sensing_singlepoint,SHG_polarization_scan
 tb.init_plot_params()
 if 'servers' not in globals(): 
     global servers
@@ -108,37 +108,35 @@ if __name__ == "__main__":
     qwp_C1,qwp_C2 = 43.5, -46.5
     center = (qwp_C1+qwp_C2)/2
     
-    keithley_b = get_keithley('GPIB0::1::INSTR')
-    keithley_b.compliance_current = 10*10**(-6)
-    # keithley_b.disable_source()
+    keithley_b = get_keithley('GPIB0::16::INSTR')
+    keithley_b.compliance_current = 100*10**(-6)
+    # keithley_b.enable_source()
     keithley_t = get_keithley('GPIB1::16::INSTR')
-    keithley_t.compliance_current = 10*10**(-6)
+    keithley_t.compliance_current = 100*10**(-6)
     # keithley_t.enable_source()
     pmt=get_PMT()
     servers_to_close = [pmt,qwp,keithley_b,keithley_t]
     
-    
     try:
-        Ey=np.arange(-15.,15.01,.25)
+        Ey=np.arange(-14.0,14.1,1)
         Ey = np.append(Ey,np.flip(Ey))
-        xrange = np.array([-8,-4,0,4,8])
-
-        for x in xrange:
-            filesave = 'fastscany_slowscany_fixx{}ascend.txt'.format(str(x).replace('-','m').replace('.','p'))
-            Ex=np.ones_like(Ey)*x
-            res = SHG_CD_Efield_4term.main(sample, keithley_b, keithley_t, pmt, qwp, qwp_angles=(qwp_C1,qwp_C2), 
-                                        Ex_array=Ex, Ey_array=Ey,gate_time_ms=200,num_gates=15,laser_power=1,file_save=filesave)
-        for x in np.flip(xrange):
-            filesave = 'fastscany_slowscany_fixx{}descend.txt'.format(str(x).replace('-','m').replace('.','p'))
-            Ex=np.ones_like(Ey)*x
-            res = SHG_CD_Efield_4term.main(sample, keithley_b, keithley_t, pmt, qwp, qwp_angles=(qwp_C1,qwp_C2), 
-                                        Ex_array=Ex, Ey_array=Ey,gate_time_ms=200,num_gates=15,laser_power=1,file_save=filesave)
+        Ex_range=np.arange(-14.0,14.1,1)
+        # qwp.move_to(qwp_C1)
+        # for x in Ex_range:
+        #     filesave = 'map2d_x_{}_ascend.txt'.format(str(x).replace('-','m').replace('.','p'))
+        #     Ex=np.ones_like(Ey)*x
+        #     res = SHG_CD_Efield_4term.main(sample, keithley_b, keithley_t, pmt, qwp, qwp_angles=(qwp_C1,qwp_C2), 
+        #                                 Ex_array=Ex, Ey_array=Ey,gate_time_ms=200,num_gates=15,laser_power=1.5,file_save=filesave)
+        # for x in np.flip(Ex_range):
+        #     filesave = 'map2d_x_{}descend.txt'.format(str(x).replace('-','m').replace('.','p'))
+        #     Ex=np.ones_like(Ey)*x
+        #     res = SHG_CD_Efield_4term.main(sample, keithley_b, keithley_t, pmt, qwp, qwp_angles=(qwp_C1,qwp_C2), 
+        #                                 Ex_array=Ex, Ey_array=Ey,gate_time_ms=200,num_gates=15,laser_power=1.5,file_save=filesave)
         # pmt.set_hv(True)
-        # a=pmt.run_collection()
+        # a=pmt.run_collection(gate_time_ms=200)
         # print(np.mean(a))
         # pmt.set_hv(False)
-        # print('')
-        # PMT_continuous_read.main(pmt, gate_time_ms=200, num_gates=0)
+        # print(pmt.get_hv())
         
     except Exception: traceback.print_exc()
     finally: exit_session()
