@@ -198,7 +198,8 @@ if __name__ == "__main__":
     sample = DualGate(sample_name='d3', d_b=9.41, d_t=7.93, data_path=path_d3)
     sample.d_flake=0.7*4
     
-    file = path_d3+'sweep8_8-18_2K_0T_after_m2T_m65deg.txt'
+    # file = path_d3+'sweep3_8-18_2K_0T_after_m2T_m65deg.txt'
+    file = path_d3+'sweep2_8-18_2K_0T_after_p2T_m114deg.txt'
     # file = path_d3+'sweep5_8-18_2K_0T_after_m2T_m65deg.txt'
     # file = path_d3+'Esweep5_0T_stacked_p1_after_m2T_diffInput_faster.txt'
     data = np.loadtxt(file)
@@ -228,16 +229,17 @@ if __name__ == "__main__":
     
     ax.plot(smooth(E_ascend), smooth(delta_rmcd_ascend), color='black', label=r'$\rightarrow$',marker='.',ms=5,zorder=1,lw=2)
     ax.plot(smooth(E_descend), smooth(delta_rmcd_descend), color='r', label=r'$\leftarrow$',marker='.',ms=5,zorder=0,lw=2)
-    ax.errorbar(smooth(E_ascend), smooth(rmcd_ascend),yerr=smooth_err(rmcd_std_ascend), color='black', label=r'$\rightarrow$',marker='.',ms=5,zorder=1,lw=2,elinewidth=1)
-    ax.errorbar(smooth(E_descend), smooth(rmcd_descend), yerr=smooth_err(rmcd_std_descend),color='r', label=r'$\leftarrow$',marker='.',ms=5,zorder=0,lw=2,elinewidth=1)
+    # ax.errorbar(smooth(E_ascend), smooth(rmcd_ascend),yerr=smooth_err(rmcd_std_ascend), color='black', label=r'$\rightarrow$',marker='.',ms=5,zorder=1,lw=2,elinewidth=1)
+    # ax.errorbar(smooth(E_descend), smooth(rmcd_descend), yerr=smooth_err(rmcd_std_descend),color='r', label=r'$\leftarrow$',marker='.',ms=5,zorder=0,lw=2,elinewidth=1)
     # ax.plot(E_ascend, rmcd_ascend-rmcd_descend[::-1], color='r', label=r'$\leftarrow$',marker='.')
     
     ax.set_xlabel('E (V/nm)')
-    ax.set_ylabel('$\DeltaRMCD %')
+    ax.set_ylabel(r'$\Delta$RMCD')
+    ax.set_title('After +2T')
     ax.legend()
     # ax.set_ylim(.85,1.5)
     ax.set_xlim(-.45,.4)
-    plt.savefig(file.replace('.txt','_plot.svg'),dpi=500,bbox_inches='tight')
+    # plt.savefig(file.replace('.txt','_plot.svg'),dpi=500,bbox_inches='tight')
     plt.show()
     
     # keithleyb = KeithleySourceMeter('GPIB::1','2450')

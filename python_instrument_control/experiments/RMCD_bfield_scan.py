@@ -160,10 +160,10 @@ def replot_rmcd_bfield_scan(data_file):
 
 if __name__ == "__main__":
     # 
-    path_d4 = '/Users/carterfox/My Drive (cdfox@wisc.edu)/StackingTransitions/CrI3/round7/d4/RMCD/bfield_scan/'
+    path_d3 = '/Users/carterfox/My Drive (cdfox@wisc.edu)/StackingTransitions/CrI3/round7/d3/RMCD/bfield_scan/'
     # path_tairte4 = 'D:/LabData/XiaoWang_Group_data_2024on/Tairan/rmcd0827/RMCD/bfield_scan/'
     # path_s6 = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/6-18-sample-for-afm-and-rmcd/RMCD/bfield_scan/'
-    file = path_d4+'BN-BN-Gr-Gr-nogates.txt'
+    file = path_d3+'twisted_scan_p3-nogates.txt'
     tb.init_plot_params()
 
     
