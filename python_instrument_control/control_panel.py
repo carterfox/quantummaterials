@@ -23,11 +23,12 @@ from homemade_servers.H11890PMT import HamamatsuH11890
 from homemade_servers.KeithleySourceMeter import KeithleySourceMeter
 from homemade_servers.ThorlabsKCube import RotationMount
 # from devices.dualgate import DualGate
-from devices.optical import Optical
+# from devices.optical import Optical
 from devices.transport import FourTerminal
 # from experiments import RMCD_bfield_scan, RMCD_mapping, RMCD_dualgate_Esweep
-from experiments import SHG_CD_Efield_4term, PMT_continuous_read
-# from experiments import raman_basic, Gr_polarization_sensing, Gr_polarization_sensing_singlepoint,SHG_polarization_scan
+from experiments import SHG_CD_Efield_4term
+# from experiments import PMT_continuous_read, SHG_polarization_scan
+# from experiments import raman_basic, Gr_polarization_sensing, Gr_polarization_sensing_singlepoint,
 tb.init_plot_params()
 if 'servers' not in globals(): 
     global servers
@@ -52,14 +53,16 @@ def get_opticool(opticool_ip='169.254.170.239', port=5000):
     return opticool, current_temp, current_field
 
 
-def get_rotation_stage(serial):
+def get_rotation_stage(serial,home=0):
     rot = RotationMount(serial)
     servers.append(rot)
+    rot.home=home
     return rot 
 
-def get_keithley(resource_name="GPIB0::16::INSTR",model='2450'):
+def get_keithley(resource_name="GPIB0::16::INSTR",model='2450',compliance_current=None):
     keithley = KeithleySourceMeter(resource_name,model)
-    # keithley.compliance_current = 10**(-6)
+    if compliance_current != None:
+        keithley.compliance_current = compliance_current
     servers.append(keithley)
     return keithley
 
@@ -87,7 +90,8 @@ def get_PMT():
 def exit_session():
     time.sleep(.1)
     for s in servers_to_close:
-        s.close()
+        if s != None:
+            s.close()
         
     
 def list_visa_resources():
@@ -95,48 +99,43 @@ def list_visa_resources():
     resources = rm.list_resources()
     print(resources)
     print('lockin usually 12 or 3')
+    
+def loop(start,stop,step):
+    array = np.arange(start,stop+step/10,step)
+    return np.round(np.append(array,np.flip(array)),4)
+def ramp(start,stop,step):
+    array = np.arange(start,stop+step/10,step)
+    return np.round(array,4)
 
 
 if __name__ == "__main__":
     
     ###### add it to servers_to_close if you want them to close each time. 
     ###### at this point only cam_spec should not be in it
-    data_path="I:/.shortcut-targets-by-id/1-8q9lGFnGNt4mDzcxXwdk43m1aVWT66q/XiaoWang_Group_data_2024on/StackingTransitions/NbOI2/Lvgroup/Efield-samples-for-optics/90deg_3L3L_4term_S2/"
-    sample = FourTerminal('4termNbOI290degS2', 5, data_path)
+    data_path="I:/.shortcut-targets-by-id/1-8q9lGFnGNt4mDzcxXwdk43m1aVWT66q/XiaoWang_Group_data_2024on/StackingTransitions/NbOI2/Lvgroup/Efield-samples-for-optics/90deg_3L3L_4term_S4/"
+    s = FourTerminal('NbOI2FourTermS4',5, data_path)
     qwp = get_rotation_stage('27261255')
-    qwp.home = 0
     qwp_C1,qwp_C2 = 43.5, -46.5
-    center = (qwp_C1+qwp_C2)/2
-    
-    keithley_b = get_keithley('GPIB0::16::INSTR')
-    keithley_b.compliance_current = 100*10**(-6)
-    # keithley_b.enable_source()
-    keithley_t = get_keithley('GPIB1::16::INSTR')
-    keithley_t.compliance_current = 100*10**(-6)
-    # keithley_t.enable_source()
     pmt=get_PMT()
-    servers_to_close = [pmt,qwp,keithley_b,keithley_t]
+    kx = get_keithley('GPIB1::16::INSTR','2400',100e-6)
+    ky = None#get_keithley('GPIB0::16::INSTR','2400',100e-6)
+    servers_to_close = [pmt,qwp,kx,ky]
     
     try:
-        Ey=np.arange(-14.0,14.1,1)
-        Ey = np.append(Ey,np.flip(Ey))
-        Ex_range=np.arange(-14.0,14.1,1)
+        # Ex_array = ramp(0, -1, -0.2)
+        Ex_array = loop(-1, 1, 0.05)
+        Ey_array = np.zeros_like(Ex_array)
+        filesave = 'goingback.txt'
+        # filesave = 'fullscanx1_floaty.txt'
         # qwp.move_to(qwp_C1)
-        # for x in Ex_range:
-        #     filesave = 'map2d_x_{}_ascend.txt'.format(str(x).replace('-','m').replace('.','p'))
-        #     Ex=np.ones_like(Ey)*x
-        #     res = SHG_CD_Efield_4term.main(sample, keithley_b, keithley_t, pmt, qwp, qwp_angles=(qwp_C1,qwp_C2), 
-        #                                 Ex_array=Ex, Ey_array=Ey,gate_time_ms=200,num_gates=15,laser_power=1.5,file_save=filesave)
-        # for x in np.flip(Ex_range):
-        #     filesave = 'map2d_x_{}descend.txt'.format(str(x).replace('-','m').replace('.','p'))
-        #     Ex=np.ones_like(Ey)*x
-        #     res = SHG_CD_Efield_4term.main(sample, keithley_b, keithley_t, pmt, qwp, qwp_angles=(qwp_C1,qwp_C2), 
-        #                                 Ex_array=Ex, Ey_array=Ey,gate_time_ms=200,num_gates=15,laser_power=1.5,file_save=filesave)
         # pmt.set_hv(True)
-        # a=pmt.run_collection(gate_time_ms=200)
+        # a=pmt.run_collection(gate_time_ms=200,num_gates=20)
         # print(np.mean(a))
         # pmt.set_hv(False)
-        # print(pmt.get_hv())
+        t,cd = SHG_CD_Efield_4term.main(s,kx,ky,pmt,qwp,qwp_angles=(qwp_C1,qwp_C2),
+                                        Ex_array=Ex_array,Ey_array=Ey_array,file_save=filesave, 
+                                        gate_time_ms=200,num_gates=10,laser_power=1.5)
+        # print('')
         
     except Exception: traceback.print_exc()
     finally: exit_session()
