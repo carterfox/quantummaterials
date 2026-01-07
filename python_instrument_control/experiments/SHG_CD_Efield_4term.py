@@ -155,6 +155,36 @@ def get_SGH_CD_std(x, y, sigma_x, sigma_y):
     denominator = (x + y)**2
     return 100 * 2 * numerator / denominator
 
+
+def replot_current(Ex_list,Ey_list,Ix,Iy,E='x'):
+    fig, ax1 = plt.subplots(1,1,figsize=(6,4),sharex=True)
+    
+    if E=='x': 
+        E_list = Ex_list
+        colord = 'r'
+        I = Ix
+    elif E == 'y':
+        E_list = Ey_list
+        colord = 'b'
+        I=Iy
+    ax1.set_xlabel(r'$E_{}$  (kV/cm)'.format(E))
+    ax1.set_ylabel(r'$I_{}$  (nA)'.format(E))
+    
+
+    diffs = np.diff(E_list)
+    try: transition_index = np.where((diffs[:-1] >= 0) & (diffs[1:] <= 0))[0][0]+2
+    except: transition_index=len(E_list)
+    
+    
+    E_list_ascend,E_list_descend = E_list[0:transition_index],E_list[transition_index:]
+    I_ascend, I_descend = I[0:transition_index],I[transition_index:]
+    ms=8
+    lw=2.5
+    elw=1.
+    ax1.errorbar(E_list_ascend, I_ascend,color='black',  label=r'$\rightarrow$',marker='.',elinewidth=elw,ms=ms)
+    ax1.errorbar(E_list_descend, I_descend,color=colord,  label=r'$\leftarrow$',marker='.',elinewidth=elw,ms=ms)
+   
+    
 def replot(Ex_list,Ey_list,SHG_total,SHG_total_std,SHG_CD,SHG_CD_std,E='x',absolute=True,x=None):
     fig, (ax1,ax2) = plt.subplots(2,1,figsize=(6,6),sharex=True)
     
@@ -196,36 +226,43 @@ def replot(Ex_list,Ey_list,SHG_total,SHG_total_std,SHG_CD,SHG_CD_std,E='x',absol
     ax2.errorbar(E_list_ascend, SHG_CD_ascend, yerr=SHG_CD_std_ascend,color='black',  label=r'$\rightarrow$',marker='.',elinewidth=elw,ms=ms)
     ax2.errorbar(E_list_descend, SHG_CD_descend, yerr=SHG_CD_std_descend,color=colord,  label=r'$\leftarrow$',marker='.',elinewidth=elw,ms=ms)
 
-    tb.plot_arrow_legend(ax1,r'$E_{}$'.format(E),x1=127,y1=700,ls=10,yratio=.058,xratio=.12,wratio=.0872,colord=colord)
+    # tb.plot_arrow_legend(ax1,r'$E_{}$'.format(E),x1=110,y1=1068,ls=10,yratio=.058,xratio=.12,wratio=.0872,colord=colord)
     # tb.plot_arrow_legend(ax1,,x1=146,y1=600,ls=12,yratio=.058,xratio=.12,wratio=.0872,colord=colord)
-    # ax2.text(74,14,r'$E_x$={}$\rightarrow$'.format(x),fontsize=12)
+    # ax2.text(40,4,r'$E_y$={}kV/cm$\rightarrow$'.format(x),fontsize=12)
     # ax2.set_ylim(-8,17)
     # ax1.set_ylim(450,2550)
     
 
 if __name__ == "__main__":
-
+    import glob
     tb.init_plot_params()
     # path_d3 = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/d3/RMCD/Esweep/'
-    path_d1 = '/Users/carterfox/My Drive (cdfox@wisc.edu)/StackingTransitions/NbOI2/Lvgroup/Efield-samples-for-optics/90deg_3L3L_4term_S2/SHG-CD-Efield/fastscanyslowx/'
+    path_d1 = '/Users/carterfox/My Drive (cdfox@wisc.edu)/StackingTransitions/NbOI2/Lvgroup/Efield-samples-for-optics/90deg_3L3L_4term_S2/SHG-CD-Efield/12-11-2dmapping/'
+    txtfiles=glob.glob(path_d1+'*txt')
+    txtfiles_sorted = sorted(txtfiles, key=os.path.getmtime)
     sample = FourTerminal('NbOI290deg4termS1', 5, path_d1)
     w = sample.channel_width
     
-    file_path = path_d1+'fastscany_slowscany_fixx4ascend.txt'
-    # file_old = '/Users/carterfox/Library/CloudStorage/GoogleDrive-cdfox@wisc.edu/.shortcut-targets-by-id/1-8q9lGFnGNt4mDzcxXwdk43m1aVWT66q/XiaoWang_Group_data_2024on/StackingTransitions/NbOI2/Lvgroup/Efield-samples-for-optics/90deg_3L3L/SHG/CD-Efield/stacked_scan7_EfieldSHG-CD_close_to_elec.txt'
-    
-    data = np.loadtxt(file_path,comments='#')
-    # Vx = data[:,0]
-    # Vy=0
-    # SHG_C1,SHG_C2,SHG_C1_std,SHG_C2_std,SHG_CD = np.array(data[:,2]),np.array(data[:,3]),np.array(data[:,4]),np.array(data[:,5]),np.array(data[:,8])
-    Vx,Vy,SHG_C1,SHG_C1_std,SHG_C2,SHG_C2_std,SHG_CD,SHG_CD_std,Ix,Iy = data[:,0],data[:,1],np.array(data[:,2]),np.array(data[:,3]),np.array(data[:,4]),np.array(data[:,5]),np.array(data[:,6]),np.array(data[:,7]),data[:,8],data[:,9]
-    Ex_list, Ey_list = Vx/w*10, Vy/w*10
-    SHG_total = SHG_C1 + SHG_C2
-    SHG_total_std = np.sqrt(SHG_C1_std**2 + SHG_C2_std**2)
-    SHG_CD_std = get_SGH_CD_std(SHG_C1,SHG_C2,SHG_C1_std,SHG_C2_std)
-    replot(Ex_list,Ey_list,SHG_total,SHG_total_std,SHG_CD,SHG_CD_std,E='y',absolute=False,x=None)
-    # plt.savefig(file_path.replace('.txt','plot.png'),dpi=500)
-    plt.show()
+    for x in glob.glob(path_d1+'*txt'):
+        
+        file_path = x#path_d1+'map2d_y_0p0_ascend.txt'
+        # file_old = '/Users/carterfox/Library/CloudStorage/GoogleDrive-cdfox@wisc.edu/.shortcut-targets-by-id/1-8q9lGFnGNt4mDzcxXwdk43m1aVWT66q/XiaoWang_Group_data_2024on/StackingTransitions/NbOI2/Lvgroup/Efield-samples-for-optics/90deg_3L3L/SHG/CD-Efield/stacked_scan7_EfieldSHG-CD_close_to_elec.txt'
+        
+        data = np.loadtxt(file_path,comments='#')
+        # Vx = data[:,0]
+        # Vy=0
+        # SHG_C1,SHG_C2,SHG_C1_std,SHG_C2_std,SHG_CD = np.array(data[:,2]),np.array(data[:,3]),np.array(data[:,4]),np.array(data[:,5]),np.array(data[:,8])
+        Vx,Vy,SHG_C1,SHG_C1_std,SHG_C2,SHG_C2_std,SHG_CD,SHG_CD_std,Ix,Iy = data[:,0],data[:,1],np.array(data[:,2]),np.array(data[:,3]),np.array(data[:,4]),np.array(data[:,5]),np.array(data[:,6]),np.array(data[:,7]),data[:,8],data[:,9]
+        Ex_list, Ey_list = Vx/w*10, Vy/w*10
+        SHG_total = SHG_C1 + SHG_C2
+        SHG_total_std = np.sqrt(SHG_C1_std**2 + SHG_C2_std**2)
+        SHG_CD_std = get_SGH_CD_std(SHG_C1,SHG_C2,SHG_C1_std,SHG_C2_std)
+        # replot(Ex_list,Ey_list,SHG_total,SHG_total_std,SHG_CD,SHG_CD_std,E='x',x=0,absolute=False)
+        replot_current(Ex_list,Ey_list,Ix,Iy,E='x')
+        plt.savefig(file_path.replace('.txt','current_plot.png'),dpi=500)
+        # plt.savefig(file_path.replace('.txt','plot.png'),dpi=500)
+        plt.close()
+    # plt.show()
     
     
     
