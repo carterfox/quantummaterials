@@ -118,23 +118,25 @@ if __name__ == "__main__":
     qwp_C1,qwp_C2 = 43.5, -46.5
     pmt=get_PMT()
     kx = get_keithley('GPIB1::16::INSTR','2400',100e-6)
-    ky = None#get_keithley('GPIB0::16::INSTR','2400',100e-6)
+    ky = None #get_keithley('GPIB0::16::INSTR','2400',100e-6)
+    # ky.enable_source()
+    # kx.disable_source()
     servers_to_close = [pmt,qwp,kx,ky]
     
     try:
-        # Ex_array = ramp(0, -1, -0.2)
-        Ex_array = loop(-1, 1, 0.05)
+        Ex_array = ramp(-10,0,.5)
+        # Ex_array = loop(-10, 0, 0.5)
         Ey_array = np.zeros_like(Ex_array)
         filesave = 'goingback.txt'
-        # filesave = 'fullscanx1_floaty.txt'
+        # filesave = 'fullscanx4_floaty.txt'
         # qwp.move_to(qwp_C1)
         # pmt.set_hv(True)
         # a=pmt.run_collection(gate_time_ms=200,num_gates=20)
         # print(np.mean(a))
-        # pmt.set_hv(False)
-        t,cd = SHG_CD_Efield_4term.main(s,kx,ky,pmt,qwp,qwp_angles=(qwp_C1,qwp_C2),
-                                        Ex_array=Ex_array,Ey_array=Ey_array,file_save=filesave, 
-                                        gate_time_ms=200,num_gates=10,laser_power=1.5)
+        print(pmt.get_hv())
+        # t,cd = SHG_CD_Efield_4term.main(s,kx,ky,pmt,qwp,qwp_angles=(qwp_C1,qwp_C2),
+        #                                 Ex_array=Ex_array,Ey_array=Ey_array,file_save=filesave, 
+        #                                 gate_time_ms=200,num_gates=10,laser_power=1.5)
         # print('')
         
     except Exception: traceback.print_exc()
