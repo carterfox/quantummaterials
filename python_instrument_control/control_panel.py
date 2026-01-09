@@ -118,26 +118,44 @@ if __name__ == "__main__":
     qwp_C1,qwp_C2 = 43.5, -46.5
     pmt=get_PMT()
     kx = get_keithley('GPIB1::16::INSTR','2400',100e-6)
-    ky = None #get_keithley('GPIB0::16::INSTR','2400',100e-6)
+    ky = get_keithley('GPIB0::16::INSTR','2400',100e-6)
     # ky.enable_source()
-    # kx.disable_source()
+    # kx.enable_source()
     servers_to_close = [pmt,qwp,kx,ky]
     
     try:
-        Ex_array = ramp(-10,0,.5)
-        # Ex_array = loop(-10, 0, 0.5)
-        Ey_array = np.zeros_like(Ex_array)
-        filesave = 'goingback.txt'
-        # filesave = 'fullscanx4_floaty.txt'
-        # qwp.move_to(qwp_C1)
-        # pmt.set_hv(True)
-        # a=pmt.run_collection(gate_time_ms=200,num_gates=20)
-        # print(np.mean(a))
-        print(pmt.get_hv())
+        # Ey_array = ramp(-15,-20,-1)
+        Ey_array = loop(-20, 20, 0.25)
+        Ex_array = np.zeros_like(Ey_array)
+        # filesave = 'fullscany3_fixx0.txt'
         # t,cd = SHG_CD_Efield_4term.main(s,kx,ky,pmt,qwp,qwp_angles=(qwp_C1,qwp_C2),
         #                                 Ex_array=Ex_array,Ey_array=Ey_array,file_save=filesave, 
         #                                 gate_time_ms=200,num_gates=10,laser_power=1.5)
+        
+        # time.sleep(2)
+        # Ey_array = loop(-20, 20, 0.125)
+        # Ex_array = np.zeros_like(Ey_array)
+        # filesave = 'fullscany4_fixx0.txt'
+        # t,cd = SHG_CD_Efield_4term.main(s,kx,ky,pmt,qwp,qwp_angles=(qwp_C1,qwp_C2),
+        #                                 Ex_array=Ex_array,Ey_array=Ey_array,file_save=filesave, 
+        #                                 gate_time_ms=200,num_gates=10,laser_power=1.5)
+        # time.sleep(2)
+        # Ey_array = loop(-20, 20, 1)
+        # Ex_array = np.zeros_like(Ey_array)
+        # filesave = 'fullscany5_fixx0.txt'
+        # t,cd = SHG_CD_Efield_4term.main(s,kx,ky,pmt,qwp,qwp_angles=(qwp_C1,qwp_C2),
+        #                                 Ex_array=Ex_array,Ey_array=Ey_array,file_save=filesave, 
+        #                                 gate_time_ms=200,num_gates=10,laser_power=1.5)
+        # time.sleep(2)
+        Ey_array = loop(-1,1,1)
+        Ex_array = np.zeros_like(Ey_array)
+        filesave = 'test.txt'
+        t,cd = SHG_CD_Efield_4term.main(s,kx,ky,pmt,qwp,qwp_angles=(qwp_C1,qwp_C2),
+                                        Ex_array=Ex_array,Ey_array=Ey_array,file_save=filesave, 
+                                        gate_time_ms=200,num_gates=10,laser_power=1.5)
+
         # print('')
+        # print(kei)
         
     except Exception: traceback.print_exc()
     finally: exit_session()
