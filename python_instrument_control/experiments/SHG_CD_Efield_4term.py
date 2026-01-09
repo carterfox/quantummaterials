@@ -64,8 +64,8 @@ def main(sample: FourTerminal, keithley_x: KeithleySourceMeter, keithley_y: Keit
 
 def update_plot(fig,ax1,ax2,line1,line2,Ex_list,Ey_list,SHG_total_list,SHG_CD_list,SHG_CD_std_list):
     #currently just using Ex
-    line1.set_data(np.array(Ex_list)*10,SHG_total_list)
-    line2.set_data(np.array(Ex_list)*10,SHG_CD_list)
+    line1.set_data(np.array(Ey_list)*10,SHG_total_list)
+    line2.set_data(np.array(Ey_list)*10,SHG_CD_list)
     ax1.relim()
     ax2.relim()
     ax1.autoscale_view()
@@ -77,7 +77,7 @@ def init_main_plot():
     # fig, (ax1,ax2) = plt.subplots(2,1,figsize=(4,8),gridspec_kw={'width_ratios': [1, 1]})
     fig, (ax1,ax2) = plt.subplots(2,1,figsize=(6,6),sharex=True)
     # ax1.set_xlabel(r'$E_x$ (kV/cm)')
-    ax2.set_xlabel(r'$E_x$ (kV/cm)')
+    ax2.set_xlabel(r'$E_y$ (kV/cm)')
     ax1.set_ylabel(r'SHG Intensity ($I_L+I_R$)')
     ax2.set_ylabel(r'SHG-CD ($\%$)')
     line1 = Line2D([], [], color='C0',marker='.')
@@ -109,9 +109,16 @@ def make_data_file(sample,qwp_angles,laser_power,gate_time_ms,num_gates,file_sav
     return file_path
 
 def update_saved_data(file_path,Vx,Vy,C1_mean,C1_std,C2_mean,C2_std,CD,CD_std,Ix,Iy):
-    with open(file_path, 'a') as f:
-        data_save = [Vx,Vy,C1_mean,C1_std,C2_mean,C2_std,CD,CD_std,Ix,Iy]
-        f.write(' '.join(f"{d:.3f}" for d in data_save) + '\n') 
+    # with open(file_path, 'a') as f:
+    #     data_save = [Vx,Vy,C1_mean,C1_std,C2_mean,C2_std,CD,CD_std,Ix,Iy]
+    #     f.write(' '.join(f"{d:.3f}" for d in data_save) + '\n') 
+    for attempt in range(10): 
+        try: 
+            with open(file_path, 'a') as f:
+                data_save = [Vx,Vy,C1_mean,C1_std,C2_mean,C2_std,CD,CD_std,Ix,Iy]
+                f.write(' '.join(f"{d:.3f}" for d in data_save) + '\n') 
+            break 
+        except FileNotFoundError: time.sleep(0.2)
 
 def update_rotation_stage(qwp_rotstage: RotationMount,qwp_angle):
     qwp_home = qwp_rotstage.home
