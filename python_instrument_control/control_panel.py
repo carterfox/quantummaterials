@@ -23,7 +23,7 @@ from homemade_servers.H11890PMT import HamamatsuH11890
 from homemade_servers.KeithleySourceMeter import KeithleySourceMeter
 from homemade_servers.ThorlabsKCube import RotationMount
 # from devices.dualgate import DualGate
-# from devices.optical import Optical
+from devices.optical import Optical
 from devices.transport import FourTerminal
 # from experiments import RMCD_bfield_scan, RMCD_mapping, RMCD_dualgate_Esweep
 from experiments import SHG_CD_Efield_4term
@@ -112,51 +112,30 @@ if __name__ == "__main__":
     
     ###### add it to servers_to_close if you want them to close each time. 
     ###### at this point only cam_spec should not be in it
-    data_path="I:/.shortcut-targets-by-id/1-8q9lGFnGNt4mDzcxXwdk43m1aVWT66q/XiaoWang_Group_data_2024on/StackingTransitions/NbOI2/Lvgroup/Efield-samples-for-optics/90deg_3L3L_4term_S4/"
-    s = FourTerminal('NbOI2FourTermS4',5, data_path)
+    data_path="I:/.shortcut-targets-by-id/1-8q9lGFnGNt4mDzcxXwdk43m1aVWT66q/XiaoWang_Group_data_2024on/StackingTransitions/NbOI2/Lvgroup/Efield-samples-for-optics/90deg_3L3L_4term_S3/"
+    s = FourTerminal('NbOI2FourTermS3',5, data_path)
     qwp = get_rotation_stage('27261255')
+    qwp.home=0
     qwp_C1,qwp_C2 = 43.5, -46.5
     pmt=get_PMT()
-    kx = get_keithley('GPIB1::16::INSTR','2400',100e-6)
-    ky = get_keithley('GPIB0::16::INSTR','2400',100e-6)
-    # ky.enable_source()
-    # kx.enable_source()
+    kx = get_keithley('GPIB1::16::INSTR','2400',100e-6) #bottom
+    ky = None #get_keithley('GPIB0::16::INSTR','2400',100e-6) #top
+  #  ky.disable_source()
+#    kx.enable_source()
     servers_to_close = [pmt,qwp,kx,ky]
     
     try:
-        # Ey_array = ramp(-15,-20,-1)
-        Ey_array = loop(-20, 20, 0.25)
-        Ex_array = np.zeros_like(Ey_array)
-        # filesave = 'fullscany3_fixx0.txt'
+        # qwp.move_to(qwp_C1)
+        Ex_array = ramp(-10,0,0.5)
+        # Ex_array = loop(-10,10,0.1)
+        Ey_array = np.zeros_like(Ex_array)
+        filesave = 'goingback.txt'
+        # filesave = 'fullscanx5_floaty.txt'
         # t,cd = SHG_CD_Efield_4term.main(s,kx,ky,pmt,qwp,qwp_angles=(qwp_C1,qwp_C2),
         #                                 Ex_array=Ex_array,Ey_array=Ey_array,file_save=filesave, 
         #                                 gate_time_ms=200,num_gates=10,laser_power=1.5)
-        
-        # time.sleep(2)
-        # Ey_array = loop(-20, 20, 0.125)
-        # Ex_array = np.zeros_like(Ey_array)
-        # filesave = 'fullscany4_fixx0.txt'
-        # t,cd = SHG_CD_Efield_4term.main(s,kx,ky,pmt,qwp,qwp_angles=(qwp_C1,qwp_C2),
-        #                                 Ex_array=Ex_array,Ey_array=Ey_array,file_save=filesave, 
-        #                                 gate_time_ms=200,num_gates=10,laser_power=1.5)
-        # time.sleep(2)
-        # Ey_array = loop(-20, 20, 1)
-        # Ex_array = np.zeros_like(Ey_array)
-        # filesave = 'fullscany5_fixx0.txt'
-        # t,cd = SHG_CD_Efield_4term.main(s,kx,ky,pmt,qwp,qwp_angles=(qwp_C1,qwp_C2),
-        #                                 Ex_array=Ex_array,Ey_array=Ey_array,file_save=filesave, 
-        #                                 gate_time_ms=200,num_gates=10,laser_power=1.5)
-        # time.sleep(2)
-        Ey_array = loop(-1,1,1)
-        Ex_array = np.zeros_like(Ey_array)
-        filesave = 'test.txt'
-        t,cd = SHG_CD_Efield_4term.main(s,kx,ky,pmt,qwp,qwp_angles=(qwp_C1,qwp_C2),
-                                        Ex_array=Ex_array,Ey_array=Ey_array,file_save=filesave, 
-                                        gate_time_ms=200,num_gates=10,laser_power=1.5)
+        # counts = pmt.quick_test(gate_time_ms=200,num_gates=20)
 
-        # print('')
-        # print(kei)
-        
     except Exception: traceback.print_exc()
     finally: exit_session()
     
