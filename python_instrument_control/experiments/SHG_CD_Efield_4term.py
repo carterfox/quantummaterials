@@ -22,7 +22,7 @@ import math
 import glob
 
 def main(sample: FourTerminal, keithley_x: KeithleySourceMeter, keithley_y: KeithleySourceMeter, pmt: HamamatsuH11890, qwp_rotstage: RotationMount,
-         qwp_angles=(0,90),gate_time_ms=200, num_gates=10, laser_power=0,Ex_array=np.array([]),Ey_array=np.array([]),file_save='test.txt'):
+         qwp_angles=(0,90),gate_time_ms=200, num_gates=10, laser_power=0,Ex_array=np.array([]),Ey_array=np.array([]),file_save='test.txt',close_fig_after=False):
     
     if len(np.unique(Ex_array)) == 1: sweep_axis = 'y'
     elif len(np.unique(Ey_array)) == 1: sweep_axis = 'x'
@@ -56,6 +56,8 @@ def main(sample: FourTerminal, keithley_x: KeithleySourceMeter, keithley_y: Keit
     plt.ioff()
     plt.savefig(file_path.replace('.txt','plot.png'),dpi=500)
     plt.show()
+    if close_fig_after:
+        plt.close()
     
     return SHG_total_list,SHG_CD_list
     

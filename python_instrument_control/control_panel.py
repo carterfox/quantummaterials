@@ -120,21 +120,41 @@ if __name__ == "__main__":
     pmt=get_PMT()
     kx = get_keithley('GPIB1::16::INSTR','2400',100e-6) #bottom
     ky = None #get_keithley('GPIB0::16::INSTR','2400',100e-6) #top
-  #  ky.disable_source()
-#    kx.enable_source()
     servers_to_close = [pmt,qwp,kx,ky]
     
     try:
-        # qwp.move_to(qwp_C1)
-        Ex_array = ramp(-10,0,0.5)
-        # Ex_array = loop(-10,10,0.1)
+        
+        Ex_array = ramp(0,-15,-1)
+        # Ex_array = loop(-15,15,.25)
         Ey_array = np.zeros_like(Ex_array)
         filesave = 'goingback.txt'
-        # filesave = 'fullscanx5_floaty.txt'
-        # t,cd = SHG_CD_Efield_4term.main(s,kx,ky,pmt,qwp,qwp_angles=(qwp_C1,qwp_C2),
-        #                                 Ex_array=Ex_array,Ey_array=Ey_array,file_save=filesave, 
-        #                                 gate_time_ms=200,num_gates=10,laser_power=1.5)
-        # counts = pmt.quick_test(gate_time_ms=200,num_gates=20)
+        # filesave = 'fullscanx1_floaty'
+        t,cd = SHG_CD_Efield_4term.main(s,kx,ky,pmt,qwp,qwp_angles=(qwp_C1,qwp_C2),
+                                        Ex_array=Ex_array,Ey_array=Ey_array,file_save=filesave, 
+                                        gate_time_ms=200,num_gates=10,laser_power=1.5)
+
+        
+        '''
+        Ex_array = loop(-15,15,1)
+        i = 0
+        
+        for Ey in Ex_array:
+            Ey_array = np.ones_like(Ex_array)*Ey
+            curstr = 'mapping_fix_y_{}_'.format(np.round(Ey,1)).replace('-','m').replace('.','p')
+            if i < int(len(Ex_array)/2): filesave = curstr+'ascend.txt'
+            else: filesave = curstr+'descend.txt'
+            t,cd = SHG_CD_Efield_4term.main(s,kx,ky,pmt,qwp,qwp_angles=(qwp_C1,qwp_C2),
+                                            Ex_array=Ex_array,Ey_array=Ey_array,file_save=filesave, 
+                                            gate_time_ms=200,num_gates=10,laser_power=1.5,close_fig_after=True)
+            i += 1
+        
+        kx.apply_voltage(compliance_current=kx.compliance_current)
+        ky.apply_voltage(compliance_current=ky.compliance_current)
+        for E in ramp(-15,0,1):
+            kx.source_voltage = E
+            ky.source_voltage = E
+            time.sleep(5)
+        '''
 
     except Exception: traceback.print_exc()
     finally: exit_session()
