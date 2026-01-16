@@ -208,13 +208,13 @@ def replot(Ex_list,Ey_list,SHG_total,SHG_total_std,SHG_CD,SHG_CD_std,Ix,Iy,E='x'
 if __name__ == "__main__":
     tb.init_plot_params()
     # path_d3 = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/d3/RMCD/Esweep/'
-    path_d1 = '/Users/carterfox/My Drive (cdfox@wisc.edu)/StackingTransitions/NbOI2/Lvgroup/Efield-samples-for-optics/90deg_3L3L_4term_S4/SHG-CD-Efield/1-8/'
+    path_d1 = '/Users/carterfox/My Drive (cdfox@wisc.edu)/StackingTransitions/NbOI2/Lvgroup/Efield-samples-for-optics/90deg_3L3L_4term_S3/SHG-CD-Efield//'
     # txtfiles=glob.glob(path_d1+'*txt')
     # txtfiles_sorted = sorted(txtfiles, key=os.path.getmtime)
-    sample = FourTerminal('NbOI290deg4termS1', 5, path_d1)
+    sample = FourTerminal('NbOI290deg4termS3', 5, path_d1)
     w = sample.channel_width
     
-    file_path = path_d1+'fullscany4_fixx0.txt'
+    file_path = path_d1+'fullscanx5_floaty.txt'
     # file_old = '/Users/carterfox/Library/CloudStorage/GoogleDrive-cdfox@wisc.edu/.shortcut-targets-by-id/1-8q9lGFnGNt4mDzcxXwdk43m1aVWT66q/XiaoWang_Group_data_2024on/StackingTransitions/NbOI2/Lvgroup/Efield-samples-for-optics/90deg_3L3L/SHG/CD-Efield/stacked_scan7_EfieldSHG-CD_close_to_elec.txt'
     
     data = np.loadtxt(file_path,comments='#')
@@ -222,7 +222,7 @@ if __name__ == "__main__":
     Ex_list, Ey_list = Vx/w*10, Vy/w*10
     SHG_total,SHG_total_std = SHG_C1 + SHG_C2, np.sqrt(SHG_C1_std**2 + SHG_C2_std**2)
     SHG_CD_std = get_SGH_CD_std(SHG_C1,SHG_C2,SHG_C1_std,SHG_C2_std)
-    replot(Ex_list,Ey_list,SHG_total,SHG_total_std,SHG_CD,SHG_CD_std,Ix,Iy,E='y',xy=0,absolute=False)
+    replot(Ex_list,Ey_list,SHG_total,SHG_total_std,SHG_CD,SHG_CD_std,Ix,Iy,E='x',xy=0,absolute=False)
     plt.savefig(file_path.replace('.txt','plot.png'),dpi=500)
     # plt.close()
     plt.show()
