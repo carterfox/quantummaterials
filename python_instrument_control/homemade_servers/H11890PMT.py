@@ -8,6 +8,7 @@ Created on Sun Aug 10 11:47:06 2025
 import ctypes
 from ctypes import *
 import time
+import numpy as np
 
 class H11890_INF(Structure):
     _fields_ = [
@@ -97,8 +98,19 @@ class HamamatsuH11890:
         # time.sleep(.2)
         results = self.read_clean_data(remove_first)
         self.stop_counting()
-        
         return results
+    
+    def quick_test(self,gate_time_ms=200,num_gates=10,remove_first=True):
+        self.set_hv(True)
+        counts = self.run_collection(gate_time_ms,num_gates,remove_first)
+        self.set_hv(False)
+        p=self.get_hv()
+        if p == False:
+            mean = np.mean(counts)
+            print(mean)
+            return mean
+        else:
+            print('hv on: ',p)
 
     def read_clean_data(self,remove_first=True):
         results=[]

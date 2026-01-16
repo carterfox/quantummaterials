@@ -23,9 +23,12 @@ import glob
 
 def main(sample: FourTerminal, keithley_x: KeithleySourceMeter, keithley_y: KeithleySourceMeter, pmt: HamamatsuH11890, qwp_rotstage: RotationMount,
          qwp_angles=(0,90),gate_time_ms=200, num_gates=10, laser_power=0,Ex_array=np.array([]),Ey_array=np.array([]),file_save='test.txt'):
-    
+    if len(np.unique(Ex_array)) == 1:
+        sweep_axis = 'y'
+    elif len(np.unique(Ey_array)) == 1:
+        sweep_axis = 'x'
     plt.ion()
-    fig,ax1,line1,ax2,line2 = init_main_plot()
+    fig,ax1,line1,ax2,line2 = init_main_plot(sweep_axis)
     file_path = make_data_file(sample,qwp_angles,laser_power,gate_time_ms,num_gates,file_save)
         
     #### turn on PMT, set keithleys, then initiate a bunch of litsts. angle_ind controls qwp setting (C1 vs C2)
@@ -33,6 +36,7 @@ def main(sample: FourTerminal, keithley_x: KeithleySourceMeter, keithley_y: Keit
     set_keithleys(keithley_x,keithley_y)
     Ex_list, Ey_list, SHG_total_list, SHG_CD_list, SHG_CD_std_list, SHG_C_vals, SHG_C_stds, angle_ind = [],[],[],[],[],  [[],[]] , [[],[]], 0
     print(f"{'Ex':^8}" f"{'Ix':^7}" f"{'Ey':^6}" f"{'Iy':^10}" f"{'ang':^1}" f"{'counts':^12}")
+    
     for (Ex,Ey) in zip(Ex_array,Ey_array):
         #### go to first qwp angle. set voltages in each keithley 
         # qwp_real_angle = update_rotation_stage(qwp_rotstage,qwp_angles[angle_ind])     
@@ -50,8 +54,8 @@ def main(sample: FourTerminal, keithley_x: KeithleySourceMeter, keithley_y: Keit
         #### compute total SGH and SHG-CD. plot and save data    
         SHG_C1, SHG_C1_std, SHG_C2, SHG_C2_std, SHG_total, SHG_CD, SHG_CD_std = get_SHG_vals(SHG_C_vals,SHG_C_stds)
         SHG_total_list.append(SHG_total), SHG_CD_list.append(SHG_CD), SHG_CD_std_list.append(SHG_CD_std), Ex_list.append(Ex), Ey_list.append(Ey)
-        update_plot(fig,ax1,ax2,line1,line2,Ex_list,Ey_list,SHG_total_list,SHG_CD_list,SHG_CD_std_list)
-        update_saved_data(file_path,Vx,Vy,SHG_C1,SHG_C1_std,SHG_C2,SHG_C2_std,SHG_CD,SHG_CD_std,Ix_meas,Iy_meas)
+        update_plot(fig,ax1,ax2,line1,line2,Ex_list,Ey_list,SHG_total_list,SHG_CD_list,SHG_CD_std_list,sweep_axis)
+        update_saved_data(file_path,Vx,Vy,SHG_C1,SHG_C1_std,SHG_C2,SHG_C2_std,SHG_CD,SHG_CD_std,Ix_meas,Iy_meas,Vx_meas,Vy_meas)
     ### turn off PMT hv and interactive plotting
     pmt.set_hv(on=False)
     time.sleep(.5)
@@ -62,10 +66,14 @@ def main(sample: FourTerminal, keithley_x: KeithleySourceMeter, keithley_y: Keit
     return SHG_total_list,SHG_CD_list
     
 
-def update_plot(fig,ax1,ax2,line1,line2,Ex_list,Ey_list,SHG_total_list,SHG_CD_list,SHG_CD_std_list):
+def update_plot(fig,ax1,ax2,line1,line2,Ex_list,Ey_list,SHG_total_list,SHG_CD_list,SHG_CD_std_list,sweep_axis):
     #currently just using Ex
-    line1.set_data(np.array(Ey_list)*10,SHG_total_list)
-    line2.set_data(np.array(Ey_list)*10,SHG_CD_list)
+    if sweep_axis == 'x':
+        E_list = Ex_list
+    elif sweep_axis == 'y':
+        E_list = Ey_list
+    line1.set_data(np.array(E_list)*10,SHG_total_list)
+    line2.set_data(np.array(E_list)*10,SHG_CD_list)
     ax1.relim()
     ax2.relim()
     ax1.autoscale_view()
@@ -73,11 +81,11 @@ def update_plot(fig,ax1,ax2,line1,line2,Ex_list,Ey_list,SHG_total_list,SHG_CD_li
     fig.canvas.draw()
     fig.canvas.flush_events()
 
-def init_main_plot():
+def init_main_plot(sweep_axis):
     # fig, (ax1,ax2) = plt.subplots(2,1,figsize=(4,8),gridspec_kw={'width_ratios': [1, 1]})
     fig, (ax1,ax2) = plt.subplots(2,1,figsize=(6,6),sharex=True)
     # ax1.set_xlabel(r'$E_x$ (kV/cm)')
-    ax2.set_xlabel(r'$E_y$ (kV/cm)')
+    ax2.set_xlabel(r'$E_{}$ (kV/cm)'.format(sweep_axis))
     ax1.set_ylabel(r'SHG Intensity ($I_L+I_R$)')
     ax2.set_ylabel(r'SHG-CD ($\%$)')
     line1 = Line2D([], [], color='C0',marker='.')
@@ -105,17 +113,17 @@ def make_data_file(sample,qwp_angles,laser_power,gate_time_ms,num_gates,file_sav
         f.write(f"# Laser Power: {laser_power} mW\n")
         f.write(f"# Gate Time: {gate_time_ms} ms\n")
         f.write(f"# Num Gates: {num_gates}\n")
-        f.write("# Vx (V) \t Vy (V) \t C1CountsMean \t C1CountsStd \t C2CountsMean \t C2CountsStd \t SHG_CD \t SHG_CD_std \t Ix (nA) \t Iy (nA) \n")
+        f.write("# Vx (V) \t Vy (V) \t C1CountsMean \t C1CountsStd \t C2CountsMean \t C2CountsStd \t SHG_CD \t SHG_CD_std \t Ix (nA) \t Iy (nA) \t Vxmeas (V) \t Vymeas (V) \n")
     return file_path
 
-def update_saved_data(file_path,Vx,Vy,C1_mean,C1_std,C2_mean,C2_std,CD,CD_std,Ix,Iy):
+def update_saved_data(file_path,Vx,Vy,C1_mean,C1_std,C2_mean,C2_std,CD,CD_std,Ix,Iy,Vxmeas,Vymeas):
     # with open(file_path, 'a') as f:
     #     data_save = [Vx,Vy,C1_mean,C1_std,C2_mean,C2_std,CD,CD_std,Ix,Iy]
     #     f.write(' '.join(f"{d:.3f}" for d in data_save) + '\n') 
     for attempt in range(10): 
         try: 
             with open(file_path, 'a') as f:
-                data_save = [Vx,Vy,C1_mean,C1_std,C2_mean,C2_std,CD,CD_std,Ix,Iy]
+                data_save = [Vx,Vy,C1_mean,C1_std,C2_mean,C2_std,CD,CD_std,Ix,Iy,Vxmeas,Vymeas]
                 f.write(' '.join(f"{d:.3f}" for d in data_save) + '\n') 
             break 
         except FileNotFoundError: time.sleep(0.2)
@@ -131,12 +139,12 @@ def set_voltages(sample,keithley_x,keithley_y,Ex,Ey):
     Vx, Vy = Ex*sample.channel_width, Ey*sample.channel_width
     if keithley_x != None:
         keithley_x.source_voltage = Vx
-        Vx_meas = 0#keithley_x.measure_voltage_avg(10)
+        Vx_meas = keithley_x.measure_voltage_avg(10)
         Ix_meas = 10**9 * keithley_x.measure_current_avg(10)
     else: Vx_meas, Ix_meas = 0,0
     if keithley_y != None:
         keithley_y.source_voltage = Vy
-        Vy_meas = 0#keithley_y.measure_voltage_avg(10)
+        Vy_meas = keithley_y.measure_voltage_avg(10)
         Iy_meas = 10**9 * keithley_y.measure_current_avg(10)
     else: Vy_meas, Iy_meas = 0,0
     return Vx, Vy, Vx_meas,Vy_meas,Ix_meas,Iy_meas
