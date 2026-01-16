@@ -23,40 +23,34 @@ import glob
 
 def main(sample: FourTerminal, keithley_x: KeithleySourceMeter, keithley_y: KeithleySourceMeter, pmt: HamamatsuH11890, qwp_rotstage: RotationMount,
          qwp_angles=(0,90),gate_time_ms=200, num_gates=10, laser_power=0,Ex_array=np.array([]),Ey_array=np.array([]),file_save='test.txt'):
-    if len(np.unique(Ex_array)) == 1:
-        sweep_axis = 'y'
-    elif len(np.unique(Ey_array)) == 1:
-        sweep_axis = 'x'
+    
+    if len(np.unique(Ex_array)) == 1: sweep_axis = 'y'
+    elif len(np.unique(Ey_array)) == 1: sweep_axis = 'x'
+    
     plt.ion()
-    fig,ax1,line1,ax2,line2 = init_main_plot(sweep_axis)
+    fig,axes,lines = init_main_plot(sweep_axis)
     file_path = make_data_file(sample,qwp_angles,laser_power,gate_time_ms,num_gates,file_save)
         
-    #### turn on PMT, set keithleys, then initiate a bunch of litsts. angle_ind controls qwp setting (C1 vs C2)
     pmt.set_hv(on=True)   
     set_keithleys(keithley_x,keithley_y)
-    Ex_list, Ey_list, SHG_total_list, SHG_CD_list, SHG_CD_std_list, SHG_C_vals, SHG_C_stds, angle_ind = [],[],[],[],[],  [[],[]] , [[],[]], 0
+    Ex_list, Ey_list, Ix_list, Iy_list, SHG_total_list, SHG_CD_list, SHG_CD_std_list, SHG_C_vals, SHG_C_stds, angle_ind = [],[],[],[],[],[],[],  [[],[]] , [[],[]], 0
     print(f"{'Ex':^8}" f"{'Ix':^7}" f"{'Ey':^6}" f"{'Iy':^10}" f"{'ang':^1}" f"{'counts':^12}")
     
     for (Ex,Ey) in zip(Ex_array,Ey_array):
-        #### go to first qwp angle. set voltages in each keithley 
-        # qwp_real_angle = update_rotation_stage(qwp_rotstage,qwp_angles[angle_ind])     
         Vx,Vy,Vx_meas,Vy_meas,Ix_meas,Iy_meas = set_voltages(sample,keithley_x,keithley_y,Ex,Ey)
         time.sleep(.1)
-        #### measure SHG data at both qwp angles
         for i in range(2):
             if i==1: angle_ind = int(not angle_ind)
             update_rotation_stage(qwp_rotstage,qwp_angles[angle_ind]) 
             data = pmt.run_collection(gate_time_ms,num_gates,remove_first=True)
-            # data = np.random.randint(low=0,high=10,size=(num_gates))
             SHG_C_vals[angle_ind].append(np.mean(data)), SHG_C_stds[angle_ind].append(np.mean(np.std(data)/np.sqrt(num_gates)))
-            # print(round(Ex,2),round(Ix_meas,2),round(Ey,2),round(Iy_meas,2),angle_ind,round(np.mean(data),1))
             print(f"{Ex:^7.2f}" f"{Ix_meas:^8.2f}" f"{Ey:^7.2f}" f"{Iy_meas:^8.2f}" f"{angle_ind:^6}" f"{np.mean(data):^9.1f}")
-        #### compute total SGH and SHG-CD. plot and save data    
+
         SHG_C1, SHG_C1_std, SHG_C2, SHG_C2_std, SHG_total, SHG_CD, SHG_CD_std = get_SHG_vals(SHG_C_vals,SHG_C_stds)
-        SHG_total_list.append(SHG_total), SHG_CD_list.append(SHG_CD), SHG_CD_std_list.append(SHG_CD_std), Ex_list.append(Ex), Ey_list.append(Ey)
-        update_plot(fig,ax1,ax2,line1,line2,Ex_list,Ey_list,SHG_total_list,SHG_CD_list,SHG_CD_std_list,sweep_axis)
+        SHG_total_list.append(SHG_total), SHG_CD_list.append(SHG_CD), SHG_CD_std_list.append(SHG_CD_std), Ex_list.append(Ex), Ey_list.append(Ey), Ix_list.append(Ix_meas),Iy_list.append(Iy_meas)
+        update_plot(fig,axes,lines,Ex_list,Ey_list,SHG_total_list,SHG_CD_list,Ix_list,Iy_list,sweep_axis)
         update_saved_data(file_path,Vx,Vy,SHG_C1,SHG_C1_std,SHG_C2,SHG_C2_std,SHG_CD,SHG_CD_std,Ix_meas,Iy_meas,Vx_meas,Vy_meas)
-    ### turn off PMT hv and interactive plotting
+
     pmt.set_hv(on=False)
     time.sleep(.5)
     plt.ioff()
@@ -66,36 +60,37 @@ def main(sample: FourTerminal, keithley_x: KeithleySourceMeter, keithley_y: Keit
     return SHG_total_list,SHG_CD_list
     
 
-def update_plot(fig,ax1,ax2,line1,line2,Ex_list,Ey_list,SHG_total_list,SHG_CD_list,SHG_CD_std_list,sweep_axis):
-    #currently just using Ex
-    if sweep_axis == 'x':
-        E_list = Ex_list
-    elif sweep_axis == 'y':
-        E_list = Ey_list
-    line1.set_data(np.array(E_list)*10,SHG_total_list)
-    line2.set_data(np.array(E_list)*10,SHG_CD_list)
-    ax1.relim()
-    ax2.relim()
-    ax1.autoscale_view()
-    ax2.autoscale_view()
-    fig.canvas.draw()
-    fig.canvas.flush_events()
-
 def init_main_plot(sweep_axis):
-    # fig, (ax1,ax2) = plt.subplots(2,1,figsize=(4,8),gridspec_kw={'width_ratios': [1, 1]})
-    fig, (ax1,ax2) = plt.subplots(2,1,figsize=(6,6),sharex=True)
-    # ax1.set_xlabel(r'$E_x$ (kV/cm)')
-    ax2.set_xlabel(r'$E_{}$ (kV/cm)'.format(sweep_axis))
-    ax1.set_ylabel(r'SHG Intensity ($I_L+I_R$)')
-    ax2.set_ylabel(r'SHG-CD ($\%$)')
-    line1 = Line2D([], [], color='C0',marker='.')
-    line2 = Line2D([], [], color='C0',marker='.')
-    ax1.add_line(line1)
-    ax2.add_line(line2)
+    fig, axs = plt.subplots(2,2,figsize=(10,6),sharex=True)
+    ax1,ax2,ax3,ax4, = axs[0,0],axs[1,0],axs[0,1],axs[1,1]
+    
+    ax2.set_xlabel(r'$E_{}$ (kV/cm)'.format(sweep_axis)), ax4.set_xlabel(r'$E_{}$ (kV/cm)'.format(sweep_axis))
+    ax1.set_ylabel(r'SHG Intensity ($I_L+I_R$)'),ax2.set_ylabel(r'SHG-CD ($\%$)')
+    ax3.set_ylabel(r'$I_x$  ($\mu$A)'),ax4.set_ylabel(r'$I_y$  ($\mu$A)')
+    ms,lw,elw = 8,2.5,1
+    
+    if sweep_axis=='x': colord = 'r'
+    elif sweep_axis== 'y': colord = 'b'
+    
+    SHG_ascend_line = Line2D([], [], color='black',marker='.',linewidth=lw,markersize=ms)
+    SHG_descend_line = Line2D([], [], color=colord,marker='.',linewidth=lw,markersize=ms)
+    CD_ascend_line = Line2D([], [], color='black',marker='.',linewidth=lw,markersize=ms)
+    CD_descend_line = Line2D([], [], color=colord,marker='.',linewidth=lw,markersize=ms)
+    Ix_ascend_line = Line2D([], [], color='black',marker='.',linewidth=lw,markersize=ms)
+    Ix_descend_line = Line2D([], [], color=colord,marker='.',linewidth=lw,markersize=ms)
+    Iy_ascend_line = Line2D([], [], color='black',marker='.',linewidth=lw,markersize=ms)
+    Iy_descend_line = Line2D([], [], color=colord,marker='.',linewidth=lw,markersize=ms)
+    
+    ax1.add_line(SHG_ascend_line),ax1.add_line(SHG_descend_line),ax2.add_line(CD_ascend_line),ax2.add_line(CD_descend_line)
+    ax3.add_line(Ix_ascend_line),ax3.add_line(Ix_descend_line),ax4.add_line(Iy_ascend_line),ax4.add_line(Iy_descend_line)
+    
+    axes = (ax1,ax2,ax3,ax4)
+    lines= (SHG_ascend_line,SHG_descend_line,CD_ascend_line,CD_descend_line,Ix_ascend_line,Ix_descend_line,Iy_ascend_line,Iy_descend_line)
+
     try:
         fig.canvas.manager.window.move(1800, 60)
     except: None
-    return fig,ax1,line1,ax2,line2
+    return fig,axes,lines
 
 def make_data_file(sample,qwp_angles,laser_power,gate_time_ms,num_gates,file_save):
     if not os.path.exists(sample.data_path+"/SHG-CD-Efield"):
@@ -117,9 +112,6 @@ def make_data_file(sample,qwp_angles,laser_power,gate_time_ms,num_gates,file_sav
     return file_path
 
 def update_saved_data(file_path,Vx,Vy,C1_mean,C1_std,C2_mean,C2_std,CD,CD_std,Ix,Iy,Vxmeas,Vymeas):
-    # with open(file_path, 'a') as f:
-    #     data_save = [Vx,Vy,C1_mean,C1_std,C2_mean,C2_std,CD,CD_std,Ix,Iy]
-    #     f.write(' '.join(f"{d:.3f}" for d in data_save) + '\n') 
     for attempt in range(10): 
         try: 
             with open(file_path, 'a') as f:
@@ -171,6 +163,36 @@ def get_SGH_CD_std(x, y, sigma_x, sigma_y):
     denominator = (x + y)**2
     return 100 * 2 * numerator / denominator
 
+
+def update_plot(fig,axes,lines,Ex_list,Ey_list,SHG_total,SHG_CD,Ix,Iy,sweep_axis,absolute=False):
+    ax1,ax2,ax3,ax4, = axes
+    SHG_ascend_line,SHG_descend_line,CD_ascend_line,CD_descend_line,Ix_ascend_line,Ix_descend_line,Iy_ascend_line,Iy_descend_line = lines
+    if sweep_axis == 'x': E_list = Ex_list
+    elif sweep_axis == 'y': E_list = Ey_list
+    E_list = np.array(E_list)*10
+    
+    diffs = np.diff(E_list)
+    try: transition_index = np.where((diffs[:-1] >= 0) & (diffs[1:] <= 0))[0][0]+2
+    except: transition_index=len(E_list)
+    
+    Ix,Iy = Ix/1000, Iy/1000
+    E_list_ascend,E_list_descend = E_list[0:transition_index],E_list[transition_index:]
+    SHG_CD_ascend,SHG_CD_descend,SHG_total_ascend,SHG_total_descend = SHG_CD[0:transition_index],SHG_CD[transition_index:],SHG_total[0:transition_index],SHG_total[transition_index:]    
+    Ix_ascend,Ix_descend,Iy_ascend,Iy_descend = Ix[0:transition_index],Ix[transition_index:],Iy[0:transition_index],Iy[transition_index:]
+    if absolute: SHG_CD_ascend,SHG_CD_descend = np.abs(SHG_CD_ascend),np.abs(SHG_CD_descend)
+
+    SHG_ascend_line.set_data(E_list_ascend,SHG_total_ascend)
+    SHG_descend_line.set_data(E_list_descend,SHG_total_descend)
+    CD_ascend_line.set_data(E_list_ascend,SHG_CD_ascend)
+    CD_descend_line.set_data(E_list_descend,SHG_CD_descend)
+    Ix_ascend_line.set_data(E_list_ascend,Ix_ascend)
+    Ix_descend_line.set_data(E_list_descend,Ix_descend)
+    Iy_ascend_line.set_data(E_list_ascend,Iy_ascend)
+    Iy_descend_line.set_data(E_list_descend,Iy_descend)
+    ax1.relim(),ax2.relim(),ax3.relim(),ax4.relim()
+    ax1.autoscale_view(),ax2.autoscale_view(),ax3.autoscale_view(),ax4.autoscale_view()
+    fig.canvas.draw()
+    fig.canvas.flush_events()
 
 def replot(Ex_list,Ey_list,SHG_total,SHG_total_std,SHG_CD,SHG_CD_std,Ix,Iy,E='x',absolute=True,xy=None):
     fig, axs = plt.subplots(2,2,figsize=(10,6),sharex=True)
