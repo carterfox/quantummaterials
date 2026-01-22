@@ -26,6 +26,7 @@ def main(sample: FourTerminal, keithley_x: KeithleySourceMeter, keithley_y: Keit
     
     if len(np.unique(Ex_array)) == 1: sweep_axis = 'y'
     elif len(np.unique(Ey_array)) == 1: sweep_axis = 'x'
+    else: sweep_axis = 'x'
     
     plt.ion()
     fig,axes,lines = init_main_plot(sweep_axis)
@@ -63,7 +64,9 @@ def main(sample: FourTerminal, keithley_x: KeithleySourceMeter, keithley_y: Keit
     
 
 def init_main_plot(sweep_axis):
-    fig, axs = plt.subplots(2,2,figsize=(10,6),sharex=True)
+    fig, axs = plt.subplots(2,2,figsize=(10,6),sharex=True,facecolor='whitesmoke')
+    for ax in axs.ravel():
+        ax.set_facecolor('whitesmoke')
     ax1,ax2,ax3,ax4, = axs[0,0],axs[1,0],axs[0,1],axs[1,1]
     
     ax2.set_xlabel(r'$E_{}$ (kV/cm)'.format(sweep_axis)), ax4.set_xlabel(r'$E_{}$ (kV/cm)'.format(sweep_axis))
@@ -90,7 +93,7 @@ def init_main_plot(sweep_axis):
     lines= (SHG_ascend_line,SHG_descend_line,CD_ascend_line,CD_descend_line,Ix_ascend_line,Ix_descend_line,Iy_ascend_line,Iy_descend_line)
 
     try:
-        fig.canvas.manager.window.move(1800, 60)
+        fig.canvas.manager.window.move(1500, 60)
     except: None
     return fig,axes,lines
 
@@ -177,7 +180,7 @@ def update_plot(fig,axes,lines,Ex_list,Ey_list,SHG_total,SHG_CD,Ix,Iy,sweep_axis
     try: transition_index = np.where((diffs[:-1] >= 0) & (diffs[1:] <= 0))[0][0]+2
     except: transition_index=len(E_list)
     
-    Ix,Iy = Ix/1000, Iy/1000
+    Ix,Iy = np.asarray(Ix)/1000, np.asarray(Iy)/1000
     E_list_ascend,E_list_descend = E_list[0:transition_index],E_list[transition_index:]
     SHG_CD_ascend,SHG_CD_descend,SHG_total_ascend,SHG_total_descend = SHG_CD[0:transition_index],SHG_CD[transition_index:],SHG_total[0:transition_index],SHG_total[transition_index:]    
     Ix_ascend,Ix_descend,Iy_ascend,Iy_descend = Ix[0:transition_index],Ix[transition_index:],Iy[0:transition_index],Iy[transition_index:]
