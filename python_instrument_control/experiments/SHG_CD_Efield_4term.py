@@ -20,6 +20,7 @@ from homemade_servers.KeithleySourceMeter import KeithleySourceMeter
 from devices.transport import FourTerminal
 import math
 import glob
+from pathlib import Path
 
 def main(sample: FourTerminal, keithley_x: KeithleySourceMeter, keithley_y: KeithleySourceMeter, pmt: HamamatsuH11890, qwp_rotstage: RotationMount,
          qwp_angles=(0,90),gate_time_ms=200, num_gates=10, laser_power=0,Ex_array=np.array([]),Ey_array=np.array([]),file_save='test.txt',close_fig_after=False):
@@ -239,9 +240,67 @@ def replot(Ex_list,Ey_list,SHG_total,SHG_total_std,SHG_CD,SHG_CD_std,Ix,Iy,E='x'
     # tb.plot_arrow_legend(ax1,r'$E_{}$'.format(E),x1=110,y1=1068,ls=10,yratio=.058,xratio=.12,wratio=.0872,colord=colord)
     # tb.plot_arrow_legend(ax1,,x1=146,y1=600,ls=12,yratio=.058,xratio=.12,wratio=.0872,colord=colord)
     # ax2.text(40,4,r'$E_y$={}kV/cm$\rightarrow$'.format(x),fontsize=12)
+    
+
+def analyze_files_2dmap(folder_path,fast_axis='x',fast_direction='hysteresis'):
+    
+    files = [Path(p) for p in glob.glob(str(Path(folder_path) / "*.txt"))]
+    ascend_files, descend_files = [f for f in files if "ascend" in f.name.lower()], [f for f in files if "descend" in f.name.lower()]
+    ascend_yvals, descend_yvals = [],[]
+    
+    for f in ascend_files: ascend_yvals.append(float(f.name.lower().split('_')[3].replace('m','-').replace('p','.')))
+    for f in descend_files: descend_yvals.append(float(f.name.lower().split('_')[3].replace('m','-').replace('p','.')))
+        
+    ascend_files = np.array(ascend_files)[np.argsort(ascend_yvals)]
+    descend_files = np.array(descend_files)[np.argsort(descend_yvals)]
+    xs,ys,CDs = np.array([]),np.array([]),np.array([])
+    
+    for file in ascend_files:
+        data=np.loadtxt(file)
+        if fast_axis=='x': ascend_ind = np.where(np.diff(data[:,0])==0)[0][0]
+        elif fast_axis=='y': ascend_ind = np.where(np.diff(data[:,1])==0)[0][0]
+        
+        data_ascend,data_descend = data[0:ascend_ind+1],data[ascend_ind+1:]
+        
+        if fast_direction == 'ascend': 
+            counts_C1,counts_C2,Ix,Iy,Vx,Vy = data_ascend[:,2],data_ascend[:,4],data_ascend[:,8],data_ascend[:,9],data_ascend[:,0],data_ascend[:,1]
+            SHG_CD = (counts_C1-counts_C2)/(counts_C1+counts_C2)*100
+            xs,ys,CDs = np.append(xs,Vx), np.append(ys,Vy), np.append(CDs,SHG_CD)
+        elif fast_direction == 'descend': 
+            counts_C1,counts_C2,Ix,Iy,Vx,Vy = data_descend[:,2],data_descend[:,4],data_descend[:,8],data_descend[:,9],data_descend[:,0],data_descend[:,1]
+            SHG_CD = (counts_C1-counts_C2)/(counts_C1+counts_C2)*100
+            xs,ys,CDs = np.append(xs,Vx), np.append(ys,Vy), np.append(CDs,SHG_CD)
+        elif fast_direction == 'hysteresis': 
+            counts_C1_ascend,counts_C2_ascend,Ix_ascend,Iy_ascend,Vx_ascend,Vy_ascend = data_ascend[:,2],data_ascend[:,4],data_ascend[:,8],data_ascend[:,9],data_ascend[:,0],data_ascend[:,1]
+            counts_C1_descend,counts_C2_descend,Ix_descend,Iy_descend,Vx_descend,Vy_descend = np.flip(data_descend[:,2]),np.flip(data_descend[:,4]),np.flip(data_descend[:,8]),np.flip(data_descend[:,9]),np.flip(data_descend[:,0]),np.flip(data_descend[:,1])
+            SHG_CD_ascend = (counts_C1_ascend-counts_C2_ascend)/(counts_C1_ascend+counts_C2_ascend)*100
+            SHG_CD_descend = (counts_C1_descend-counts_C2_descend)/(counts_C1_descend+counts_C2_descend)*100
+            SHG_CD_hysteresis = SHG_CD_descend - SHG_CD_ascend
+            xs,ys,CDs = np.append(xs,Vx_ascend), np.append(ys,Vy_ascend), np.append(CDs,SHG_CD_hysteresis)
+        
+    xs,ys = xs/5*10, ys/5*10
+    x_unique, y_unique = np.unique(xs), np.unique(ys)
+    image = np.zeros((len(x_unique), len(y_unique)))
+
+    for x, y, v in zip(xs, ys, CDs):
+        xi,yi = np.where(x_unique == x)[0][0],np.where(y_unique == y)[0][0]
+        image[yi, xi] = v
+        
+    plt.figure()
+    plt.imshow(image,origin='lower',extent=[x_unique.min(), x_unique.max(), y_unique.min(), y_unique.max()],vmin=-25,vmax=10,cmap='viridis_r')
+    cbar=plt.colorbar(label="SHG-CD (%)") 
+    plt.xlabel("E$_x$ (kV/cm)") 
+    plt.ylabel("E$_y$ (kV/cm)") 
+    # plt.title("2D Map") 
+    plt.savefig(path_map+'plot_2dmap_{}_{}.png'.format(fast_axis,fast_direction),dpi=500)
+    # plt.show()
+
+    return image
+    
 
 if __name__ == "__main__":
     tb.init_plot_params()
+    '''
     # path_d3 = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/d3/RMCD/Esweep/'
     path_d1 = '/Users/carterfox/My Drive (cdfox@wisc.edu)/StackingTransitions/NbOI2/Lvgroup/Efield-samples-for-optics/90deg_3L3L_4term_S3/SHG-CD-Efield//'
     # txtfiles=glob.glob(path_d1+'*txt')
@@ -261,7 +320,11 @@ if __name__ == "__main__":
     plt.savefig(file_path.replace('.txt','plot.png'),dpi=500)
     # plt.close()
     plt.show()
-    
+    '''
+
+    path_map = '/Users/carterfox/My Drive (cdfox@wisc.edu)/StackingTransitions/NbOI2/Lvgroup/Efield-samples-for-optics/90deg_3L3L_4term_S3/SHG-CD-Efield/1-16-2dmap/'
+    image = analyze_files_2dmap(path_map,fast_direction='hysteresis')
+    plt.show()
     
     
     
