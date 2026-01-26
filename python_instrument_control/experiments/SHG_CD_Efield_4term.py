@@ -241,6 +241,36 @@ def replot(Ex_list,Ey_list,SHG_total,SHG_total_std,SHG_CD,SHG_CD_std,Ix,Iy,E='x'
     # tb.plot_arrow_legend(ax1,,x1=146,y1=600,ls=12,yratio=.058,xratio=.12,wratio=.0872,colord=colord)
     # ax2.text(40,4,r'$E_y$={}kV/cm$\rightarrow$'.format(x),fontsize=12)
     
+def plot_for_proposal(Ex_list,Ey_list,SHG_CD,SHG_CD_std,E='x',xy=None):
+    plt.rcParams["font.size"] = 14
+    
+    if E=='x': E_list,colord = Ex_list,'r'
+    elif E == 'y': E_list,colord = Ey_list,'b'
+    
+    diffs = np.diff(E_list)
+    try: transition_index = np.where((diffs[:-1] >= 0) & (diffs[1:] <= 0))[0][0]+2
+    except: transition_index=len(E_list)
+    E_list_ascend,E_list_descend = E_list[0:transition_index],E_list[transition_index:]
+    SHG_CD_ascend,SHG_CD_descend = SHG_CD[0:transition_index],SHG_CD[transition_index:]
+    SHG_CD_std_ascend,SHG_CD_std_descend = SHG_CD_std[0:transition_index],SHG_CD_std[transition_index:]
+                                                                                     
+    fig, ax0 = plt.subplots(1,1,figsize=(4,3))
+    Estr = r'$E_{}$'.format(E)
+    ax0.set_xlabel(Estr+r' (kV/cm)'),ax0.set_ylabel(r'SHG-CD ($\%$)')
+    ms,lw,elw = 6,2,1
+    ax0.errorbar(E_list_ascend, SHG_CD_ascend, yerr=SHG_CD_std_ascend,color='black',  label=r'$\rightarrow$',marker='.',elinewidth=elw,ms=ms)
+    ax0.errorbar(E_list_descend, SHG_CD_descend, yerr=SHG_CD_std_descend,color=colord,  label=r'$\leftarrow$',marker='.',elinewidth=elw,ms=ms)
+    
+    # ax0.fill_between(E_list_ascend,SHG_CD_ascend+SHG_CD_std_ascend,SHG_CD_ascend-SHG_CD_std_ascend,color='black',alpha=.15)
+    # ax0.fill_between(E_list_descend,SHG_CD_descend+SHG_CD_std_descend,SHG_CD_descend-SHG_CD_std_descend,color='r',alpha=.15)
+    
+    ax0.set_ylim(-22,22)
+    ax0.set_yticks([-20,-10,0,10,20])
+    ax0.set_xticks([-150,-75,0,75,150])
+    
+    tb.plot_arrow(ax0, 60,-17.5,-40,0,w=2.5)
+    tb.plot_arrow(ax0, 10,17, 40,0,w=2.5,c='black')
+    ax0.text(-145.0,-18,'$E_y$=2 kV/cm',fontsize=10)
 
 def analyze_files_2dmap(folder_path,fast_axis='x',fast_direction='hysteresis'):
     
@@ -300,15 +330,15 @@ def analyze_files_2dmap(folder_path,fast_axis='x',fast_direction='hysteresis'):
 
 if __name__ == "__main__":
     tb.init_plot_params()
-    '''
+    # '''
     # path_d3 = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/d3/RMCD/Esweep/'
-    path_d1 = '/Users/carterfox/My Drive (cdfox@wisc.edu)/StackingTransitions/NbOI2/Lvgroup/Efield-samples-for-optics/90deg_3L3L_4term_S3/SHG-CD-Efield//'
+    path_d1 = '/Users/carterfox/My Drive (cdfox@wisc.edu)/StackingTransitions/NbOI2/Lvgroup/Efield-samples-for-optics/90deg_3L3L_4term_S3/SHG-CD-Efield/1-16-2dmap/'
     # txtfiles=glob.glob(path_d1+'*txt')
     # txtfiles_sorted = sorted(txtfiles, key=os.path.getmtime)
     sample = FourTerminal('NbOI290deg4termS3', 5, path_d1)
     w = sample.channel_width
     
-    file_path = path_d1+'fullscanx5_floaty.txt'
+    file_path = path_d1+'mapping_fix_y_1p0_ascend.txt'
     # file_old = '/Users/carterfox/Library/CloudStorage/GoogleDrive-cdfox@wisc.edu/.shortcut-targets-by-id/1-8q9lGFnGNt4mDzcxXwdk43m1aVWT66q/XiaoWang_Group_data_2024on/StackingTransitions/NbOI2/Lvgroup/Efield-samples-for-optics/90deg_3L3L/SHG/CD-Efield/stacked_scan7_EfieldSHG-CD_close_to_elec.txt'
     
     data = np.loadtxt(file_path,comments='#')
@@ -316,15 +346,17 @@ if __name__ == "__main__":
     Ex_list, Ey_list = Vx/w*10, Vy/w*10
     SHG_total,SHG_total_std = SHG_C1 + SHG_C2, np.sqrt(SHG_C1_std**2 + SHG_C2_std**2)
     SHG_CD_std = get_SGH_CD_std(SHG_C1,SHG_C2,SHG_C1_std,SHG_C2_std)
-    replot(Ex_list,Ey_list,SHG_total,SHG_total_std,SHG_CD,SHG_CD_std,Ix,Iy,E='x',xy=0,absolute=False)
-    plt.savefig(file_path.replace('.txt','plot.png'),dpi=500)
+    
+    plot_for_proposal(Ex_list,Ey_list,SHG_CD,SHG_CD_std,E='x',xy=None)
+    # replot(Ex_list,Ey_list,SHG_total,SHG_total_std,SHG_CD,SHG_CD_std,Ix,Iy,E='x',xy=0,absolute=False)
+    plt.savefig(file_path.replace('.txt','proposal_plot.png'),dpi=500)
     # plt.close()
     plt.show()
-    '''
+    # '''
 
-    path_map = '/Users/carterfox/My Drive (cdfox@wisc.edu)/StackingTransitions/NbOI2/Lvgroup/Efield-samples-for-optics/90deg_3L3L_4term_S3/SHG-CD-Efield/1-16-2dmap/'
-    image = analyze_files_2dmap(path_map,fast_direction='hysteresis')
-    plt.show()
+    # path_map = '/Users/carterfox/My Drive (cdfox@wisc.edu)/StackingTransitions/NbOI2/Lvgroup/Efield-samples-for-optics/90deg_3L3L_4term_S3/SHG-CD-Efield/1-16-2dmap/'
+    # image = analyze_files_2dmap(path_map,fast_direction='hysteresis')
+    # plt.show()
     
     
     

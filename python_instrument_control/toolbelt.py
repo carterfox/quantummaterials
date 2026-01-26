@@ -170,6 +170,11 @@ def plot_arrow_legend(ax,label,x1=None,y1=None,ls=18,yratio=.058,xratio=.12,wrat
         ax.text(x2,yavg,r'$-$'+label+r'  ',fontsize=ls,va='center',ha='right')
     return ax
 
+def plot_arrow(ax,x,y,dx,dy,w=1,c='r'):    
+    arrow = mpatches.Arrow(x,y,dx,dy,width=w,color=c)
+    ax.add_patch(arrow)
+    return ax
+
 def plot_rmcd_state(ax,state,x,y,xstep=0.1,h='right',f=18):
     xcur = x
     for a in state:
