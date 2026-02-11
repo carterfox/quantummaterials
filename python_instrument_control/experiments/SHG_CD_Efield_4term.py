@@ -21,6 +21,7 @@ from devices.transport import FourTerminal
 import math
 import glob
 from pathlib import Path
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 def main(sample: FourTerminal, keithley_x: KeithleySourceMeter, keithley_y: KeithleySourceMeter, pmt: HamamatsuH11890, qwp_rotstage: RotationMount,
          qwp_angles=(0,90),gate_time_ms=200, num_gates=10, laser_power=0,Ex_array=np.array([]),Ey_array=np.array([]),file_save='test.txt',close_fig_after=False):
@@ -241,11 +242,11 @@ def replot(Ex_list,Ey_list,SHG_total,SHG_total_std,SHG_CD,SHG_CD_std,Ix,Iy,E='x'
     # tb.plot_arrow_legend(ax1,,x1=146,y1=600,ls=12,yratio=.058,xratio=.12,wratio=.0872,colord=colord)
     # ax2.text(40,4,r'$E_y$={}kV/cm$\rightarrow$'.format(x),fontsize=12)
     
-def plot_for_proposal(Ex_list,Ey_list,SHG_CD,SHG_CD_std,E='x',xy=None):
+def plot_for_proposal(Ex_list,Ey_list,SHG,SHG_std,SHG_CD,SHG_CD_std,Esweep='x',Efixval=0):
     plt.rcParams["font.size"] = 14
-    
-    if E=='x': E_list,colord = Ex_list,'r'
-    elif E == 'y': E_list,colord = Ey_list,'b'
+        
+    if Esweep=='x': E_list,colord = Ex_list,'r'
+    elif Esweep == 'y': E_list,colord = Ey_list,'b'
     
     diffs = np.diff(E_list)
     try: transition_index = np.where((diffs[:-1] >= 0) & (diffs[1:] <= 0))[0][0]+2
@@ -253,27 +254,34 @@ def plot_for_proposal(Ex_list,Ey_list,SHG_CD,SHG_CD_std,E='x',xy=None):
     E_list_ascend,E_list_descend = E_list[0:transition_index],E_list[transition_index:]
     SHG_CD_ascend,SHG_CD_descend = SHG_CD[0:transition_index],SHG_CD[transition_index:]
     SHG_CD_std_ascend,SHG_CD_std_descend = SHG_CD_std[0:transition_index],SHG_CD_std[transition_index:]
-                                                                                     
-    fig, ax0 = plt.subplots(1,1,figsize=(4,3))
-    Estr = r'$E_{}$'.format(E)
-    ax0.set_xlabel(Estr+r' (kV/cm)'),ax0.set_ylabel(r'SHG-CD ($\%$)')
+    SHG_ascend,SHG_descend = SHG[0:transition_index],SHG[transition_index:]
+    SHG_std_ascend,SHG_std_descend = SHG_std[0:transition_index],SHG_std[transition_index:]
+          
+    fig, (ax1,ax0) = plt.subplots(2,1,figsize=(3.5,4.5),sharex=True)
+    Estr = r'$E_{}$'.format(Esweep)
+    ax0.set_xlabel(Estr+r' (kV/cm)'),ax0.set_ylabel(r'SHG-CD ($\%$)'),ax1.set_ylabel(r'SHG Intensity')
     ms,lw,elw = 6,2,1
     ax0.errorbar(E_list_ascend, SHG_CD_ascend, yerr=SHG_CD_std_ascend,color='black',  label=r'$\rightarrow$',marker='.',elinewidth=elw,ms=ms)
     ax0.errorbar(E_list_descend, SHG_CD_descend, yerr=SHG_CD_std_descend,color=colord,  label=r'$\leftarrow$',marker='.',elinewidth=elw,ms=ms)
     
+    ax1.errorbar(E_list_ascend, SHG_ascend, yerr=SHG_std_ascend,color='black',  label=r'$\rightarrow$',marker='.',elinewidth=elw,ms=ms)
+    ax1.errorbar(E_list_descend, SHG_descend, yerr=SHG_std_descend,color=colord,  label=r'$\leftarrow$',marker='.',elinewidth=elw,ms=ms)
+    
     # ax0.fill_between(E_list_ascend,SHG_CD_ascend+SHG_CD_std_ascend,SHG_CD_ascend-SHG_CD_std_ascend,color='black',alpha=.15)
     # ax0.fill_between(E_list_descend,SHG_CD_descend+SHG_CD_std_descend,SHG_CD_descend-SHG_CD_std_descend,color='r',alpha=.15)
     
-    ax0.set_ylim(-22,22)
+    # ax0.set_ylim(-23,23)
     ax0.set_yticks([-20,-10,0,10,20])
     ax0.set_xticks([-150,-75,0,75,150])
     
-    tb.plot_arrow(ax0, 60,-17.5,-40,0,w=2.5)
-    tb.plot_arrow(ax0, 10,17, 40,0,w=2.5,c='black')
-    ax0.text(-145.0,-18,'$E_y$=2 kV/cm',fontsize=10)
+    # tb.plot_arrow(ax0, 60,-17.5,-40,0,w=2.5)
+    # tb.plot_arrow(ax0, 10,17, 40,0,w=2.5,c='black')
+    ax1.set_title('$E_y$ = {} kV/cm'.format(Efixval),fontsize=10)
+    # ax1.text(35,2000,'$E_y$=10 kV/cm',fontsize=10)
 
-def analyze_files_2dmap(folder_path,fast_axis='x',fast_direction='hysteresis'):
-    
+def analyze_files_2dmap(folder_path,fast_axis='x',slow_direction='a'):
+    if fast_axis=='x': slow_axis = 'y'
+    elif fast_axis=='y': slow_axis = 'x'
     files = [Path(p) for p in glob.glob(str(Path(folder_path) / "*.txt"))]
     ascend_files, descend_files = [f for f in files if "ascend" in f.name.lower()], [f for f in files if "descend" in f.name.lower()]
     ascend_yvals, descend_yvals = [],[]
@@ -283,80 +291,254 @@ def analyze_files_2dmap(folder_path,fast_axis='x',fast_direction='hysteresis'):
         
     ascend_files = np.array(ascend_files)[np.argsort(ascend_yvals)]
     descend_files = np.array(descend_files)[np.argsort(descend_yvals)]
-    xs,ys,CDs = np.array([]),np.array([]),np.array([])
+    xs,ys,SHG_CD_ascend_vals,SHG_CD_descend_vals,SHG_ascend_vals,SHG_descend_vals,SHG_hysteresis_vals,SHG_CD_hysteresis_vals = np.array([]),np.array([]),np.array([]),np.array([]),np.array([]),np.array([]),np.array([]),np.array([])
     
-    for file in ascend_files:
+    # for file in ascend_files:
+    if slow_direction == 'a': files = ascend_files
+    elif slow_direction == 'd': files = descend_files
+    
+    for file in files:
         data=np.loadtxt(file)
         if fast_axis=='x': ascend_ind = np.where(np.diff(data[:,0])==0)[0][0]
         elif fast_axis=='y': ascend_ind = np.where(np.diff(data[:,1])==0)[0][0]
         
         data_ascend,data_descend = data[0:ascend_ind+1],data[ascend_ind+1:]
         
-        if fast_direction == 'ascend': 
-            counts_C1,counts_C2,Ix,Iy,Vx,Vy = data_ascend[:,2],data_ascend[:,4],data_ascend[:,8],data_ascend[:,9],data_ascend[:,0],data_ascend[:,1]
-            SHG_CD = (counts_C1-counts_C2)/(counts_C1+counts_C2)*100
-            xs,ys,CDs = np.append(xs,Vx), np.append(ys,Vy), np.append(CDs,SHG_CD)
-        elif fast_direction == 'descend': 
-            counts_C1,counts_C2,Ix,Iy,Vx,Vy = data_descend[:,2],data_descend[:,4],data_descend[:,8],data_descend[:,9],data_descend[:,0],data_descend[:,1]
-            SHG_CD = (counts_C1-counts_C2)/(counts_C1+counts_C2)*100
-            xs,ys,CDs = np.append(xs,Vx), np.append(ys,Vy), np.append(CDs,SHG_CD)
-        elif fast_direction == 'hysteresis': 
-            counts_C1_ascend,counts_C2_ascend,Ix_ascend,Iy_ascend,Vx_ascend,Vy_ascend = data_ascend[:,2],data_ascend[:,4],data_ascend[:,8],data_ascend[:,9],data_ascend[:,0],data_ascend[:,1]
-            counts_C1_descend,counts_C2_descend,Ix_descend,Iy_descend,Vx_descend,Vy_descend = np.flip(data_descend[:,2]),np.flip(data_descend[:,4]),np.flip(data_descend[:,8]),np.flip(data_descend[:,9]),np.flip(data_descend[:,0]),np.flip(data_descend[:,1])
-            SHG_CD_ascend = (counts_C1_ascend-counts_C2_ascend)/(counts_C1_ascend+counts_C2_ascend)*100
-            SHG_CD_descend = (counts_C1_descend-counts_C2_descend)/(counts_C1_descend+counts_C2_descend)*100
-            SHG_CD_hysteresis = SHG_CD_descend - SHG_CD_ascend
-            xs,ys,CDs = np.append(xs,Vx_ascend), np.append(ys,Vy_ascend), np.append(CDs,SHG_CD_hysteresis)
+        counts_C1_ascend,counts_C2_ascend,Ix_ascend,Iy_ascend,Vx_ascend,Vy_ascend = data_ascend[:,2],data_ascend[:,4],data_ascend[:,8],data_ascend[:,9],data_ascend[:,0],data_ascend[:,1]
+        counts_C1_descend,counts_C2_descend,Ix_descend,Iy_descend,Vx_descend,Vy_descend = np.flip(data_descend[:,2]),np.flip(data_descend[:,4]),np.flip(data_descend[:,8]),np.flip(data_descend[:,9]),np.flip(data_descend[:,0]),np.flip(data_descend[:,1])
+        SHG_ascend = counts_C1_ascend+counts_C2_ascend
+        SHG_descend = counts_C1_descend+counts_C2_descend
+        SHG_CD_ascend = (counts_C1_ascend-counts_C2_ascend)/(counts_C1_ascend+counts_C2_ascend)*100
+        SHG_CD_descend = (counts_C1_descend-counts_C2_descend)/(counts_C1_descend+counts_C2_descend)*100
+        SHG_CD_hysteresis = SHG_CD_descend - SHG_CD_ascend
+        SHG_hysteresis = SHG_descend - SHG_ascend
+            
+        xs,ys = np.append(xs,Vx_ascend), np.append(ys,Vy_ascend)
+        SHG_CD_ascend_vals = np.append(SHG_CD_ascend_vals,SHG_CD_ascend)
+        SHG_CD_descend_vals = np.append(SHG_CD_descend_vals,SHG_CD_descend)
+        SHG_ascend_vals = np.append(SHG_ascend_vals,SHG_ascend)
+        SHG_descend_vals = np.append(SHG_descend_vals,SHG_descend)
+        SHG_CD_hysteresis_vals = np.append(SHG_CD_hysteresis_vals,SHG_CD_hysteresis)
+        SHG_hysteresis_vals = np.append(SHG_hysteresis_vals,SHG_hysteresis)
         
     xs,ys = xs/5*10, ys/5*10
     x_unique, y_unique = np.unique(xs), np.unique(ys)
-    image = np.zeros((len(x_unique), len(y_unique)))
-
-    for x, y, v in zip(xs, ys, CDs):
-        xi,yi = np.where(x_unique == x)[0][0],np.where(y_unique == y)[0][0]
-        image[yi, xi] = v
-        
-    plt.figure()
-    plt.imshow(image,origin='lower',extent=[x_unique.min(), x_unique.max(), y_unique.min(), y_unique.max()],vmin=-25,vmax=10,cmap='viridis_r')
-    cbar=plt.colorbar(label="SHG-CD (%)") 
-    plt.xlabel("E$_x$ (kV/cm)") 
-    plt.ylabel("E$_y$ (kV/cm)") 
-    # plt.title("2D Map") 
-    plt.savefig(path_map+'plot_2dmap_{}_{}.png'.format(fast_axis,fast_direction),dpi=500)
-    # plt.show()
-
-    return image
+    image_cda = np.zeros((len(x_unique), len(y_unique)))
+    image_cdd = np.zeros((len(x_unique), len(y_unique)))
+    image_cdh = np.zeros((len(x_unique), len(y_unique)))
+    image_ta = np.zeros((len(x_unique), len(y_unique)))
+    image_td = np.zeros((len(x_unique), len(y_unique)))
+    image_th = np.zeros((len(x_unique), len(y_unique)))
     
+    for x, y, cda, cdd, cdh, ta, td, th in zip(xs, ys, SHG_CD_ascend_vals,SHG_CD_descend_vals, SHG_CD_hysteresis_vals,SHG_ascend_vals,SHG_descend_vals,SHG_hysteresis_vals):
+        xi,yi = np.where(x_unique == x)[0][0],np.where(y_unique == y)[0][0]
+        image_cda[xi, yi] = cda
+        image_cdd[xi, yi] = cdd
+        image_cdh[xi, yi] = cdh
+        image_ta[xi, yi] = ta
+        image_td[xi, yi] = td
+        image_th[xi, yi] = th
+    image_cda=np.transpose(image_cda)
+    image_cdd=np.transpose(image_cdd)
+    image_cdh=np.transpose(image_cdh)
+    image_ta=np.transpose(image_ta)
+    image_td=np.transpose(image_td)
+    image_th=np.transpose(image_th)
+        
+    # plot_map(image, x_unique, y_unique, cbarlabel)
+    
+    # plt.savefig(path_map+'plot_2dmap_{}_{}_{}_{}_{}.png'.format(slow_axis,slow_direction,fast_axis,fast_direction,value),dpi=500)
+    # plt.show()
+    return x_unique,y_unique,image_cda,image_cdd,image_cdh,image_ta,image_td,image_th
 
+def plot_map(image,x_unique,y_unique,value='CD',vmin=None,vmax=None):
+    if value == 'CD': cbarlabel = "SHG-CD (%)"
+    elif value == 'CDhyst': cbarlabel = "SHG-CD (%)\nhysteresis"
+    if value == 'total': cbarlabel = "SHG Intensity"
+    elif value == 'totalhyst': cbarlabel = "SHG Intensity\nhysteresis"
+    fig=plt.figure(figsize=(1.5,1.5))
+    plt.imshow(image,origin='lower',extent=[x_unique.min(), x_unique.max(), y_unique.min(), y_unique.max()],vmin=vmin,vmax=vmax,cmap='coolwarm')
+    cbar=plt.colorbar(shrink=0.4) 
+    fs=5
+    cbar.set_label(cbarlabel, ha='center',fontsize=fs)
+    cbar.set_ticks([-10,-0,10])
+    cbar.ax.tick_params(labelsize=fs)
+    plt.xlabel("E$_x$ (kV/cm)",fontsize=fs)
+    plt.ylabel("E$_y$ (kV/cm)",fontsize=fs)  
+    plt.xticks([-140,-70,0,70,140],fontsize=fs)
+    plt.yticks([-140,-70,0,70,140],fontsize=fs)
+    plt.tick_params(axis='both',color='white')
+    # plt.title("2D Map") 
+    # plt.show()
+    return fig
+
+def plot_dualmap(image_ta,image_td,image_cda, image_cdd, x_unique,y_unique):
+    
+    maxval = np.max([np.max(image_ta),np.max(image_td)])
+    image_ta,image_td = image_ta/maxval,image_td/maxval
+        
+    # fig, (ax1,ax2) = plt.subplots(1, 2, figsize=(4, 3), constrained_layout=True)
+    fig1,ax1 = tb.create_axes_with_exact_size(1.35, 1.2)
+    fig2,ax2 = tb.create_axes_with_exact_size(1.35, 1.2)
+    fig3,ax3 = tb.create_axes_with_exact_size(1.35, 1.2)
+    fig4,ax4 = tb.create_axes_with_exact_size(1.35, 1.2)
+
+
+    im1 = ax1.imshow(image_ta,origin='lower',extent=[x_unique.min(), x_unique.max(), y_unique.min(), y_unique.max()],vmin=.1,vmax=.9,cmap='Reds') 
+    im2 = ax2.imshow(image_td,origin='lower',extent=[x_unique.min(), x_unique.max(), y_unique.min(), y_unique.max()],vmin=.1,vmax=.9,cmap='Reds') 
+   
+    im3 = ax3.imshow(image_cda,origin='lower',extent=[x_unique.min(), x_unique.max(), y_unique.min(), y_unique.max()],vmin=-17,vmax=17,cmap='coolwarm') 
+    im4 = ax4.imshow(image_cdd,origin='lower',extent=[x_unique.min(), x_unique.max(), y_unique.min(), y_unique.max()],vmin=-17,vmax=17,cmap='coolwarm') 
+   
+    # im1 = ax1.imshow(image_ta,origin='lower',extent=[x_unique.min(), x_unique.max(), y_unique.min(), y_unique.max()],vmin=vmin,vmax=vmax,cmap=cmap) 
+    # im2 = ax2.imshow(image_td,origin='lower',extent=[x_unique.min(), x_unique.max(), y_unique.min(), y_unique.max()],vmin=vmin,vmax=vmax,cmap=cmap) 
+    
+    fs=7
+    ax1.set_xlabel("$E_x$ (kV/cm)", fontsize=fs) 
+    ax1.set_ylabel("$E_y$ (kV/cm)", fontsize=fs,labelpad=-4) 
+    ax1.tick_params(axis="both", labelsize=fs) 
+    ax2.set_xlabel("$E_x$ (kV/cm)", fontsize=fs) 
+    # ax2.set_ylabel("E$_y$ (kV/cm)", fontsize=fs) 
+    ax2.set_yticks([-140,-70,0,70,140],[])
+    ax1.set_xticks([-140,-70,0,70,140])
+    ax2.set_xticks([-140,-70,0,70,140])
+    ax1.set_yticks([-140,-70,0,70,140])
+    ax1.tick_params(axis="both", labelsize=fs,length=2) 
+    ax2.tick_params(axis="both", labelsize=fs,length=2) 
+    
+    ax3.set_xlabel("$E_x$ (kV/cm)", fontsize=fs) 
+    ax3.set_ylabel("$E_y$ (kV/cm)", fontsize=fs,labelpad=-4) 
+    ax3.tick_params(axis="both", labelsize=fs) 
+    ax4.set_xlabel("$E_x$ (kV/cm)", fontsize=fs) 
+    # ax4.set_ylabel("E$_y$ (kV/cm)", fontsize=fs) 
+    ax4.set_yticks([-140,-70,0,70,140],[])
+    ax3.set_xticks([-140,-70,0,70,140])
+    ax4.set_xticks([-140,-70,0,70,140])
+    ax3.set_yticks([-140,-70,0,70,140])
+    ax3.tick_params(axis="both", labelsize=fs,length=2) 
+    ax4.tick_params(axis="both", labelsize=fs,length=2) 
+    
+    # cbar = fig1.colorbar(im1, ax=ax1, location="right", fraction=0.05) 
+    cbar2 = fig2.colorbar(im2, ax=ax2, location="right", fraction=0.05,pad=0.03) 
+    cbar4 = fig4.colorbar(im4, ax=ax4, location="right", fraction=0.05,pad=0.03)  
+    cbar2.set_ticks([0.2,0.4,0.6,0.8])
+    cbar2.ax.tick_params(labelsize=fs,length=1.85)
+    cbar4.set_ticks([-16,-8,0,8,16])
+    cbar4.ax.tick_params(labelsize=fs,length=1.85)
+    cbar2.set_label('SHG Intensity (a.u.)' ,fontsize=fs,labelpad=3)
+    cbar4.set_label('SHG-CD (%)',fontsize=fs,labelpad=-2)
+    
+    ax2.annotate( "", xy=(-120, 138), xytext=(-115, 138), arrowprops=dict(arrowstyle="simple,head_length=0.3,head_width=0.2,tail_width=0.04",linestyle="-", color='white', linewidth=0.1) )    
+    ax2.annotate( "", xy=(-124, 138), xytext=(140, 138), arrowprops=dict(arrowstyle="->,head_width=0.001,head_length=0.001",linestyle="--", color='white', linewidth=1) )    
+    ax1.annotate( "", xy=(140, 138), xytext=(-124, 138), arrowprops=dict(arrowstyle="->,head_width=0.001,head_length=0.001",linestyle="--", color='white', linewidth=1) )    
+    ax1.annotate( "", xy=(137, 138), xytext=(132, 138), arrowprops=dict(arrowstyle="simple,head_length=0.3,head_width=0.2,tail_width=0.04",linestyle="--", color='white', linewidth=0.1) )    
+    ax1.annotate( "", xy=(-132.5, 140), xytext=(-132.5, -140), arrowprops=dict(arrowstyle="simple,head_length=0.3,head_width=0.2,tail_width=0.04",linestyle="--", color='white', linewidth=0.1) )    
+    ax2.annotate( "", xy=(-132.5, 140), xytext=(-132.5, -140), arrowprops=dict(arrowstyle="simple,head_length=0.3,head_width=0.2,tail_width=0.04",linestyle="--", color='white', linewidth=0.1) )    
+
+    ax4.annotate( "", xy=(-120, 138), xytext=(-115, 138), arrowprops=dict(arrowstyle="simple,head_length=0.3,head_width=0.2,tail_width=0.04",linestyle="-", color='k', linewidth=0.1) )    
+    ax4.annotate( "", xy=(-124, 138), xytext=(140, 138), arrowprops=dict(arrowstyle="->,head_width=0.001,head_length=0.001",linestyle="--", color='k', linewidth=1) )    
+    ax3.annotate( "", xy=(140, 138), xytext=(-124, 138), arrowprops=dict(arrowstyle="->,head_width=0.001,head_length=0.001",linestyle="--", color='k', linewidth=1) )    
+    ax3.annotate( "", xy=(137, 138), xytext=(132, 138), arrowprops=dict(arrowstyle="simple,head_length=0.3,head_width=0.2,tail_width=0.04",linestyle="--", color='k', linewidth=0.1) )    
+    ax3.annotate( "", xy=(-132.5, 140), xytext=(-132.5, -140), arrowprops=dict(arrowstyle="simple,head_length=0.3,head_width=0.2,tail_width=0.04",linestyle="--", color='k', linewidth=0.1) )    
+    ax4.annotate( "", xy=(-132.5, 140), xytext=(-132.5, -140), arrowprops=dict(arrowstyle="simple,head_length=0.3,head_width=0.2,tail_width=0.04",linestyle="--", color='k', linewidth=0.1) )    
+
+    bw=0.7
+    for spine in ax1.spines.values(): spine.set_linewidth(bw) 
+    for spine in ax2.spines.values(): spine.set_linewidth(bw) 
+    cbar2.outline.set_linewidth(bw)
+    cbar4.outline.set_linewidth(bw)
+    
+    return fig1,fig2,fig3,fig4
+    
+    
+def plot_linecut(Ex_list,Ey_list,SHG,SHG_std,SHG_CD,SHG_CD_std,Esweep='x',Efixval=0,value='CD'):
+    plt.rcParams["font.size"] = 10
+        
+    if Esweep=='x': E_list,colord = Ex_list,'r'
+    elif Esweep == 'y': E_list,colord = Ey_list,'b'
+    
+    diffs = np.diff(E_list)
+    try: transition_index = np.where((diffs[:-1] >= 0) & (diffs[1:] <= 0))[0][0]+2
+    except: transition_index=len(E_list)
+    E_list_ascend,E_list_descend = E_list[0:transition_index],E_list[transition_index:]
+    SHG_CD_ascend,SHG_CD_descend = SHG_CD[0:transition_index],SHG_CD[transition_index:]
+    SHG_CD_std_ascend,SHG_CD_std_descend = SHG_CD_std[0:transition_index],SHG_CD_std[transition_index:]
+    SHG_ascend,SHG_descend = SHG[0:transition_index],SHG[transition_index:]
+    SHG_std_ascend,SHG_std_descend = SHG_std[0:transition_index],SHG_std[transition_index:]
+    maxval = 2743.3# np.max([np.max(SHG_ascend),np.max(SHG_descend)])
+    SHG_ascend,SHG_descend,SHG_std_ascend,SHG_std_descend = SHG_ascend/maxval,SHG_descend/maxval,SHG_std_ascend/maxval,SHG_std_descend/maxval
+    
+    # fig, ax0 = plt.subplots(1,1,figsize=(1.7,1.5),sharex=True)
+    
+    fig_t,ax0 = tb.create_axes_with_exact_size(1.35, 1.2)
+    fig_CD,ax1 = tb.create_axes_with_exact_size(1.35, 1.2)
+    
+    ax0.yaxis.tick_right(), ax1.yaxis.tick_right() 
+    ax0.yaxis.set_label_position("right"), ax1.yaxis.set_label_position("right")
+
+    # ax1.yaxis.tick_right() 
+    # ax1.yaxis.set_label_position("right")
+    Estr = r'$E_{}$'.format(Esweep)
+    ms,lw,elw,fs = 5,1.5,1,7
+    
+    ax0.errorbar(E_list_ascend, SHG_CD_ascend, yerr=SHG_CD_std_ascend,color='black',  label=r'$\rightarrow$',marker='.',elinewidth=elw,ms=ms)
+    ax0.errorbar(E_list_descend, SHG_CD_descend, yerr=SHG_CD_std_descend,color=colord,  label=r'$\leftarrow$',marker='.',elinewidth=elw,ms=ms)
+    ax0.set_ylabel(r'SHG-CD ($\%$)', fontsize=fs,labelpad=0)
+    ax0.set_yticks([-16,-8,0,8,16])
+    ax0.set_ylim(-21,21)
+    ax0.text(-155,-5,'$E_y$=10kV/cm',fontsize=fs*.7)
+    ax0.annotate( "", xy=(85, 6), xytext=(20, 6), arrowprops=dict(arrowstyle="simple,head_length=0.3,head_width=0.2,tail_width=0.07",linestyle="-", color='k', linewidth=0.15) )    
+    ax0.annotate( "", xy=(20, -16.5), xytext=(85, -16.5), arrowprops=dict(arrowstyle="simple,head_length=0.3,head_width=0.2,tail_width=0.07",linestyle="-", color='r', linewidth=0.15) )    
+        
+    ax1.errorbar(E_list_ascend, SHG_ascend, yerr=SHG_std_ascend,color='black',  label=r'$\rightarrow$',marker='.',elinewidth=elw,ms=ms)
+    ax1.errorbar(E_list_descend, SHG_descend, yerr=SHG_std_descend,color=colord,  label=r'$\leftarrow$',marker='.',elinewidth=elw,ms=ms)
+    ax1.set_ylabel(r'SHG Intensity', fontsize=fs) 
+    # ax1.set_yticks([.3,.6,.9])
+    ax1.text(-160,.23,'$E_y$=10kV/cm',fontsize=fs*.7)
+    ax1.annotate( "", xy=(50, .7), xytext=(-15, .7), arrowprops=dict(arrowstyle="simple,head_length=0.3,head_width=0.2,tail_width=0.07",linestyle="-", color='k', linewidth=0.15) )    
+    ax1.annotate( "", xy=(-20, .38), xytext=(45, .38), arrowprops=dict(arrowstyle="simple,head_length=0.3,head_width=0.2,tail_width=0.07",linestyle="-", color='r', linewidth=0.15) )    
+        
+    ax0.set_xlabel(Estr+r' (kV/cm)', fontsize=fs), ax1.set_xlabel(Estr+r' (kV/cm)', fontsize=fs)
+    ax0.set_xticks([-140,-70,0,70,140]), ax1.set_xticks([-140,-70,0,70,140])
+    ax0.tick_params(axis="both", labelsize=fs,length=2), ax1.tick_params(axis="both", labelsize=fs,length=2) 
+    
+    bw=0.7
+    for spine in ax0.spines.values(): spine.set_linewidth(bw) 
+    # ax1.tick_params(axis="both", labelsize=fs,length=2) 
+    return fig_t,fig_CD
+    
 if __name__ == "__main__":
     tb.init_plot_params()
     # '''
-    # path_d3 = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/d3/RMCD/Esweep/'
     path_d1 = '/Users/carterfox/My Drive (cdfox@wisc.edu)/StackingTransitions/NbOI2/Lvgroup/Efield-samples-for-optics/90deg_3L3L_4term_S3/SHG-CD-Efield/1-16-2dmap/'
     # txtfiles=glob.glob(path_d1+'*txt')
     # txtfiles_sorted = sorted(txtfiles, key=os.path.getmtime)
     sample = FourTerminal('NbOI290deg4termS3', 5, path_d1)
     w = sample.channel_width
-    
     file_path = path_d1+'mapping_fix_y_1p0_ascend.txt'
-    # file_old = '/Users/carterfox/Library/CloudStorage/GoogleDrive-cdfox@wisc.edu/.shortcut-targets-by-id/1-8q9lGFnGNt4mDzcxXwdk43m1aVWT66q/XiaoWang_Group_data_2024on/StackingTransitions/NbOI2/Lvgroup/Efield-samples-for-optics/90deg_3L3L/SHG/CD-Efield/stacked_scan7_EfieldSHG-CD_close_to_elec.txt'
-    
     data = np.loadtxt(file_path,comments='#')
     Vx,Vy,SHG_C1,SHG_C1_std,SHG_C2,SHG_C2_std,SHG_CD,SHG_CD_std,Ix,Iy = data[:,0],data[:,1],np.array(data[:,2]),np.array(data[:,3]),np.array(data[:,4]),np.array(data[:,5]),np.array(data[:,6]),np.array(data[:,7]),data[:,8],data[:,9]
     Ex_list, Ey_list = Vx/w*10, Vy/w*10
     SHG_total,SHG_total_std = SHG_C1 + SHG_C2, np.sqrt(SHG_C1_std**2 + SHG_C2_std**2)
     SHG_CD_std = get_SGH_CD_std(SHG_C1,SHG_C2,SHG_C1_std,SHG_C2_std)
     
-    plot_for_proposal(Ex_list,Ey_list,SHG_CD,SHG_CD_std,E='x',xy=None)
-    # replot(Ex_list,Ey_list,SHG_total,SHG_total_std,SHG_CD,SHG_CD_std,Ix,Iy,E='x',xy=0,absolute=False)
-    plt.savefig(file_path.replace('.txt','proposal_plot.png'),dpi=500)
-    # plt.close()
-    plt.show()
+    
+    fig_t,fig_CD=plot_linecut(Ex_list,Ey_list,SHG_total,SHG_total_std,SHG_CD,SHG_CD_std,Esweep='x',Efixval=10,value='CD')
+    fig_t.savefig(path_d1+'plot_fig4_e.svg',dpi=500)
+    fig_CD.savefig(path_d1+'plot_fig4_f.svg',dpi=500)
+
     # '''
 
     # path_map = '/Users/carterfox/My Drive (cdfox@wisc.edu)/StackingTransitions/NbOI2/Lvgroup/Efield-samples-for-optics/90deg_3L3L_4term_S3/SHG-CD-Efield/1-16-2dmap/'
-    # image = analyze_files_2dmap(path_map,fast_direction='hysteresis')
-    # plt.show()
+    # x_unique,y_unique,image_cda,image_cdd,image_cdh,image_ta,image_td,image_th = analyze_files_2dmap(path_map,fast_axis='x',slow_direction='a')
+    # plot_map(image_cdd, x_unique, y_unique,vmin=-18,vmax=18)
+    # fig_ta,fig_td,fig_cda,fig_cdd=plot_dualmap(image_ta,image_td, image_cda, image_cdd, x_unique, y_unique)
+    # fig_ta.savefig(path_d1+'plot_fig4_c.svg',dpi=500)
+    # fig_td.savefig(path_d1+'plot_fig4_e.svg',dpi=500)
+    # fig_cda.savefig(path_d1+'plot_fig4_d.svg',dpi=500)
+    # fig_cdd.savefig(path_d1+'plot_fig4_f.svg',dpi=500)
+    
+    plt.show()
     
     
     
