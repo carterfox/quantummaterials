@@ -20,7 +20,8 @@ class AndorCamSpec:
         ret = self.sdk.SetTemperature(temperature)
         # ret = self.sdk.SetCoolerMode(1)
         # print(ret)
-        ret = self.sdk.SetAcquisitionMode(self.codes.Acquisition_Mode.SINGLE_SCAN)
+        # ret = self.sdk.SetAcquisitionMode(self.codes.Acquisition_Mode.SINGLE_SCAN)
+        ret = self.sdk.SetAcquisitionMode(self.codes.Acquisition_Mode.ACCUMULATE)
         ret = self.sdk.SetReadMode(self.codes.Read_Mode.FULL_VERTICAL_BINNING)
         ret = self.sdk.SetTriggerMode(self.codes.Trigger_Mode.INTERNAL)
         ret = self.sdk.SetVSSpeed(2)
@@ -87,6 +88,11 @@ class AndorCamSpec:
             data = self.acquire_image()
             images.append(data)
         return images
+    
+    def acquire_accumulation(num_images):
+        
+        print('test')
+        return 
     
     def configure_spectrometer(self, grating=3, central_wl=644.21e-9):
         self.spec.set_grating(grating)

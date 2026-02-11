@@ -18,17 +18,18 @@ import time
 logging.basicConfig(level=logging.INFO, format='%(levelname)s - %(message)s')
 # from homemade_servers.SSI_OE1022D import LockInOE1022D
 # from homemade_servers.QDopticool import Opticool
-from homemade_servers.H11890PMT import HamamatsuH11890
-# from homemade_servers.AndorCameraSpectrometer import AndorCamSpec
-from homemade_servers.KeithleySourceMeter import KeithleySourceMeter
+# from homemade_servers.H11890PMT import HamamatsuH11890
+from homemade_servers.AndorCameraSpectrometer import AndorCamSpec
+# from homemade_servers.KeithleySourceMeter import KeithleySourceMeter
 from homemade_servers.ThorlabsKCube import RotationMount
 # from devices.dualgate import DualGate
-# from devices.optical import Optical
-from devices.transport import FourTerminal
+from devices.optical import Optical
+# from devices.transport import FourTerminal
 # from experiments import RMCD_bfield_scan, RMCD_mapping, RMCD_dualgate_Esweep
-from experiments import SHG_CD_Efield_4term
-# from experiments import PMT_continuous_read, SHG_polarization_scan
-# from experiments import raman_basic, Gr_polarization_sensing, Gr_polarization_sensing_singlepoint,
+# from experiments import SHG_CD_Efield_4term
+# from experiments import PMT_continuous_read, SHG_polarization_scan, Gr_polarization_sensing, Gr_polarization_sensing_singlepoint,
+from experiments import raman_basic
+
 tb.init_plot_params()
 if 'servers' not in globals(): 
     global servers
@@ -71,7 +72,7 @@ def get_ANC300(resource_name='ASRL11'):
     servers.append(ANC)
     return ANC
 
-def get_AndorCamSpec(temperature=-85):
+def get_AndorCamSpec(temperature=-80):
     andor = AndorCamSpec(temperature=temperature)
     servers.append(andor)
     return andor
@@ -112,46 +113,21 @@ if __name__ == "__main__":
     
     ###### add it to servers_to_close if you want them to close each time. 
     ###### at this point only cam_spec should not be in it
-    data_path="I:/.shortcut-targets-by-id/1-8q9lGFnGNt4mDzcxXwdk43m1aVWT66q/XiaoWang_Group_data_2024on/StackingTransitions/NbOI2/Lvgroup/Efield-samples-for-optics/90deg_3L3L_4term_S3/"
-    s = FourTerminal('NbOI2FourTermS3',5, data_path)
-    qwp = get_rotation_stage('27261255')
-    qwp.home=0
-    qwp_C1,qwp_C2 = 43.5, -46.5
-    pmt=get_PMT()
-    kx = get_keithley('GPIB1::16::INSTR','2400',100e-6) #bottom
-    ky = get_keithley('GPIB0::16::INSTR','2400',100e-6) #top
-    # ky.enable_source()
-    # kx.enable_source()
-    servers_to_close = [pmt,qwp,kx,ky]
+    data_path="D:/LabData/XiaoWang_Group_data_2024on/Hongrui/Raman/collabration/Zizhong/New folder/D3_PtPrT/2k/D_Raman_Map_xy_240s"
+    sample = Optical('D3_PtPrT', data_path)
+    waveplate = get_rotation_stage(27268499)
+    cam_spec = get_AndorCamSpec()
+    servers_to_close=[]
     
     try:
+        exposure_time=240
+        averages=1
+     #   angles=np.array([0,5,10])
+        fixed_angle = 37.5  # Set this to your desired fixed polarization angle
+        num_measurements = 500  # How many consecutive times you want to measure
+        angles = np.full(num_measurements, fixed_angle)
+        raman_basic.angle_sweep(cam_spec, waveplate, exposure_time, averages, angles)
         
-        # Ex_array = ramp(0,-17,-1)
-        # Ey_array = Ex_array #np.zeros_like(Ex_array)
-        # filesave = 'goingback.txt'
-        # t,cd = SHG_CD_Efield_4term.main(s,kx,ky,pmt,qwp,qwp_angles=(qwp_C1,qwp_C2),
-        #             Ex_array=Ex_array,Ey_array=Ey_array,file_save=filesave,
-        #             laser_power=1.5,gate_time_ms=200,num_gates=10)
-        
-        # '''
-        Ex_array = loop(-17,17,1)
-        for Ey in ramp(-17,17,1):
-            Ey_array = np.ones_like(Ex_array)*Ey
-            curstr = 'mapping_fix_y_{}_'.format(np.round(Ey,1)).replace('-','m').replace('.','p')
-            filesave = curstr+'ascend.txt'
-            t,cd = SHG_CD_Efield_4term.main(s,kx,ky,pmt,qwp,qwp_angles=(qwp_C1,qwp_C2),
-                            Ex_array=Ex_array,Ey_array=Ey_array,file_save=filesave, 
-                            gate_time_ms=200,num_gates=20,laser_power=1.5,close_fig_after=True)
-       
-        print(pmt.get_hv())
-        for Ex in ramp(-17,0,1):
-            Ey = Ex*(-1)
-            kx.source_voltage = Ex*s.channel_width
-            ky.source_voltage = Ey*s.channel_width
-            time.sleep(3)
-        print(kx.measure_voltage_avg(10))
-        print(ky.measure_voltage_avg(10))
-        # '''
 
     except Exception: traceback.print_exc()
     finally: exit_session()
