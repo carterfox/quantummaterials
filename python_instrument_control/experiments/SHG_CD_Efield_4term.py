@@ -390,10 +390,7 @@ def plot_dualmap(image_ta,image_td,image_cda, image_cdd, x_unique,y_unique):
     im3 = ax3.imshow(image_cda,origin='lower',extent=[x_unique.min(), x_unique.max(), y_unique.min(), y_unique.max()],vmin=-17,vmax=17,cmap='coolwarm') 
     im4 = ax4.imshow(image_cdd,origin='lower',extent=[x_unique.min(), x_unique.max(), y_unique.min(), y_unique.max()],vmin=-17,vmax=17,cmap='coolwarm') 
    
-    # im1 = ax1.imshow(image_ta,origin='lower',extent=[x_unique.min(), x_unique.max(), y_unique.min(), y_unique.max()],vmin=vmin,vmax=vmax,cmap=cmap) 
-    # im2 = ax2.imshow(image_td,origin='lower',extent=[x_unique.min(), x_unique.max(), y_unique.min(), y_unique.max()],vmin=vmin,vmax=vmax,cmap=cmap) 
-    
-    fs=7
+    fs=8
     ax1.set_xlabel("$E_x$ (kV/cm)", fontsize=fs) 
     ax1.set_ylabel("$E_y$ (kV/cm)", fontsize=fs,labelpad=-4) 
     ax1.tick_params(axis="both", labelsize=fs) 
@@ -442,9 +439,11 @@ def plot_dualmap(image_ta,image_td,image_cda, image_cdd, x_unique,y_unique):
     ax3.annotate( "", xy=(-132.5, 140), xytext=(-132.5, -140), arrowprops=dict(arrowstyle="simple,head_length=0.3,head_width=0.2,tail_width=0.04",linestyle="--", color='k', linewidth=0.1) )    
     ax4.annotate( "", xy=(-132.5, 140), xytext=(-132.5, -140), arrowprops=dict(arrowstyle="simple,head_length=0.3,head_width=0.2,tail_width=0.04",linestyle="--", color='k', linewidth=0.1) )    
 
-    bw=0.7
+    bw=0.5
     for spine in ax1.spines.values(): spine.set_linewidth(bw) 
     for spine in ax2.spines.values(): spine.set_linewidth(bw) 
+    for spine in ax3.spines.values(): spine.set_linewidth(bw) 
+    for spine in ax4.spines.values(): spine.set_linewidth(bw) 
     cbar2.outline.set_linewidth(bw)
     cbar4.outline.set_linewidth(bw)
     
@@ -479,14 +478,14 @@ def plot_linecut(Ex_list,Ey_list,SHG,SHG_std,SHG_CD,SHG_CD_std,Esweep='x',Efixva
     # ax1.yaxis.tick_right() 
     # ax1.yaxis.set_label_position("right")
     Estr = r'$E_{}$'.format(Esweep)
-    ms,lw,elw,fs = 5,1.5,1,7
+    ms,lw,elw,fs = 5,1.5,1,8
     
     ax0.errorbar(E_list_ascend, SHG_CD_ascend, yerr=SHG_CD_std_ascend,color='black',  label=r'$\rightarrow$',marker='.',elinewidth=elw,ms=ms)
     ax0.errorbar(E_list_descend, SHG_CD_descend, yerr=SHG_CD_std_descend,color=colord,  label=r'$\leftarrow$',marker='.',elinewidth=elw,ms=ms)
     ax0.set_ylabel(r'SHG-CD ($\%$)', fontsize=fs,labelpad=0)
     ax0.set_yticks([-16,-8,0,8,16])
     ax0.set_ylim(-21,21)
-    ax0.text(-155,-5,'$E_y$=10kV/cm',fontsize=fs*.7)
+    ax0.text(-155,-5,'$E_y$=10kV/cm',fontsize=fs*.72)
     ax0.annotate( "", xy=(85, 6), xytext=(20, 6), arrowprops=dict(arrowstyle="simple,head_length=0.3,head_width=0.2,tail_width=0.07",linestyle="-", color='k', linewidth=0.15) )    
     ax0.annotate( "", xy=(20, -16.5), xytext=(85, -16.5), arrowprops=dict(arrowstyle="simple,head_length=0.3,head_width=0.2,tail_width=0.07",linestyle="-", color='r', linewidth=0.15) )    
         
@@ -494,19 +493,127 @@ def plot_linecut(Ex_list,Ey_list,SHG,SHG_std,SHG_CD,SHG_CD_std,Esweep='x',Efixva
     ax1.errorbar(E_list_descend, SHG_descend, yerr=SHG_std_descend,color=colord,  label=r'$\leftarrow$',marker='.',elinewidth=elw,ms=ms)
     ax1.set_ylabel(r'SHG Intensity', fontsize=fs) 
     # ax1.set_yticks([.3,.6,.9])
-    ax1.text(-160,.23,'$E_y$=10kV/cm',fontsize=fs*.7)
-    ax1.annotate( "", xy=(50, .7), xytext=(-15, .7), arrowprops=dict(arrowstyle="simple,head_length=0.3,head_width=0.2,tail_width=0.07",linestyle="-", color='k', linewidth=0.15) )    
+    ax1.text(40,.71,'$E_y$=10kV/cm',fontsize=fs*.72)
+    ax1.annotate( "", xy=(40, .57), xytext=(-25, .57), arrowprops=dict(arrowstyle="simple,head_length=0.3,head_width=0.2,tail_width=0.07",linestyle="-", color='k', linewidth=0.15) )    
     ax1.annotate( "", xy=(-20, .38), xytext=(45, .38), arrowprops=dict(arrowstyle="simple,head_length=0.3,head_width=0.2,tail_width=0.07",linestyle="-", color='r', linewidth=0.15) )    
         
     ax0.set_xlabel(Estr+r' (kV/cm)', fontsize=fs), ax1.set_xlabel(Estr+r' (kV/cm)', fontsize=fs)
     ax0.set_xticks([-140,-70,0,70,140]), ax1.set_xticks([-140,-70,0,70,140])
     ax0.tick_params(axis="both", labelsize=fs,length=2), ax1.tick_params(axis="both", labelsize=fs,length=2) 
     
-    bw=0.7
+    bw=0.5
     for spine in ax0.spines.values(): spine.set_linewidth(bw) 
+    for spine in ax1.spines.values(): spine.set_linewidth(bw) 
     # ax1.tick_params(axis="both", labelsize=fs,length=2) 
     return fig_t,fig_CD
     
+
+def plot_supp_linecut(Ex_list,Ey_list,
+                      SHG_total_m14,SHG_total_std_m14,SHG_CD_m14,SHG_CD_std_m14,
+                      SHG_total_m10,SHG_total_std_m10,SHG_CD_m10,SHG_CD_std_m10,
+                      SHG_total_m3,SHG_total_std_m3,SHG_CD_m3,SHG_CD_std_m3,
+                      SHG_total_1,SHG_total_std_1,SHG_CD_1,SHG_CD_std_1,
+                      SHG_total_10,SHG_total_std_10,SHG_CD_10,SHG_CD_std_10,
+                      Esweep='x',Efixval=0,value='CD'):
+    plt.rcParams["font.size"] = 10
+    plt.rcParams["figure.constrained_layout.use"] = False
+    ms,lw,elw,fs,bw = 5,1.5,1,8,.5
+    
+    fig, axs = plt.subplots(2,5,figsize=(6.35,2.4), dpi=500,sharex=True,gridspec_kw={'hspace':0,'wspace':.05})
+    fig.subplots_adjust(left=0, right=1, top=1, bottom=0)
+    ax1,ax0,ax3,ax2,ax5,ax4,ax7,ax6,ax9,ax8 = axs[0,0],axs[1,0],axs[0,1],axs[1,1],axs[0,2],axs[1,2],axs[0,3],axs[1,3],axs[0,4],axs[1,4]
+    xticks=[-140,-70,0,70,140]
+    ax1.set_xlim(-170,170)
+    yticksCD, yticksT = [-20,-10,0,10,20], [.2,.4,.6,.8,1]
+    ax1.set_xticks(xticks),ax3.set_xticks(xticks),ax5.set_xticks(xticks),ax7.set_xticks(xticks),ax9.set_xticks(xticks)
+    ax0.set_yticks(yticksCD),ax1.set_yticks(yticksT)
+    ax2.set_yticks(yticksCD,[]),ax4.set_yticks(yticksCD,[]),ax6.set_yticks(yticksCD,[]),ax8.set_yticks(yticksCD,[])
+    ax3.set_yticks(yticksT,[]),ax5.set_yticks(yticksT,[]),ax7.set_yticks(yticksT,[]),ax9.set_yticks(yticksT,[])
+    ymin_CD,ymax_CD = -28,23
+    ymin_T,ymax_T = .1,1.05
+    ax0.set_ylim(ymin_CD,ymax_CD),ax2.set_ylim(ymin_CD,ymax_CD),ax4.set_ylim(ymin_CD,ymax_CD),ax6.set_ylim(ymin_CD,ymax_CD),ax8.set_ylim(ymin_CD,ymax_CD)
+    ax1.set_ylim(ymin_T,ymax_T),ax3.set_ylim(ymin_T,ymax_T),ax5.set_ylim(ymin_T,ymax_T),ax7.set_ylim(ymin_T,ymax_T),ax9.set_ylim(ymin_T,ymax_T)
+    
+    ax1.set_ylabel(r'SHG Intensity', fontsize=fs), ax0.set_ylabel(r'SHG-CD ($\%$)', fontsize=fs)
+    ax0.set_xlabel(r'$E_x$ (kV/cm)', fontsize=fs),ax2.set_xlabel(r'$E_x$ (kV/cm)', fontsize=fs)
+    ax4.set_xlabel(r'$E_x$ (kV/cm)', fontsize=fs),ax6.set_xlabel(r'$E_x$ (kV/cm)', fontsize=fs), ax8.set_xlabel(r'$E_x$ (kV/cm)', fontsize=fs)
+
+    for ax in axs:
+        for axx in ax:
+            axx.tick_params(axis="both", labelsize=fs,length=2) 
+            for spine in axx.spines.values(): spine.set_linewidth(bw) 
+        
+    E_list,colord = Ex_list,'r'
+    diffs = np.diff(E_list)
+    try: transition_index = np.where((diffs[:-1] >= 0) & (diffs[1:] <= 0))[0][0]+2
+    except: transition_index=len(E_list)
+    E_list_ascend,E_list_descend = E_list[0:transition_index],E_list[transition_index:]
+    maxval = 2743.3 
+
+    SHG,SHG_std,SHG_CD,SHG_CD_std = SHG_total_m14,SHG_total_std_m14,SHG_CD_m14,SHG_CD_std_m14
+    SHG_CD_ascend,SHG_CD_descend = SHG_CD[0:transition_index],SHG_CD[transition_index:]
+    SHG_CD_std_ascend,SHG_CD_std_descend = SHG_CD_std[0:transition_index],SHG_CD_std[transition_index:]
+    SHG_ascend,SHG_descend = SHG[0:transition_index],SHG[transition_index:]
+    SHG_std_ascend,SHG_std_descend = SHG_std[0:transition_index],SHG_std[transition_index:]
+    SHG_ascend,SHG_descend,SHG_std_ascend,SHG_std_descend = SHG_ascend/maxval,SHG_descend/maxval,SHG_std_ascend/maxval,SHG_std_descend/maxval
+    ax0.errorbar(E_list_ascend, SHG_CD_ascend, yerr=SHG_CD_std_ascend,color='black',  label=r'$\rightarrow$',marker='.',elinewidth=elw,ms=ms)
+    ax0.errorbar(E_list_descend, SHG_CD_descend, yerr=SHG_CD_std_descend,color=colord,  label=r'$\leftarrow$',marker='.',elinewidth=elw,ms=ms)            
+    ax1.errorbar(E_list_ascend, SHG_ascend, yerr=SHG_std_ascend,color='black',  label=r'$\rightarrow$',marker='.',elinewidth=elw,ms=ms)
+    ax1.errorbar(E_list_descend, SHG_descend, yerr=SHG_std_descend,color=colord,  label=r'$\leftarrow$',marker='.',elinewidth=elw,ms=ms)
+    ax1.set_title('$E_y$ = -140 kV/cm',fontsize=fs)
+    ax1.annotate( "", xy=(65, .8), xytext=(0, .85), arrowprops=dict(arrowstyle="simple,head_length=0.3,head_width=0.2,tail_width=0.07",linestyle="-", color='k', linewidth=0.15) )    
+    ax1.annotate( "", xy=(0, .41), xytext=(65, .37), arrowprops=dict(arrowstyle="simple,head_length=0.3,head_width=0.2,tail_width=0.07",linestyle="-", color='r', linewidth=0.15) )    
+        
+    SHG,SHG_std,SHG_CD,SHG_CD_std = SHG_total_m10,SHG_total_std_m10,SHG_CD_m10,SHG_CD_std_m10
+    SHG_CD_ascend,SHG_CD_descend = SHG_CD[0:transition_index],SHG_CD[transition_index:]
+    SHG_CD_std_ascend,SHG_CD_std_descend = SHG_CD_std[0:transition_index],SHG_CD_std[transition_index:]
+    SHG_ascend,SHG_descend = SHG[0:transition_index],SHG[transition_index:]
+    SHG_std_ascend,SHG_std_descend = SHG_std[0:transition_index],SHG_std[transition_index:]
+    SHG_ascend,SHG_descend,SHG_std_ascend,SHG_std_descend = SHG_ascend/maxval,SHG_descend/maxval,SHG_std_ascend/maxval,SHG_std_descend/maxval
+    ax2.errorbar(E_list_ascend, SHG_CD_ascend, yerr=SHG_CD_std_ascend,color='black',  label=r'$\rightarrow$',marker='.',elinewidth=elw,ms=ms)
+    ax2.errorbar(E_list_descend, SHG_CD_descend, yerr=SHG_CD_std_descend,color=colord,  label=r'$\leftarrow$',marker='.',elinewidth=elw,ms=ms)            
+    ax3.errorbar(E_list_ascend, SHG_ascend, yerr=SHG_std_ascend,color='black',  label=r'$\rightarrow$',marker='.',elinewidth=elw,ms=ms)
+    ax3.errorbar(E_list_descend, SHG_descend, yerr=SHG_std_descend,color=colord,  label=r'$\leftarrow$',marker='.',elinewidth=elw,ms=ms)
+    ax3.set_title('$E_y$ = -100 kV/cm',fontsize=fs)
+
+    SHG,SHG_std,SHG_CD,SHG_CD_std = SHG_total_m3,SHG_total_std_m3,SHG_CD_m3,SHG_CD_std_m3
+    SHG_CD_ascend,SHG_CD_descend = SHG_CD[0:transition_index],SHG_CD[transition_index:]
+    SHG_CD_std_ascend,SHG_CD_std_descend = SHG_CD_std[0:transition_index],SHG_CD_std[transition_index:]
+    SHG_ascend,SHG_descend = SHG[0:transition_index],SHG[transition_index:]
+    SHG_std_ascend,SHG_std_descend = SHG_std[0:transition_index],SHG_std[transition_index:]
+    SHG_ascend,SHG_descend,SHG_std_ascend,SHG_std_descend = SHG_ascend/maxval,SHG_descend/maxval,SHG_std_ascend/maxval,SHG_std_descend/maxval
+    ax4.errorbar(E_list_ascend, SHG_CD_ascend, yerr=SHG_CD_std_ascend,color='black',  label=r'$\rightarrow$',marker='.',elinewidth=elw,ms=ms)
+    ax4.errorbar(E_list_descend, SHG_CD_descend, yerr=SHG_CD_std_descend,color=colord,  label=r'$\leftarrow$',marker='.',elinewidth=elw,ms=ms)            
+    ax5.errorbar(E_list_ascend, SHG_ascend, yerr=SHG_std_ascend,color='black',  label=r'$\rightarrow$',marker='.',elinewidth=elw,ms=ms)
+    ax5.errorbar(E_list_descend, SHG_descend, yerr=SHG_std_descend,color=colord,  label=r'$\leftarrow$',marker='.',elinewidth=elw,ms=ms)
+    ax5.set_title('$E_y$ = -30 kV/cm',fontsize=fs)
+
+    SHG,SHG_std,SHG_CD,SHG_CD_std = SHG_total_1,SHG_total_std_1,SHG_CD_1,SHG_CD_std_1
+    SHG_CD_ascend,SHG_CD_descend = SHG_CD[0:transition_index],SHG_CD[transition_index:]
+    SHG_CD_std_ascend,SHG_CD_std_descend = SHG_CD_std[0:transition_index],SHG_CD_std[transition_index:]
+    SHG_ascend,SHG_descend = SHG[0:transition_index],SHG[transition_index:]
+    SHG_std_ascend,SHG_std_descend = SHG_std[0:transition_index],SHG_std[transition_index:]
+    SHG_ascend,SHG_descend,SHG_std_ascend,SHG_std_descend = SHG_ascend/maxval,SHG_descend/maxval,SHG_std_ascend/maxval,SHG_std_descend/maxval
+    ax6.errorbar(E_list_ascend, SHG_CD_ascend, yerr=SHG_CD_std_ascend,color='black',  label=r'$\rightarrow$',marker='.',elinewidth=elw,ms=ms)
+    ax6.errorbar(E_list_descend, SHG_CD_descend, yerr=SHG_CD_std_descend,color=colord,  label=r'$\leftarrow$',marker='.',elinewidth=elw,ms=ms)            
+    ax7.errorbar(E_list_ascend, SHG_ascend, yerr=SHG_std_ascend,color='black',  label=r'$\rightarrow$',marker='.',elinewidth=elw,ms=ms)
+    ax7.errorbar(E_list_descend, SHG_descend, yerr=SHG_std_descend,color=colord,  label=r'$\leftarrow$',marker='.',elinewidth=elw,ms=ms)
+    ax7.set_title('$E_y$ = 10 kV/cm',fontsize=fs)
+
+    SHG,SHG_std,SHG_CD,SHG_CD_std = SHG_total_10,SHG_total_std_10,SHG_CD_10,SHG_CD_std_10
+    SHG_CD_ascend,SHG_CD_descend = SHG_CD[0:transition_index],SHG_CD[transition_index:]
+    SHG_CD_std_ascend,SHG_CD_std_descend = SHG_CD_std[0:transition_index],SHG_CD_std[transition_index:]
+    SHG_ascend,SHG_descend = SHG[0:transition_index],SHG[transition_index:]
+    SHG_std_ascend,SHG_std_descend = SHG_std[0:transition_index],SHG_std[transition_index:]
+    SHG_ascend,SHG_descend,SHG_std_ascend,SHG_std_descend = SHG_ascend/maxval,SHG_descend/maxval,SHG_std_ascend/maxval,SHG_std_descend/maxval
+    ax8.errorbar(E_list_ascend, SHG_CD_ascend, yerr=SHG_CD_std_ascend,color='black',  label=r'$\rightarrow$',marker='.',elinewidth=elw,ms=ms)
+    ax8.errorbar(E_list_descend, SHG_CD_descend, yerr=SHG_CD_std_descend,color=colord,  label=r'$\leftarrow$',marker='.',elinewidth=elw,ms=ms)            
+    ax9.errorbar(E_list_ascend, SHG_ascend, yerr=SHG_std_ascend,color='black',  label=r'$\rightarrow$',marker='.',elinewidth=elw,ms=ms)
+    ax9.errorbar(E_list_descend, SHG_descend, yerr=SHG_std_descend,color=colord,  label=r'$\leftarrow$',marker='.',elinewidth=elw,ms=ms)
+    ax9.set_title('$E_y$ = 100 kV/cm',fontsize=fs)
+
+    return fig
+
 if __name__ == "__main__":
     tb.init_plot_params()
     # '''
@@ -515,17 +622,69 @@ if __name__ == "__main__":
     # txtfiles_sorted = sorted(txtfiles, key=os.path.getmtime)
     sample = FourTerminal('NbOI290deg4termS3', 5, path_d1)
     w = sample.channel_width
+    # file_path = path_d1+'mapping_fix_y_1p0_ascend.txt'
+    # data = np.loadtxt(file_path,comments='#')
+    # Vx,Vy,SHG_C1,SHG_C1_std,SHG_C2,SHG_C2_std,SHG_CD,SHG_CD_std,Ix,Iy = data[:,0],data[:,1],np.array(data[:,2]),np.array(data[:,3]),np.array(data[:,4]),np.array(data[:,5]),np.array(data[:,6]),np.array(data[:,7]),data[:,8],data[:,9]
+    # Ex_list, Ey_list = Vx/w*10, Vy/w*10
+    # SHG_total,SHG_total_std = SHG_C1 + SHG_C2, np.sqrt(SHG_C1_std**2 + SHG_C2_std**2)
+    # SHG_CD_std = get_SGH_CD_std(SHG_C1,SHG_C2,SHG_C1_std,SHG_C2_std)
+    
+    
+    # fig_t,fig_CD=plot_linecut(Ex_list,Ey_list,SHG_total,SHG_total_std,SHG_CD,SHG_CD_std,Esweep='x',Efixval=10,value='CD')
+    # fig_t.savefig(path_d1+'plot_supp_linecut1_total.svg',dpi=500)
+    # fig_CD.savefig(path_d1+'plot_supp_linecut1_CD.svg',dpi=500)
+    
+    
+    
+    file_path = path_d1+'mapping_fix_y_m14p0_ascend.txt'
+    data = np.loadtxt(file_path,comments='#')
+    Vx,Vy,SHG_C1,SHG_C1_std,SHG_C2,SHG_C2_std,SHG_CD,SHG_CD_std,Ix,Iy = data[:,0],data[:,1],np.array(data[:,2]),np.array(data[:,3]),np.array(data[:,4]),np.array(data[:,5]),np.array(data[:,6]),np.array(data[:,7]),data[:,8],data[:,9]
+    Ex_list, Ey_list = Vx/w*10, Vy/w*10
+    SHG_total_m14,SHG_total_std_m14 = SHG_C1 + SHG_C2, np.sqrt(SHG_C1_std**2 + SHG_C2_std**2)
+    SHG_CD_std_m14 = get_SGH_CD_std(SHG_C1,SHG_C2,SHG_C1_std,SHG_C2_std)
+    SHG_CD_m14 = SHG_CD
+    
+    file_path = path_d1+'mapping_fix_y_m10p0_ascend.txt'
+    data = np.loadtxt(file_path,comments='#')
+    Vx,Vy,SHG_C1,SHG_C1_std,SHG_C2,SHG_C2_std,SHG_CD,SHG_CD_std,Ix,Iy = data[:,0],data[:,1],np.array(data[:,2]),np.array(data[:,3]),np.array(data[:,4]),np.array(data[:,5]),np.array(data[:,6]),np.array(data[:,7]),data[:,8],data[:,9]
+    Ex_list, Ey_list = Vx/w*10, Vy/w*10
+    SHG_total_m10,SHG_total_std_m10 = SHG_C1 + SHG_C2, np.sqrt(SHG_C1_std**2 + SHG_C2_std**2)
+    SHG_CD_std_m10 = get_SGH_CD_std(SHG_C1,SHG_C2,SHG_C1_std,SHG_C2_std)
+    SHG_CD_m10 = SHG_CD
+    
+    file_path = path_d1+'mapping_fix_y_m3p0_ascend.txt'
+    data = np.loadtxt(file_path,comments='#')
+    Vx,Vy,SHG_C1,SHG_C1_std,SHG_C2,SHG_C2_std,SHG_CD,SHG_CD_std,Ix,Iy = data[:,0],data[:,1],np.array(data[:,2]),np.array(data[:,3]),np.array(data[:,4]),np.array(data[:,5]),np.array(data[:,6]),np.array(data[:,7]),data[:,8],data[:,9]
+    Ex_list, Ey_list = Vx/w*10, Vy/w*10
+    SHG_total_m3,SHG_total_std_m3 = SHG_C1 + SHG_C2, np.sqrt(SHG_C1_std**2 + SHG_C2_std**2)
+    SHG_CD_std_m3 = get_SGH_CD_std(SHG_C1,SHG_C2,SHG_C1_std,SHG_C2_std)
+    SHG_CD_m3 = SHG_CD
+    
     file_path = path_d1+'mapping_fix_y_1p0_ascend.txt'
     data = np.loadtxt(file_path,comments='#')
     Vx,Vy,SHG_C1,SHG_C1_std,SHG_C2,SHG_C2_std,SHG_CD,SHG_CD_std,Ix,Iy = data[:,0],data[:,1],np.array(data[:,2]),np.array(data[:,3]),np.array(data[:,4]),np.array(data[:,5]),np.array(data[:,6]),np.array(data[:,7]),data[:,8],data[:,9]
     Ex_list, Ey_list = Vx/w*10, Vy/w*10
-    SHG_total,SHG_total_std = SHG_C1 + SHG_C2, np.sqrt(SHG_C1_std**2 + SHG_C2_std**2)
-    SHG_CD_std = get_SGH_CD_std(SHG_C1,SHG_C2,SHG_C1_std,SHG_C2_std)
+    SHG_total_1,SHG_total_std_1 = SHG_C1 + SHG_C2, np.sqrt(SHG_C1_std**2 + SHG_C2_std**2)
+    SHG_CD_std_1 = get_SGH_CD_std(SHG_C1,SHG_C2,SHG_C1_std,SHG_C2_std)
+    SHG_CD_1 = SHG_CD
+    
+    file_path = path_d1+'mapping_fix_y_10p0_ascend.txt'
+    data = np.loadtxt(file_path,comments='#')
+    Vx,Vy,SHG_C1,SHG_C1_std,SHG_C2,SHG_C2_std,SHG_CD,SHG_CD_std,Ix,Iy = data[:,0],data[:,1],np.array(data[:,2]),np.array(data[:,3]),np.array(data[:,4]),np.array(data[:,5]),np.array(data[:,6]),np.array(data[:,7]),data[:,8],data[:,9]
+    Ex_list, Ey_list = Vx/w*10, Vy/w*10
+    SHG_total_10,SHG_total_std_10 = SHG_C1 + SHG_C2, np.sqrt(SHG_C1_std**2 + SHG_C2_std**2)
+    SHG_CD_std_10 = get_SGH_CD_std(SHG_C1,SHG_C2,SHG_C1_std,SHG_C2_std)
+    SHG_CD_10 = SHG_CD
     
     
-    fig_t,fig_CD=plot_linecut(Ex_list,Ey_list,SHG_total,SHG_total_std,SHG_CD,SHG_CD_std,Esweep='x',Efixval=10,value='CD')
-    fig_t.savefig(path_d1+'plot_fig4_e.svg',dpi=500)
-    fig_CD.savefig(path_d1+'plot_fig4_f.svg',dpi=500)
+    fig=plot_supp_linecut(Ex_list,Ey_list,
+                          SHG_total_m14,SHG_total_std_m14,SHG_CD_m14,SHG_CD_std_m14,
+                          SHG_total_m10,SHG_total_std_m10,SHG_CD_m10,SHG_CD_std_m10,
+                          SHG_total_m3,SHG_total_std_m3,SHG_CD_m3,SHG_CD_std_m3,
+                          SHG_total_1,SHG_total_std_1,SHG_CD_1,SHG_CD_std_1,
+                          SHG_total_10,SHG_total_std_10,SHG_CD_10,SHG_CD_std_10,
+                          Esweep='x',Efixval=10,value='CD')
+    fig.savefig(path_d1+'plot_supp_linecuts.svg',dpi=500)
 
     # '''
 
@@ -534,9 +693,9 @@ if __name__ == "__main__":
     # plot_map(image_cdd, x_unique, y_unique,vmin=-18,vmax=18)
     # fig_ta,fig_td,fig_cda,fig_cdd=plot_dualmap(image_ta,image_td, image_cda, image_cdd, x_unique, y_unique)
     # fig_ta.savefig(path_d1+'plot_fig4_c.svg',dpi=500)
-    # fig_td.savefig(path_d1+'plot_fig4_e.svg',dpi=500)
-    # fig_cda.savefig(path_d1+'plot_fig4_d.svg',dpi=500)
-    # fig_cdd.savefig(path_d1+'plot_fig4_f.svg',dpi=500)
+    # fig_td.savefig(path_d1+'plot_fig4_d.svg',dpi=500)
+    # fig_cda.savefig(path_d1+'plot_fig4_f.svg',dpi=500)
+    # fig_cdd.savefig(path_d1+'plot_fig4_g.svg',dpi=500)
     
     plt.show()
     

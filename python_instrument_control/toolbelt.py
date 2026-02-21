@@ -38,6 +38,8 @@ def create_axes_with_exact_size(ax_width_in, ax_height_in, margins_in=(0.1,0.1),
     ],projection=proj)
     return fig, ax
 
+
+
 def make_bfield_list(b_start,b_end,b_step):
     bfield_list = np.append(np.arange(b_start,b_end,b_step),np.arange(b_end,b_start-b_step,-1*b_step))
     return bfield_list
@@ -131,6 +133,15 @@ def init_plot_params():
     plt.rcParams["lines.marker"] = '.'
     plt.rcParams["lines.linewidth"] = 2
     plt.rcParams["axes.labelpad"] = 4
+    plt.rcParams['font.family'] = 'Arial' 
+    # plt.rcParams['mathtext.sans-serif'] = ['Arial'] 
+    plt.rcParams['mathtext.rm'] = 'Arial' 
+    plt.rcParams['mathtext.it'] = 'Arial:italic' 
+    plt.rcParams['mathtext.bf'] = 'Arial:bold'
+    plt.rcParams['mathtext.sf'] = 'Arial' 
+    plt.rcParams['mathtext.tt'] = 'Arial' 
+    plt.rcParams['mathtext.cal'] = 'Arial' 
+    plt.rcParams['mathtext.default'] = 'it' 
     plt.rcParams["font.size"] = fontsize
     plt.rcParams["lines.markersize"] = 10
     plt.rcParams["figure.figsize"] = [6,4]
