@@ -20,7 +20,7 @@ def angle_sweep(cam_spec: AndorCamSpec, waveplate: RotationMount, exposure_time,
     
     # Use the provided save_path, or fall back to default if None
     if save_path is None:
-        save_dir = r'D:\LabData\XiaoWang_Group_data_2024on\Hongrui\Raman\collabration\Zizhong\D3\2k\d_raman_map_xy_240s'
+        save_dir = r'D:\LabData\XiaoWang_Group_data_2024on\Hongrui\Raman\collabration\Zizhong\D3\2knew\D\XY_pol15'
     else:
         save_dir = save_path
 
@@ -54,6 +54,7 @@ def angle_sweep(cam_spec: AndorCamSpec, waveplate: RotationMount, exposure_time,
                 print(f"\nMoving to {angle}°...")
                 waveplate.move_to(angle)
                 # We only check position when we actually move to save time
+                time.sleep(2)
                 current_pos = waveplate.get_pos()
                 print(f"Move complete. Current position: {current_pos:.2f}°")
                 previous_angle = angle
@@ -86,7 +87,7 @@ def angle_sweep(cam_spec: AndorCamSpec, waveplate: RotationMount, exposure_time,
         
         try:
             # Filename includes index 'i' to prevent overwriting
-            filename = f"D3_PtPrT_D_{angle}_{polarization}_{i}.txt"
+            filename = f"D3_PtPrT_N_{angle}_{polarization}_{i}_xy_sweepD.txt"
             full_path = os.path.join(save_dir, filename)
             
             data_to_save = np.column_stack((raman_shift_axis, summed_spectrum))
@@ -113,7 +114,7 @@ def angle_sweep(cam_spec: AndorCamSpec, waveplate: RotationMount, exposure_time,
 def dual_gap_raman_map_NOTTESTED(cam_spec: AndorCamSpec,keithley_x: KeithleySourceMeter, keithley_y: KeithleySourceMeter, Vx_array, Vy_array, exposure_time, averages, save_path=None):
     
     if save_path is None:
-        save_dir = r'D:\LabData\XiaoWang_Group_data_2024on\Hongrui\Raman\collabration\Zizhong\D3\2k\d_raman_map_xy_240s'
+        save_dir = r'D:\LabData\XiaoWang_Group_data_2024on\Hongrui\Raman\collabration\Zizhong\D3\2k\dn\n_raman_pol_sweep\xy_n0_dense'
     else:
         save_dir = save_path
 

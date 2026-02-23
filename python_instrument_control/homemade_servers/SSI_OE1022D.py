@@ -61,17 +61,19 @@ class LockInOE1022D():
         except Exception as e:
             logging.error(f"Write error: {e}")
     def identify(self):
-        return self.query("*IDND?")    
+        return self.query("*IDND?").strip().replace('\x00', '')
 
     # --- Data Reading and storage ---
     def read_single(self, channel=1, param=2):
         """Read a single parameter (e.g., R, X, Y, θ)"""
+        self.reset_buffer()
         raw = self.query(f"SNAPD? {channel},{param}")
         clean = float(raw.replace('\x00','').strip())
         return clean
 
     def read_multiple(self, channel=1, params=[0, 1, 2, 3]):
         """Read multiple parameters simultaneously"""
+        self.reset_buffer()
         param_str = ",".join(map(str, params))
         raw = self.query(f"SNAPD? {channel},{param_str}")
         clean = raw.replace('\x00','').strip()#.split(','),dtype=float)
@@ -97,7 +99,6 @@ class LockInOE1022D():
             except Exception as e:
                 logging.error(f"Error reading data: {e}")
             time.sleep(delay)
-    
         mean_R_chan = np.mean(data_R_chan, axis=0) if data_R_chan else None
         std_R_chan = np.std(data_R_chan, axis=0) if data_R_chan else None
         mean_dR_chan = np.mean(data_dR_chan, axis=0) if data_dR_chan else None
@@ -130,16 +131,16 @@ class LockInOE1022D():
     # --- Configuration ---
     
     def get_reference_source(self, channel=1):
-        return self.query(f"FMODD? {channel}")
+        return self.query(f"FMODD? {channel}").strip().replace('\x00', '')
     
     def get_reference_frequency(self, channel=1):
-        return float(self.query(f"FREQD? {channel}"))
+        return float(self.query(f"FREQD? {channel}").strip().replace('\x00', ''))
     
     def get_phase_shift(self, channel=1):
-        return float(self.query(f"PHASD? {channel}"))
+        return float(self.query(f"PHASD? {channel}").strip().replace('\x00', ''))
     
     def get_sensitivity(self, channel=1):
-        index = int(self.query(f"SENSD? {channel}"))
+        index = int(self.query(f"SENSD? {channel}").strip().replace('\x00', ''))
         if 0 <= index < len(self.sensitivities):
             return self.sensitivities[index]
         else:
@@ -147,22 +148,23 @@ class LockInOE1022D():
             return None
     
     def get_time_constant(self, channel=1):
-        return int(self.query(f"OFLTD? {channel}"))
+        # return int(self.query(f"OFLTD? {channel}"))
+        return int(self.query(f"OFLTD? {channel}").strip().replace('\x00', ''))
     
     def get_filter_slope(self, channel=1):
-        return int(self.query(f"OFSLD? {channel}"))
+        return int(self.query(f"OFSLD? {channel}").strip().replace('\x00', ''))
     
     def get_sync_filter(self, channel=1):
-        return bool(int(self.query(f"SYNCD? {channel}")))
+        return bool(int(self.query(f"SYNCD? {channel}").strip().replace('\x00', '')))
     
     def get_harmonic(self, channel=1, slot=1):
-        return int(self.query(f"HARMD? {channel},{slot}"))
+        return int(self.query(f"HARMD? {channel},{slot}").strip().replace('\x00', ''))
     
     def get_sine_output(self, channel=1):
         try:
-            amplitude = float(self.query(f"SLVLD? {channel}"))
-            offset = float(self.query(f"SVLLD? {channel}"))
-            waveform_type = int(self.query(f"SWVTD? {channel}"))
+            amplitude = float(self.query(f"SLVLD? {channel}").strip().replace('\x00', ''))
+            offset = float(self.query(f"SVLLD? {channel}").strip().replace('\x00', ''))
+            waveform_type = int(self.query(f"SWVTD? {channel}").strip().replace('\x00', ''))
             return {
                 "amplitude_v": amplitude,
                 "offset_v": offset,
@@ -219,6 +221,7 @@ class LockInOE1022D():
             logging.error(f"Error configuring SINE OUT: {e}")
             
     def read_continuous(self, channel=1, param=2, interval=0.01,save_to=None):
+        self.reset_buffer()
         plt.ion()
         fig, ax = plt.subplots(figsize=(8, 4))
         ax.set_xlabel("Time (s)")

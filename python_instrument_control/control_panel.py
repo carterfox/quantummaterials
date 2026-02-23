@@ -9,26 +9,27 @@ Created on Sun Aug  3 12:32:27 2025
 # import MultiPyVu as mpv
 import numpy as np
 import matplotlib.pyplot as plt
-# from qcodes_contrib_drivers.drivers.Attocube.ANC300 import ANC300
+from qcodes_contrib_drivers.drivers.Attocube.ANC300 import ANC300
 import toolbelt as tb
 import traceback
 import logging
 import pyvisa
 import time
 logging.basicConfig(level=logging.INFO, format='%(levelname)s - %(message)s')
-# from homemade_servers.SSI_OE1022D import LockInOE1022D
-# from homemade_servers.QDopticool import Opticool
+from homemade_servers.SSI_OE1022D import LockInOE1022D
+from homemade_servers.QDopticool import Opticool
 # from homemade_servers.H11890PMT import HamamatsuH11890
-from homemade_servers.AndorCameraSpectrometer import AndorCamSpec
-# from homemade_servers.KeithleySourceMeter import KeithleySourceMeter
+# from homemade_servers.AndorCameraSpectrometer import AndorCamSpec
+from homemade_servers.KeithleySourceMeter import KeithleySourceMeter
 from homemade_servers.ThorlabsKCube import RotationMount
-# from devices.dualgate import DualGate
-from devices.optical import Optical
+from devices.dualgate import DualGate, DualGate_MLGsense
+# from devices.optical import Optical
 # from devices.transport import FourTerminal
-# from experiments import RMCD_bfield_scan, RMCD_mapping, RMCD_dualgate_Esweep
+from experiments import RMCD_bfield_scan, RMCD_mapping, RMCD_dualgate_Esweep
 # from experiments import SHG_CD_Efield_4term
-# from experiments import PMT_continuous_read, SHG_polarization_scan, Gr_polarization_sensing, Gr_polarization_sensing_singlepoint,
-from experiments import raman_basic
+# from experiments import PMT_continuous_read, SHG_polarization_scan, 
+from experiments import Gr_polarization_sensing, Gr_polarization_sensing_singlepoint
+# from experiments import raman_basic
 
 tb.init_plot_params()
 if 'servers' not in globals(): 
@@ -36,7 +37,7 @@ if 'servers' not in globals():
     servers = []
 labdata = 'D:/LabData/XiaoWang_Group_data_2024on/'
 
-def get_lockin(resource_name='ASRL15::INSTR', R_chan=1, dR_chan=2, num_avgs=25,delay=1):  
+def get_lockin(resource_name='ASRL9::INSTR', R_chan=1, dR_chan=2, num_avgs=25,delay=1):  
     lockin = LockInOE1022D(resource_name)
     lockin.R_chan, lockin.dR_chan = R_chan, dR_chan
     lockin.num_avgs = num_avgs
@@ -51,7 +52,7 @@ def get_opticool(opticool_ip='169.254.170.239', port=5000):
     current_temp = opticool.get_temperature()
     current_field = opticool.get_field()
     servers.append(opticool)
-    return opticool, current_temp, current_field
+    return opticool
 
 
 def get_rotation_stage(serial,home=0):
@@ -113,22 +114,27 @@ if __name__ == "__main__":
     
     ###### add it to servers_to_close if you want them to close each time. 
     ###### at this point only cam_spec should not be in it
-    data_path="D:/LabData/XiaoWang_Group_data_2024on/Hongrui/Raman/collabration/Zizhong/New folder/D3_PtPrT/2k/D_Raman_Map_xy_240s"
-    sample = Optical('D3_PtPrT', data_path)
-    waveplate = get_rotation_stage(27268499)
-    cam_spec = get_AndorCamSpec()
-    servers_to_close=[]
+    base = "I:/.shortcut-targets-by-id/1-8q9lGFnGNt4mDzcxXwdk43m1aVWT66q/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round8/c4_2L_2-10/"
+    data_path=base+"GrSensorSingle/2K/Vt_sweep_Vb0/twoterm/"
+    sample = DualGate_MLGsense('CrI3_2L_MLG', d_b=20, d_m=7.4, d_t=6.6, d_flake=1.4, data_path=data_path)
+    sample.temperature=2
+    lockin = get_lockin(delay=3,num_avgs=100)
+    sample.Vsin=0.1
+    sample.Rbox=1e6
+    keithley_b = get_keithley('GPIB1::16::INSTR','2400',compliance_current=50e-9)
+    servers_to_close=[lockin,keithley_b]
     
     try:
-        exposure_time=240
-        averages=1
-     #   angles=np.array([0,5,10])
-        fixed_angle = 37.5  # Set this to your desired fixed polarization angle
-        num_measurements = 500  # How many consecutive times you want to measure
-        angles = np.full(num_measurements, fixed_angle)
-        raman_basic.angle_sweep(cam_spec, waveplate, exposure_time, averages, angles)
+        filesave = 'loop_scan2_Vt_sweep.txt'
+        # filesave = 'going_down2.txt'
+        E_array = np.arange(-0.3,0.302,.0025) #V/nm
+        Vt_array = E_array*(sample.d_t)
+        Vt_array = np.append(Vt_array,np.flip(Vt_array))
+        # Vb_array = np.array([0,0.001,.002])
+        # RMCD_mapping.main(sample, lockin, ANC, x_start=0, x_end=36,points=24,returnsteps=30,file_save=filesave)
+        # RMCD_bfield_scan.main(sample, lockin, opticool, bfield_array, filesave)
+        Gr_polarization_sensing_singlepoint.main(sample, lockin, keithley_b, Vt_array, filesave,scanaxis='Vt')
         
-
     except Exception: traceback.print_exc()
     finally: exit_session()
     

@@ -135,12 +135,14 @@ def main(sample, lockin: LockInOE1022D, ANC: ANC300, x_start, x_end, y_start=Non
     return scan_array
 
 
-def plot_rmcd_map(scan_array,x_step,y_step,plot_type='RMCD'):
+def plot_rmcd_map(scan_array,x_step,y_step,plot_type='RMCD',cmin=None,cmax=None):
     y_points,x_points = np.shape(scan_array)
     fig, ax = plt.subplots()
     # fig.canvas.manager.window.move(1920, 100)
-    im = ax.imshow(scan_array, cmap='viridis', interpolation='none')
+    im = ax.imshow(scan_array, cmap='viridis', interpolation='none',vmin=cmin,vmax=cmax)
     cbar=plt.colorbar(im, ax=ax)
+    # if cmin!=None:
+        # cbar.set_clim(cmin,cmax)
     ax.set_xlabel(r'X ($\mu$m)'),ax.set_ylabel(r'Y ($\mu$m)')
     # print(x_points)
     xticks = np.linspace(0, x_points - 1, num=5)  # 5 ticks evenly spaced
@@ -163,7 +165,7 @@ def plot_rmcd_map(scan_array,x_step,y_step,plot_type='RMCD'):
         cbar.set_label(r'$\theta$')
     return fig,ax,im
 
-def replot_rmcd_map(data_file,plot_type='RMCD'):
+def replot_rmcd_map(data_file,plot_type='RMCD',cmin=None,cmax=None):
     data = np.loadtxt(data_file)
     x,y,r,dr,theta_dr = data[:,0], data[:,1],data[:,2], data[:,6], data[:,8]
     rmcd = dr/r*100
@@ -188,31 +190,32 @@ def replot_rmcd_map(data_file,plot_type='RMCD'):
     elif plot_type == 'thetadR':
         grid = theta_dr
     scan_array = np.fliplr(grid.reshape((len(y_points), len(x_points))))
-    fig,ax,im=plot_rmcd_map(scan_array,xstep,ystep,plot_type)
+    fig,ax,im=plot_rmcd_map(scan_array,xstep,ystep,plot_type,cmin,cmax)
     return fig,ax,im
 
 
 if __name__ == "__main__":
     # 
     # path_d4 = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/d4/RMCD/bfield_scan/'
-    path_d3 = '/Users/carterfox/Google Drive/My Drive/StackingTransitions/CrI3/round7/d3/RMCD/mapping/'
-    # path_s6 = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/6-18-sample-for-afm-and-rmcd/RMCD/bfield_scan/'
+    # path_d3 = '/Users/carterfox/Google Drive/My Drive/StackingTransitions/CrI3/round7/d3/RMCD/mapping/'
+    data_path="I:/.shortcut-targets-by-id/1-8q9lGFnGNt4mDzcxXwdk43m1aVWT66q/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round8/c4_2L_2-10/RMCD/"
     # file = path_s6+'sixlayer-scan3.txt'
     # file = path_s6+'fourlayer-scan1.txt'
     # file = path_s6+'map1_0T.txt'
-    file = path_d3+'map_after_p2T_8-19.txt'
-    file = path_d3+'map_after_m2T_8-19.txt'
+    file = data_path+'RMCD/mapping/1p3T_map1.txt'
+    # file = data_path+'map_after_m2T_8-19.txt'
     tb.init_plot_params()
 
-    plottype = 'thetadR'
-    fig,ax,im = replot_rmcd_map(file,plottype)
+    plottype = 'RMCD'
+    # fig,ax,im = replot_rmcd_map(file,plottype,0,2.1)
+    fig,ax,im = replot_rmcd_map(file,'R')
 
     # fig,ax,b_field,theta_dr = replot_rmcd_bfield_scan(file)
     # tb.plot_arrow_legend(ax,r'$B_{\perp}$',x1=1.7,y1=-7,ls=18,yratio=.058,xratio=.12,wratio=.0872)
     
     title = file.split('/')[-1].split('.txt')[0]
     plt.title(title)
-    plt.xlim(0,40)
-    plt.ylim(40,0)
+    # plt.xlim(0,40)
+    # plt.ylim(40,0)
     # plt.savefig(file.replace('.txt','_{}_plot.png'.format(plottype)),dpi=500)
     plt.show()
