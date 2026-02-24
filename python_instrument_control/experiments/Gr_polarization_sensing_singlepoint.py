@@ -197,11 +197,9 @@ if __name__ == "__main__":
 
 
     tb.init_plot_params()
-    # path = '/Users/carterfox/My Drive (cdfox@wisc.edu)/StackingTransitions/CrI3/round7/d3/GrSensorSingle/295K/measurements2/'    
-    path="I:/.shortcut-targets-by-id/1-8q9lGFnGNt4mDzcxXwdk43m1aVWT66q/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round8/c4_2L_2-10/GrSensorSingle/2K/"
+    path="/Users/carterfox/Library/CloudStorage/GoogleDrive-cdfox@wisc.edu/.shortcut-targets-by-id/1-8q9lGFnGNt4mDzcxXwdk43m1aVWT66q/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round8/c4_2L_2-10/GrSensorSingle/2K/"
     sample = DualGate_MLGsense('CrI3_2L_MLG', d_b=20, d_m=7.4, d_t=6.6, d_flake=1.4, data_path=path)
-    # path = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/d3/GrSensorSingle/'
-    file = path+'Vb_sweep_Vt0/twoterm/loop_scan1_Vb_sweep - Copy.txt'
+    file = path+'Esweep/twoterm/Esweep_loop1.txt'
     data = np.loadtxt(file)
     Vb,V_b_meas,I_b_meas,R_Gr,R_Gr_std,V_Gr = data[:,0],data[:,1],data[:,2],data[:,3],data[:,4],data[:,5]
     db = sample.d_b
@@ -212,12 +210,9 @@ if __name__ == "__main__":
     
     diffs = np.diff(Vb)
     change_indices = np.where(diffs < 0)[0]  # descending starts here
-    if len(change_indices)==0:
-        change_indices = np.array([len(Vb)-1])
-    Vb_ascend = Vb[:change_indices[0] + 1]
-    Vb_descend = Vb[change_indices[0]:]
-    E_ascend = Vb_ascend/db
-    E_descend = Vb_descend/db
+    if len(change_indices)==0: change_indices = np.array([len(Vb)-1])
+    Vb_ascend, Vb_descend = Vb[:change_indices[0] + 1], Vb[change_indices[0]:]
+    E_ascend, E_descend = Vb_ascend/db, Vb_descend/db
     
     plot = 'R' #'R'
     fig, ax = plt.subplots(1,1,figsize=(6,5))
@@ -225,23 +220,11 @@ if __name__ == "__main__":
     Rbox=1e6
     
     V_Gr = V_Gr/(1e6)
-    # R_inner = (V_Gr/Vsin)*Rbox/(1-4*V_Gr/Vsin)/1000
-    ascend = R_Gr[:change_indices[0] + 1]
-    descend = R_Gr[change_indices[0]:]
-    std_ascend = R_Gr_std[:change_indices[0] + 1]
-    std_descend = R_Gr_std[change_indices[0]:]
+    ascend,descend = R_Gr[:change_indices[0]+1], R_Gr[change_indices[0]:]
+    std_ascend,std_descend = R_Gr_std[:change_indices[0]+1],R_Gr_std[change_indices[0]:]
     # ax.set_xlabel('$V_{b}/d_b$ (Vnm$^{-1}$)'), ax.set_ylabel(r'$R_{Gr}$ (k$\Omega$)')
-    ax.set_xlabel('$V_{b}/d_t$ (Vnm$^{-1}$)'), ax.set_ylabel(r'$R_{Gr}$ (k$\Omega$)')
-    # ax.set_xlim(-.1 ,.1 )
-    # ax.set_ylim(2.7,6.5)
-
-        
-    if plot == 'G':
-        ascend = 1000/ascend
-        descend = 1000/descend
-        # std_ascend = 1000*R_Gr_std[:change_indices[0] + 1]/(R_Gr[:change_indices[0] + 1])**2
-        # std_descend = 1000*R_Gr_std[change_indices[0] + 1:]/(R_Gr[change_indices[0] + 1:])**2
-        ax.set_xlabel('$V_{b}/d$(Vnm$^{-1}$)'), ax.set_ylabel(r'G$_{Gr}$ ($\mu S$)')
+    # ax.set_xlabel('$V_{b}/d_t$ (Vnm$^{-1}$)'), ax.set_ylabel(r'$R_{Gr}$ (k$\Omega$)')
+    ax.set_xlabel('$E_{\perp}$ (Vnm$^{-1}$)'), ax.set_ylabel(r'$R_{Gr}$ (k$\Omega$)')
     
     ax.errorbar(E_ascend, ascend,yerr=std_ascend,color='r',marker='.',ms=3,label=r'$\rightarrow$',elinewidth=0)
     ax.errorbar(E_descend, descend,yerr=std_descend,color='b',marker='.',ms=3,label=r'$\leftarrow$',elinewidth=0)
