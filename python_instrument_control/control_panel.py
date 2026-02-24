@@ -16,6 +16,7 @@ import logging
 import pyvisa
 import time
 logging.basicConfig(level=logging.INFO, format='%(levelname)s - %(message)s')
+logging.getLogger('matplotlib').setLevel(logging.WARNING)
 from homemade_servers.SSI_OE1022D import LockInOE1022D
 from homemade_servers.QDopticool import Opticool
 # from homemade_servers.H11890PMT import HamamatsuH11890
@@ -115,38 +116,38 @@ if __name__ == "__main__":
     ###### add it to servers_to_close if you want them to close each time. 
     ###### at this point only cam_spec should not be in it
     base = "I:/.shortcut-targets-by-id/1-8q9lGFnGNt4mDzcxXwdk43m1aVWT66q/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round8/c4_2L_2-10/"
-    data_path=base+"GrSensorSingle/2K/Vb_sweep_Vt0/twoterm/"
+    data_path=base+"GrSensorSingle/2K/Esweep/twoterm/"
     sample = DualGate_MLGsense('CrI3_2L_MLG', d_b=20, d_m=7.4, d_t=6.6, d_flake=1.4, data_path=data_path)
     sample.temperature=2
     lockin = get_lockin(delay=3,num_avgs=100)
     sample.Vsin=0.1
     sample.Rbox=1e6
     keithley_b = get_keithley('GPIB1::16::INSTR','2400',compliance_current=50e-9)
-    servers_to_close=[lockin,keithley_b]
+    keithley_t = get_keithley('GPIB1::1::INSTR','2400',compliance_current=50e-9)
+    servers_to_close=[lockin,keithley_b,keithley_t]
     
-    try:
-        filesave = 'loop_scan2_Vb_sweep.txt'
-        E_array = np.arange(-.10,.102,.002) #V/nm
-        Vb_array = E_array*(sample.d_b+sample.d_m+sample.d_flake)
-        Vb_array = np.append(Vb_array,np.flip(Vb_array))
-        Gr_polarization_sensing_singlepoint.main(sample, lockin, keithley_b, Vb_array, filesave,scanaxis='Vb')
+    try:        
+        filesave = 'Esweep_loop2.txt'
+        E_array = np.arange(-0.1,0.102,0.002) #V/nm
+        # Vb_array = E_array*(sample.d_b+sample.d_m+sample.d_flake)
+        E_array = np.append(E_array,np.flip(E_array))
+        # Gr_polarization_sensing_singlepoint.main(sample, lockin, keithley_b, Vb_array, filesave,scanaxis='Vb')
+        Gr_polarization_sensing_singlepoint.sweep_Efield(sample, lockin, keithley_b, keithley_t, E_array,filesave)
         
-        filesave = 'loop_scan3_Vb_sweep.txt'
-        E_array = np.arange(-.10,.101,.001) #V/nm
-        Vb_array = E_array*(sample.d_b+sample.d_m+sample.d_flake)
-        Vb_array = np.append(Vb_array,np.flip(Vb_array))
-        Gr_polarization_sensing_singlepoint.main(sample, lockin, keithley_b, Vb_array, filesave,scanaxis='Vb')
+        # Et_array = np.linspace(-.15,.15,30)
+        # Eb_array = np.linspace(-.1,.10,101)
+        # Vb_array = np.append(Eb_array,np.flip(Eb_array))*(sample.d_b+sample.d_m+sample.d_flake)
+        # Vt_array = Eb_array*sample.d_t
         
-        filesave = 'loop_scan4_Vb_sweep.txt'
-        E_array = np.arange(-.10,.101,.0005) #V/nm
-        Vb_array = E_array*(sample.d_b+sample.d_m+sample.d_flake)
-        Vb_array = np.append(Vb_array,np.flip(Vb_array))
-        Gr_polarization_sensing_singlepoint.main(sample, lockin, keithley_b, Vb_array, filesave,scanaxis='Vb')
+        # for Vt in Vt_array:
+        #     Vt_cur_array = np.ones_like(Vb_array)*Vt
+        #     keithley_t.source_voltage=Vt
+            
+        #     Vtstr = str(Vt).replace('-','m').replace('.','p')
+        #     filesave = 'VbVt_mapping_Vt_{}_.txt'.format(Vt)
+        #     Gr_polarization_sensing_singlepoint.main(sample, lockin, keithley_b, Vb_array, filesave,scanaxis='Vb')
+
         
-        filesave = 'going_up4.txt'
-        E_array = np.arange(-.10,.01,.01) #V/nm
-        Vb_array = E_array*(sample.d_b+sample.d_m+sample.d_flake)
-        Gr_polarization_sensing_singlepoint.main(sample, lockin, keithley_b, Vb_array, filesave,scanaxis='Vb')
         
     except Exception: traceback.print_exc()
     finally: exit_session()
