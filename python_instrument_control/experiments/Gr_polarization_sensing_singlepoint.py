@@ -19,25 +19,31 @@ import os
 from matplotlib.lines import Line2D
 from sklearn.linear_model import HuberRegressor
 
+def sweep_Efield(sample: DualGate, lockin: LockInOE1022D, keithley_b: KeithleySourceMeter, keithley_t: KeithleySourceMeter,E_array,file_save='test.txt'):
+    saving_file = make_files(sample,lockin,file_save,'Efield')
+    sample.Vsin = lockin.get_sine_output(1)['amplitude_v']
+    keithley_b.enable_source() 
+    keithley_b.apply_voltage()
+        
 
 def main(sample: DualGate, lockin: LockInOE1022D, keithley_b: KeithleySourceMeter,Vb_array,file_save='test.txt',scanaxis='Vb'):
     
     saving_file = make_files(sample,lockin,file_save)
     sample.Vsin = lockin.get_sine_output(1)['amplitude_v']
-    
-    plt.ion()
-    fig,ax1,lineup,linedown = init_plot()
-    
+    keithley_b.enable_source() 
+    keithley_b.apply_voltage()
     if scanaxis == 'Vb': sample.d = (sample.d_b+sample.d_m+sample.d_flake) # sample.d = sample.d_b
     elif scanaxis == 'Vt': sample.d = sample.d_t
+    
+    plt.ion()
+    fig,ax1,lineup,linedown = init_plot(sample,Vb_array,scanaxis)
 
-    ax1.set_xlabel(r'$V_{}/d_{}$ (V)'.format(scanaxis[-1],scanaxis[-1])),ax1.set_xlim(np.min(Vb_array/sample.d)*1.1,1.1*np.max(Vb_array/sample.d))
     Vb_list, R_Gr_list, Vb_list_up, Vb_list_down, R_Gr_list_up, R_Gr_list_down = [],[],[],[],[],[]
     
     for Vb in Vb_array: # sweep Vb 
         V_b_meas,I_b_meas = set_gates(keithley_b,Vb)
-        
         time.sleep(lockin.delay)
+        
         mean_R_chan, std_R_chan, mean_dR_chan, std_dR_chan = lockin.read_average_dual(params=[2, 3], num_avgs=lockin.num_avgs)
         V_Gr, V_Gr_std = mean_R_chan[0]*10**6, std_R_chan[0]*10**6   #uV
         Vbox = sample.Vsin*10**6 - V_Gr  #uV
@@ -86,7 +92,7 @@ def update_plot(sample, lineup: Line2D,linedown: Line2D, xup_data, yup_data, xdo
     fig.canvas.flush_events()
     plt.pause(pause_time)
 
-def init_plot():
+def init_plot(sample,Vb_array,scanaxis):
     fig, ax1 = plt.subplots()
     fig.canvas.manager.window.move(1920, 100)  # (x, y) position in pixels
     ax1.set_xlabel(r'V$_{t}/d$ (V)')
@@ -95,19 +101,24 @@ def init_plot():
     linedown = Line2D([], [], color='blue',marker='.',markersize=3)
     ax1.add_line(lineup)
     ax1.add_line(linedown)
+    ax1.set_xlabel(r'$V_{}/d_{}$ (V)'.format(scanaxis[-1],scanaxis[-1]))
+    ax1.set_xlim(np.min(Vb_array/sample.d)*1.1,1.1*np.max(Vb_array/sample.d))
     # ax1.legend()
     return fig,ax1,lineup,linedown
 
-def make_files(sample,lockin,file_save):
+def make_files(sample,lockin,file_save,sweeptype='singlegate'):
     gen_path = sample.data_path+file_save
-    saving_file = make_Gr_resistance_saving_file(gen_path,sample,lockin)
+    saving_file = make_Gr_resistance_saving_file(gen_path,sample,lockin,sweeptype)
     return saving_file
 
 
-def make_Gr_resistance_saving_file(filename,sample,lockin):
+def make_Gr_resistance_saving_file(filename,sample,lockin,sweeptype='singlegate'):
     while os.path.exists(filename):            
         filename = filename.replace(".txt", "_new.txt")
-    h = '#Vb_set(V) Vb_meas(V) Ib_meas(nA) R_Gr(kOhm) R_Gr_std(kOhm) V_Gr(uV) I_Gr(nA) Vbox(uV)'
+    if sweeptype=='singlegate':
+        h = '#Vb_set(V) Vb_meas(V) Ib_meas(nA) R_Gr(kOhm) R_Gr_std(kOhm) V_Gr(uV) I_Gr(nA) Vbox(uV)'
+    elif sweeptype=='Efield':
+        h = '#Vb_set(V) Vb_meas(V) Ib_meas(nA) R_Gr(kOhm) R_Gr_std(kOhm) V_Gr(uV) I_Gr(nA) Vbox(uV) Vt_set(V) Vt_meas(V) It_meas(nA) E_set(V/nm)'
     with open(filename, 'a') as file:
         h0 = '# Rbox (Ohm) = {}'.format(sample.Rbox)
         h1 = '# Vsin (V) = {}'.format(sample.Vsin)
@@ -132,7 +143,7 @@ if __name__ == "__main__":
     path="I:/.shortcut-targets-by-id/1-8q9lGFnGNt4mDzcxXwdk43m1aVWT66q/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round8/c4_2L_2-10/GrSensorSingle/2K/"
     sample = DualGate_MLGsense('CrI3_2L_MLG', d_b=20, d_m=7.4, d_t=6.6, d_flake=1.4, data_path=path)
     # path = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/d3/GrSensorSingle/'
-    file = path+'Vt_sweep_Vb0/twoterm/loop_scan1_Vt_sweep.txt'
+    file = path+'Vb_sweep_Vt0/twoterm/loop_scan1_Vb_sweep - Copy.txt'
     data = np.loadtxt(file)
     Vb,V_b_meas,I_b_meas,R_Gr,R_Gr_std,V_Gr = data[:,0],data[:,1],data[:,2],data[:,3],data[:,4],data[:,5]
     db = sample.d_b
@@ -147,8 +158,8 @@ if __name__ == "__main__":
         change_indices = np.array([len(Vb)-1])
     Vb_ascend = Vb[:change_indices[0] + 1]
     Vb_descend = Vb[change_indices[0]:]
-    E_ascend = Vb_ascend/dt
-    E_descend = Vb_descend/dt
+    E_ascend = Vb_ascend/db
+    E_descend = Vb_descend/db
     
     plot = 'R' #'R'
     fig, ax = plt.subplots(1,1,figsize=(6,5))
@@ -162,7 +173,7 @@ if __name__ == "__main__":
     std_ascend = R_Gr_std[:change_indices[0] + 1]
     std_descend = R_Gr_std[change_indices[0]:]
     # ax.set_xlabel('$V_{b}/d_b$ (Vnm$^{-1}$)'), ax.set_ylabel(r'$R_{Gr}$ (k$\Omega$)')
-    ax.set_xlabel('$V_{t}/d_t$ (Vnm$^{-1}$)'), ax.set_ylabel(r'$R_{Gr}$ (k$\Omega$)')
+    ax.set_xlabel('$V_{b}/d_t$ (Vnm$^{-1}$)'), ax.set_ylabel(r'$R_{Gr}$ (k$\Omega$)')
     # ax.set_xlim(-.1 ,.1 )
     # ax.set_ylim(2.7,6.5)
 
