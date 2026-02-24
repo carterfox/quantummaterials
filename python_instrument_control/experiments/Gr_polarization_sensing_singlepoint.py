@@ -18,17 +18,22 @@ import toolbelt as tb
 import os
 from matplotlib.lines import Line2D
 from sklearn.linear_model import HuberRegressor
+import logging
+logging.getLogger('matplotlib').setLevel(logging.WARNING)
 
 def sweep_Efield(sample: DualGate, lockin: LockInOE1022D, keithley_b: KeithleySourceMeter, keithley_t: KeithleySourceMeter,E_array,file_save='test.txt'):
+    d_b = sample.d_b + sample.d_m + sample.d_flake 
+    d_t = sample.d_t
+    
     plt.ion()
     fig,ax1,lineup,linedown = init_plot(sample,E_array,'Efield')    
     saving_file = make_files(sample,lockin,file_save,'Efield')
     sample.Vsin = lockin.get_sine_output(1)['amplitude_v']
     setup_keithleys(keithley_b,keithley_t)
     
-    d_b = sample.d_b + sample.d_m + sample.d_flake 
-    d_t = sample.d_t
     E_list, E_list_up, E_list_down, R_Gr_list, R_Gr_list_up, R_Gr_list_down = [],[],[],[],[],[]
+    
+    print('E(V/nm)   Ib(nA)   It(nA)   Vgr(uV)   Igr(nA)   Rgr(kOhm)')
 
     for E in E_array:
         
@@ -61,6 +66,9 @@ def sweep_Efield(sample: DualGate, lockin: LockInOE1022D, keithley_b: KeithleySo
     
 
 def main(sample: DualGate, lockin: LockInOE1022D, keithley_b: KeithleySourceMeter,Vb_array,file_save='test.txt',scanaxis='Vb'):
+    if scanaxis == 'Vb': sample.d = (sample.d_b+sample.d_m+sample.d_flake) # sample.d = sample.d_b
+    elif scanaxis == 'Vt': sample.d = sample.d_t
+
     plt.ion()
     fig,ax1,lineup,linedown = init_plot(sample,Vb_array,scanaxis)
     saving_file = make_files(sample,lockin,file_save)
@@ -68,9 +76,6 @@ def main(sample: DualGate, lockin: LockInOE1022D, keithley_b: KeithleySourceMete
     
     setup_keithleys(keithley_b)
     
-    if scanaxis == 'Vb': sample.d = (sample.d_b+sample.d_m+sample.d_flake) # sample.d = sample.d_b
-    elif scanaxis == 'Vt': sample.d = sample.d_t
-
     Vb_list, R_Gr_list, Vb_list_up, Vb_list_down, R_Gr_list_up, R_Gr_list_down = [],[],[],[],[],[]
     
     for Vb in Vb_array: # sweep Vb 
@@ -96,7 +101,6 @@ def main(sample: DualGate, lockin: LockInOE1022D, keithley_b: KeithleySourceMete
         Vb_list.append(Vb), R_Gr_list.append(R_Gr) #kOhm
         save_data([Vb,V_b_meas,I_b_meas,R_Gr,R_Gr_std,V_Gr,I_Gr,Vbox],saving_file)
         update_plot(sample,lineup,linedown,Vb_list_up,R_Gr_list_up,Vb_list_down,R_Gr_list_down,ax1,fig,scanaxis)
-    
     plt.ioff()
     plt.savefig(saving_file.replace('.txt','_R_plot.png'),dpi=500)
     plt.show()
@@ -107,10 +111,10 @@ def main(sample: DualGate, lockin: LockInOE1022D, keithley_b: KeithleySourceMete
 def setup_keithleys(keithley_b=None,keithley_t=None):
     if keithley_b!=None:
         keithley_b.enable_source() 
-        keithley_b.apply_voltage()
+        keithley_b.apply_voltage(compliance_current=keithley_b.compliance_current)
     if keithley_t!=None:
         keithley_t.enable_source() 
-        keithley_t.apply_voltage()
+        keithley_t.apply_voltage(compliance_current=keithley_t.compliance_current)
         
 def set_gates(keithley_b=None,keithley_t=None,Vb=0,Vt=0):
     
@@ -135,7 +139,7 @@ def save_data(data_save,saving_file):
         file.write(' '.join(f"{d:.9f}" for d in data_save) + '\n') 
         
 def update_plot(sample, lineup: Line2D,linedown: Line2D, xup_data, yup_data, xdown_data, ydown_data, 
-                ax: plt.Axes, fig: plt.Figure, pause_time: float = 0.05, scanaxis='Vb'):
+                ax: plt.Axes, fig: plt.Figure, scanaxis='Vb'):
     if scanaxis == 'Efield': xup_data,xdown_data = np.asarray(xup_data), np.asarray(xdown_data) 
     else: xup_data,xdown_data = np.asarray(xup_data)/sample.d , np.asarray(xdown_data)/sample.d 
     lineup.set_data(xup_data, yup_data)
@@ -144,7 +148,7 @@ def update_plot(sample, lineup: Line2D,linedown: Line2D, xup_data, yup_data, xdo
     ax.autoscale_view()
     fig.canvas.draw()
     fig.canvas.flush_events()
-    plt.pause(pause_time)
+    plt.pause(0.05)
 
 def init_plot(sample,X_array,scanaxis):
     fig, ax1 = plt.subplots()
@@ -155,7 +159,7 @@ def init_plot(sample,X_array,scanaxis):
     ax1.add_line(lineup)
     ax1.add_line(linedown)
     if scanaxis == 'Efield': 
-        ax1.set_xlabel('$E_\perp$ (V nm$^{-1}$)')
+        ax1.set_xlabel(r"$E_{\perp}$ (Vnm$^{-1}$)")
         xmin,xmax = np.min(X_array),np.max(X_array)
         ax1.set_xlim(xmin - .1*abs(xmin), xmax + .1*abs(xmax))
     else: 
