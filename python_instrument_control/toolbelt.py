@@ -161,6 +161,39 @@ def init_plot_params():
     # "text.usetex": True,
     # "font.family": "Helvetica"})
     
+    
+from matplotlib.patches import Rectangle
+from matplotlib.lines import Line2D
+from matplotlib.legend_handler import HandlerBase
+
+class BarWithDotHandler(HandlerBase):
+    def create_artists(self, legend, orig_handle,
+                       xdescent, ydescent, width, height, fontsize, trans):
+        
+        bar_color, dot_color = orig_handle
+        
+        # Bar rectangle (fills most of the legend box)
+        bar = Rectangle(
+            (xdescent, ydescent),
+            width,
+            height,
+            facecolor=bar_color,
+            edgecolor='none',
+            transform=trans,alpha=.27
+        )
+        
+        # Dot centered inside the rectangle
+        dot = Line2D(
+            [xdescent + width/2],
+            [ydescent + height/2],
+            marker='.',
+            markersize=3,
+            color=dot_color,
+            linestyle='',
+            transform=trans
+        )
+        return [bar, dot]
+    
 def plot_arrow_legend(ax,label,x1=None,y1=None,ls=18,yratio=.058,xratio=.12,wratio=.0872,colora='black',colord='red'):
     xrange = ax.get_xlim()[1] - ax.get_xlim()[0]
     yrange = ax.get_ylim()[1] - ax.get_ylim()[0]

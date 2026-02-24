@@ -635,7 +635,7 @@ if __name__ == "__main__":
     # fig_CD.savefig(path_d1+'plot_supp_linecut1_CD.svg',dpi=500)
     
     
-    
+    '''
     file_path = path_d1+'mapping_fix_y_m14p0_ascend.txt'
     data = np.loadtxt(file_path,comments='#')
     Vx,Vy,SHG_C1,SHG_C1_std,SHG_C2,SHG_C2_std,SHG_CD,SHG_CD_std,Ix,Iy = data[:,0],data[:,1],np.array(data[:,2]),np.array(data[:,3]),np.array(data[:,4]),np.array(data[:,5]),np.array(data[:,6]),np.array(data[:,7]),data[:,8],data[:,9]
@@ -685,13 +685,13 @@ if __name__ == "__main__":
                           SHG_total_10,SHG_total_std_10,SHG_CD_10,SHG_CD_std_10,
                           Esweep='x',Efixval=10,value='CD')
     fig.savefig(path_d1+'plot_supp_linecuts.svg',dpi=500)
-
+    '''
     # '''
 
-    # path_map = '/Users/carterfox/My Drive (cdfox@wisc.edu)/StackingTransitions/NbOI2/Lvgroup/Efield-samples-for-optics/90deg_3L3L_4term_S3/SHG-CD-Efield/1-16-2dmap/'
-    # x_unique,y_unique,image_cda,image_cdd,image_cdh,image_ta,image_td,image_th = analyze_files_2dmap(path_map,fast_axis='x',slow_direction='a')
+    path_map = '/Users/carterfox/My Drive (cdfox@wisc.edu)/StackingTransitions/NbOI2/Lvgroup/Efield-samples-for-optics/90deg_3L3L_4term_S3/SHG-CD-Efield/1-16-2dmap/'
+    x_unique,y_unique,image_cda,image_cdd,image_cdh,image_ta,image_td,image_th = analyze_files_2dmap(path_map,fast_axis='x',slow_direction='a')
     # plot_map(image_cdd, x_unique, y_unique,vmin=-18,vmax=18)
-    # fig_ta,fig_td,fig_cda,fig_cdd=plot_dualmap(image_ta,image_td, image_cda, image_cdd, x_unique, y_unique)
+    fig_ta,fig_td,fig_cda,fig_cdd=plot_dualmap(image_ta,image_td, image_cda, image_cdd, x_unique, y_unique)
     # fig_ta.savefig(path_d1+'plot_fig4_c.svg',dpi=500)
     # fig_td.savefig(path_d1+'plot_fig4_d.svg',dpi=500)
     # fig_cda.savefig(path_d1+'plot_fig4_f.svg',dpi=500)
