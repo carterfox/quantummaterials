@@ -143,7 +143,7 @@ if __name__ == "__main__":
     path="I:/.shortcut-targets-by-id/1-8q9lGFnGNt4mDzcxXwdk43m1aVWT66q/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round8/c4_2L_2-10/GrSensorSingle/2K/"
     sample = DualGate_MLGsense('CrI3_2L_MLG', d_b=20, d_m=7.4, d_t=6.6, d_flake=1.4, data_path=path)
     # path = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/d3/GrSensorSingle/'
-    file = path+'Vb_sweep_Vt0/twoterm/loop_scan1_Vb_sweep - Copy.txt'
+    file = path+'Vb_sweep_Vt0/twoterm/loop_scan2_Vb_sweep.txt'
     data = np.loadtxt(file)
     Vb,V_b_meas,I_b_meas,R_Gr,R_Gr_std,V_Gr = data[:,0],data[:,1],data[:,2],data[:,3],data[:,4],data[:,5]
     db = sample.d_b
