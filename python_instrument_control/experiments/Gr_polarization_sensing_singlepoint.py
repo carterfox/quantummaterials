@@ -18,6 +18,10 @@ import toolbelt as tb
 import os
 from matplotlib.lines import Line2D
 from sklearn.linear_model import HuberRegressor
+import math
+import glob
+from pathlib import Path
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 def sweep_Efield(sample: DualGate, lockin: LockInOE1022D, keithley_b: KeithleySourceMeter, keithley_t: KeithleySourceMeter,E_array,file_save='test.txt'):
     plt.ion()
@@ -193,43 +197,147 @@ def make_Gr_resistance_saving_file(filename,sample,lockin,sweeptype='singlegate'
     return filename
 
 
+def plot_2dmap(folder_path,d_b,d_t):
+    files = np.array([Path(p) for p in glob.glob(str(Path(folder_path) / "*.txt"))])
+    Vtvals = []
+    for f in files:
+        fss = float(str(f).split('/')[-1].replace('_0p','_0.').replace('_m0p','_-0.').split('_')[3])
+        Vtvals.append(fss)
+    Vtvals = np.asarray(Vtvals)
+    Vtvalssort = np.argsort(Vtvals)
+    Vt = np.sort(Vtvals)
+    sorted_files = files[Vtvalssort]
+    
+    Vb=np.loadtxt(files[0])[:,0]
+    xs,ys,R_Gr_vals_ascend,R_Gr_vals_descend = np.array([]),np.array([]),np.array([]),np.array([])
+    
+    for fs,Vt in zip(sorted_files,Vt):
+        data = np.loadtxt(fs)
+        Vb,V_b_meas,I_b_meas,R_Gr,R_Gr_std,V_Gr = data[:,0],data[:,1],data[:,2],data[:,3],data[:,4],data[:,5]
+        diffs = np.diff(Vb)
+        change_indices = np.where(diffs < 0)[0]  # descending starts here
+        if len(change_indices)==0: change_indices = np.array([len(Vb)-1])
+        # print(change_indices)
+        Vb_ascend, Vb_descend = Vb[:change_indices[0]], Vb[change_indices[0]:]
+        R_Gr_ascend, R_Gr_descend = R_Gr[:change_indices[0]], R_Gr[change_indices[0]:]
+        xs = np.append(xs,Vb_ascend/d_b)
+        ys = np.append(ys,np.ones_like(Vb_ascend)*Vt/d_t)
+        R_Gr_vals_ascend = np.append(R_Gr_vals_ascend,R_Gr_ascend)
+        R_Gr_vals_descend = np.append(R_Gr_vals_descend,np.flip(R_Gr_descend))
+        # print(Vt)
+    # print(np.shape(Vb_ascend),np.shape(Vb_descend))
+    x_unique, y_unique = np.unique(xs), np.unique(ys)
+    image_Rgr_a = np.zeros((len(x_unique), len(y_unique)))
+    image_Rgr_d = np.zeros((len(x_unique), len(y_unique)))
+    image_Rgr_hyst = np.zeros((len(x_unique), len(y_unique)))
+    # 
+    # print(x_unique,y_unique)    
+    for x, y, Ra,Rd in zip(xs, ys, R_Gr_vals_ascend,R_Gr_vals_descend):
+        xi,yi = np.where(x_unique == x)[0][0],np.where(y_unique == y)[0][0]
+        image_Rgr_a[xi, yi] = Ra
+        image_Rgr_d[xi, yi] = Rd
+        image_Rgr_hyst[xi, yi] = Rd-Ra
+        
+    image_Rgr_a=np.transpose(image_Rgr_a)    
+    image_Rgr_d=np.transpose(image_Rgr_d)    
+    fs=8
+    bw=0.5
+
+    fig1,ax1 = tb.create_axes_with_exact_size(1.35, 1.2)
+    im1=ax1.imshow(image_Rgr_a,origin='lower',extent=[x_unique.min(), x_unique.max(), y_unique.min(), y_unique.max()],vmin=95,vmax=205)
+    cbar = fig1.colorbar(im1, ax=ax1, location="right", fraction=0.05,pad=0.03) 
+    cbar.set_label('$R_{Gr}$ (k$\Omega$)', ha='center',fontsize=fs)
+    cbar.ax.tick_params(labelsize=fs,length=1)
+    cbar.set_ticks([100,125,150,175,200])
+    ax1.set_xlabel("V$_b$ (V)",fontsize=fs)
+    ax1.set_ylabel("V$_t$ (V)",fontsize=fs,labelpad=0)  
+    ax1.set_xticks([-.08,0,.08],[-0.08,0,0.08])
+    ax1.set_yticks([-.14,-.07,0,.07,.14])
+    ax1.tick_params(axis="both", labelsize=fs,length=2,color='k') 
+    cbar.outline.set_linewidth(bw)
+    for spine in ax1.spines.values(): spine.set_linewidth(bw) 
+    ax1.annotate( "", xy=(.08, -.14), xytext=(-.08, -.14), arrowprops=dict(arrowstyle="simple,head_length=0.2,head_width=0.1,tail_width=0.015",linestyle="-", color='white', linewidth=0.02) )    
+    ax1.annotate( "", xy=(-.08, -.14), xytext=(-.08, .14), arrowprops=dict(arrowstyle="->,head_width=0.001,head_length=0.001",linestyle="--", color='white', linewidth=.3) )    
+    ax1.annotate( "", xy=(-.08, .14), xytext=(-.08, .13), arrowprops=dict(arrowstyle="simple,head_length=0.2,head_width=0.1,tail_width=0.04",linestyle="--", color='white', linewidth=0.03) )    
+
+    fig2,ax2 = tb.create_axes_with_exact_size(1.35, 1.2)
+    im2=ax2.imshow(image_Rgr_d,origin='lower',extent=[x_unique.min(), x_unique.max(), y_unique.min(), y_unique.max()],vmin=95,vmax=205)
+    cbar2 = fig2.colorbar(im2, ax=ax2, location="right", fraction=0.05,pad=0.03) 
+    cbar2.set_label('$R_{Gr}$ (k$\Omega$)', ha='center',fontsize=fs)
+    cbar2.ax.tick_params(labelsize=fs,length=1)
+    cbar2.set_ticks([100,125,150,175,200])
+    ax2.set_xlabel("V$_b$ (V)",fontsize=fs)
+    ax2.set_ylabel("V$_t$ (V)",fontsize=fs,labelpad=0)  
+    ax2.set_xticks([-.08,0,.08],[-0.08,0,0.08])
+    ax2.set_yticks([-.14,-.07,0,.07,.14])
+    ax2.tick_params(axis="both", labelsize=fs,length=2,color='k') 
+    cbar2.outline.set_linewidth(bw)
+    for spine in ax2.spines.values(): spine.set_linewidth(bw) 
+    ax2.annotate( "", xy=(-.08, -.14), xytext=(.08, -.14), arrowprops=dict(arrowstyle="simple,head_length=0.2,head_width=0.1,tail_width=0.015",linestyle="-", color='white', linewidth=0.02) )    
+    ax2.annotate( "", xy=(-.08, -.14), xytext=(-.08, .14), arrowprops=dict(arrowstyle="->,head_width=0.001,head_length=0.001",linestyle="--", color='white', linewidth=.3) )    
+    ax2.annotate( "", xy=(-.08, .14), xytext=(-.08, .13), arrowprops=dict(arrowstyle="simple,head_length=0.2,head_width=0.1,tail_width=0.04",linestyle="--", color='white', linewidth=0.03) )    
+
+    fig3,ax3 = tb.create_axes_with_exact_size(1.35, 1.2)
+    im3=ax3.imshow(image_Rgr_hyst,origin='lower',extent=[x_unique.min(), x_unique.max(), y_unique.min(), y_unique.max()],vmin=-5,vmax=5)
+    cbar3 = fig3.colorbar(im3, ax=ax3, location="right", fraction=0.05,pad=0.03) 
+    cbar3.set_label('$\Delta R_{Gr}$ (k$\Omega$)', ha='center',fontsize=fs)
+    cbar3.ax.tick_params(labelsize=fs,length=1)
+    # cbar3.set_ticks([100,125,150,175,200])
+    ax3.set_xlabel("V$_b$ (V)",fontsize=fs)
+    ax3.set_ylabel("V$_t$ (V)",fontsize=fs,labelpad=0)  
+    ax3.set_xticks([-.08,0,.08],[-0.08,0,0.08])
+    ax3.set_yticks([-.14,-.07,0,.07,.14])
+    ax3.tick_params(axis="both", labelsize=fs,length=2,color='k') 
+    cbar3.outline.set_linewidth(bw)
+    for spine in ax3.spines.values(): spine.set_linewidth(bw) 
+    ax3.annotate( "", xy=(-.08, -.14), xytext=(.08, -.14), arrowprops=dict(arrowstyle="simple,head_length=0.2,head_width=0.1,tail_width=0.015",linestyle="-", color='white', linewidth=0.02) )    
+    
+    fig1.savefig(folder_path+'R_Gr_map_Vb_ascend.png',dpi=500)
+    fig2.savefig(folder_path+'R_Gr_map_Vb_descend.png',dpi=500)
+    fig3.savefig(folder_path+'R_Gr_map_Vb_hyst.png',dpi=500)
+    
+    return image_Rgr_a
+
+
 if __name__ == "__main__":
 
 
     tb.init_plot_params()
-    path="/Users/carterfox/Library/CloudStorage/GoogleDrive-cdfox@wisc.edu/.shortcut-targets-by-id/1-8q9lGFnGNt4mDzcxXwdk43m1aVWT66q/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round8/c4_2L_2-10/GrSensorSingle/2K/"
+    path="/Users/carterfox/Library/CloudStorage/GoogleDrive-cdfox@wisc.edu/.shortcut-targets-by-id/1-8q9lGFnGNt4mDzcxXwdk43m1aVWT66q/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round8/c4_2L_2-10/GrSensorSingle/2K/2dmap/"
     sample = DualGate_MLGsense('CrI3_2L_MLG', d_b=20, d_m=7.4, d_t=6.6, d_flake=1.4, data_path=path)
-    file = path+'Esweep/twoterm/Esweep_loop1.txt'
-    data = np.loadtxt(file)
-    Vb,V_b_meas,I_b_meas,R_Gr,R_Gr_std,V_Gr = data[:,0],data[:,1],data[:,2],data[:,3],data[:,4],data[:,5]
-    db = sample.d_b
-    dt = sample.d_t
-    dc = sample.d_flake
-    db = db+dt+dc
+    # file = path+'2dmap/'
+    # data = np.loadtxt(file)
+    # Vb,V_b_meas,I_b_meas,R_Gr,R_Gr_std,V_Gr = data[:,0],data[:,1],data[:,2],data[:,3],data[:,4],data[:,5]
+    # db = sample.d_b
+    # dt = sample.d_t
+    # dc = sample.d_flake
+    # db = db+dt+dc
+    
+    image_Rgr_a=plot_2dmap(path, d_b=sample.d_b+sample.d_m+sample.d_flake, d_t=sample.d_t)
 
     
-    diffs = np.diff(Vb)
-    change_indices = np.where(diffs < 0)[0]  # descending starts here
-    if len(change_indices)==0: change_indices = np.array([len(Vb)-1])
-    Vb_ascend, Vb_descend = Vb[:change_indices[0] + 1], Vb[change_indices[0]:]
-    E_ascend, E_descend = Vb_ascend/db, Vb_descend/db
+    # diffs = np.diff(Vb)
+    # change_indices = np.where(diffs < 0)[0]  # descending starts here
+    # if len(change_indices)==0: change_indices = np.array([len(Vb)-1])
+    # Vb_ascend, Vb_descend = Vb[:change_indices[0] + 1], Vb[change_indices[0]:]
+    # E_ascend, E_descend = Vb_ascend/db, Vb_descend/db
     
-    plot = 'R' #'R'
-    fig, ax = plt.subplots(1,1,figsize=(6,5))
-    Vsin=0.1
-    Rbox=1e6
+    # fig, ax = plt.subplots(1,1,figsize=(6,5))
+    # Vsin=0.1
+    # Rbox=1e6
     
-    V_Gr = V_Gr/(1e6)
-    ascend,descend = R_Gr[:change_indices[0]+1], R_Gr[change_indices[0]:]
-    std_ascend,std_descend = R_Gr_std[:change_indices[0]+1],R_Gr_std[change_indices[0]:]
+    # V_Gr = V_Gr/(1e6)
+    # ascend,descend = R_Gr[:change_indices[0]+1], R_Gr[change_indices[0]:]
+    # std_ascend,std_descend = R_Gr_std[:change_indices[0]+1],R_Gr_std[change_indices[0]:]
     # ax.set_xlabel('$V_{b}/d_b$ (Vnm$^{-1}$)'), ax.set_ylabel(r'$R_{Gr}$ (k$\Omega$)')
     # ax.set_xlabel('$V_{b}/d_t$ (Vnm$^{-1}$)'), ax.set_ylabel(r'$R_{Gr}$ (k$\Omega$)')
-    ax.set_xlabel('$E_{\perp}$ (Vnm$^{-1}$)'), ax.set_ylabel(r'$R_{Gr}$ (k$\Omega$)')
+    # ax.set_xlabel('$E_{\perp}$ (Vnm$^{-1}$)'), ax.set_ylabel(r'$R_{Gr}$ (k$\Omega$)')
+    # ax.set_xlim(-.105,.105)
     
-    ax.errorbar(E_ascend, ascend,yerr=std_ascend,color='r',marker='.',ms=3,label=r'$\rightarrow$',elinewidth=0)
-    ax.errorbar(E_descend, descend,yerr=std_descend,color='b',marker='.',ms=3,label=r'$\leftarrow$',elinewidth=0)
-    ax.legend(loc='upper left')
-    plt.savefig(file.replace('.txt','_{}_plot.png'.format(plot)),dpi=500)
+    # ax.errorbar(E_ascend, ascend,yerr=std_ascend,color='r',marker='.',ms=3,label=r'$\rightarrow$',elinewidth=0)
+    # ax.errorbar(E_descend, descend,yerr=std_descend,color='b',marker='.',ms=3,label=r'$\leftarrow$',elinewidth=0)
+    # ax.legend(loc='upper left')
+    # plt.savefig(file.replace('.txt','_{}_plot.png'.format(plot)),dpi=500)
     plt.show()
     
 
