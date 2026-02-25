@@ -127,27 +127,30 @@ if __name__ == "__main__":
     servers_to_close=[lockin,keithley_b,keithley_t]
     
     try:        
-        filesave = 'Esweep_loop2.txt'
-        E_array = np.arange(-0.1,0.102,0.002) #V/nm
+        
+        # filesave = 'goingback.txt'
+        # E_array = np.arange(-0.10,0.005,0.005) #V/nm
         # Vb_array = E_array*(sample.d_b+sample.d_m+sample.d_flake)
-        E_array = np.append(E_array,np.flip(E_array))
+        # E_array = np.append(E_array,np.flip(E_array))
         # Gr_polarization_sensing_singlepoint.main(sample, lockin, keithley_b, Vb_array, filesave,scanaxis='Vb')
-        Gr_polarization_sensing_singlepoint.sweep_Efield(sample, lockin, keithley_b, keithley_t, E_array,filesave)
+        # Gr_polarization_sensing_singlepoint.sweep_Efield(sample, lockin, keithley_b, keithley_t, E_array,filesave)
         
-        # Et_array = np.linspace(-.15,.15,30)
-        # Eb_array = np.linspace(-.1,.10,101)
-        # Vb_array = np.append(Eb_array,np.flip(Eb_array))*(sample.d_b+sample.d_m+sample.d_flake)
-        # Vt_array = Eb_array*sample.d_t
+        Et_array = np.linspace(-.15,.15,25)
+        Eb_array = np.linspace(-.09,.09,91)
+        Vb_array = np.append(Eb_array,np.flip(Eb_array))*(sample.d_b+sample.d_m+sample.d_flake)
+        Vt_array = Et_array*sample.d_t
         
-        # for Vt in Vt_array:
-        #     Vt_cur_array = np.ones_like(Vb_array)*Vt
-        #     keithley_t.source_voltage=Vt
+        for Vt in Vt_array[1:]:
+
+            keithley_t.source_voltage=Vt
+            print(keithley_t.measure_current_avg(10))
             
-        #     Vtstr = str(Vt).replace('-','m').replace('.','p')
-        #     filesave = 'VbVt_mapping_Vt_{}_.txt'.format(Vt)
-        #     Gr_polarization_sensing_singlepoint.main(sample, lockin, keithley_b, Vb_array, filesave,scanaxis='Vb')
+            Vtstr = str(round(Vt,4)).replace('-','m').replace('.','p')
+            filesave = 'VbVt_mapping_Vt_{}_.txt'.format(Vtstr)
+            Gr_polarization_sensing_singlepoint.main(sample, lockin, keithley_b, Vb_array, filesave,scanaxis='Vb')
 
         
+    
         
     except Exception: traceback.print_exc()
     finally: exit_session()

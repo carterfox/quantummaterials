@@ -18,6 +18,9 @@ import toolbelt as tb
 import os
 from matplotlib.lines import Line2D
 from sklearn.linear_model import HuberRegressor
+import logging
+logging.getLogger('matplotlib').setLevel(logging.WARNING)
+
 
 def sweep_Efield(sample: DualGate, lockin: LockInOE1022D, keithley_b: KeithleySourceMeter, keithley_t: KeithleySourceMeter,E_array,file_save='test.txt'):
     plt.ion()
@@ -61,15 +64,15 @@ def sweep_Efield(sample: DualGate, lockin: LockInOE1022D, keithley_b: KeithleySo
     
 
 def main(sample: DualGate, lockin: LockInOE1022D, keithley_b: KeithleySourceMeter,Vb_array,file_save='test.txt',scanaxis='Vb'):
+    if scanaxis == 'Vb': sample.d = (sample.d_b+sample.d_m+sample.d_flake) # sample.d = sample.d_b
+    elif scanaxis == 'Vt': sample.d = sample.d_t
+
     plt.ion()
     fig,ax1,lineup,linedown = init_plot(sample,Vb_array,scanaxis)
     saving_file = make_files(sample,lockin,file_save)
     sample.Vsin = lockin.get_sine_output(1)['amplitude_v']
     
     setup_keithleys(keithley_b)
-    
-    if scanaxis == 'Vb': sample.d = (sample.d_b+sample.d_m+sample.d_flake) # sample.d = sample.d_b
-    elif scanaxis == 'Vt': sample.d = sample.d_t
 
     Vb_list, R_Gr_list, Vb_list_up, Vb_list_down, R_Gr_list_up, R_Gr_list_down = [],[],[],[],[],[]
     
@@ -107,10 +110,10 @@ def main(sample: DualGate, lockin: LockInOE1022D, keithley_b: KeithleySourceMete
 def setup_keithleys(keithley_b=None,keithley_t=None):
     if keithley_b!=None:
         keithley_b.enable_source() 
-        keithley_b.apply_voltage()
+        keithley_b.apply_voltage(compliance_current=keithley_b.compliance_current)
     if keithley_t!=None:
         keithley_t.enable_source() 
-        keithley_t.apply_voltage()
+        keithley_t.apply_voltage(compliance_current=keithley_t.compliance_current)
         
 def set_gates(keithley_b=None,keithley_t=None,Vb=0,Vt=0):
     
@@ -135,7 +138,7 @@ def save_data(data_save,saving_file):
         file.write(' '.join(f"{d:.9f}" for d in data_save) + '\n') 
         
 def update_plot(sample, lineup: Line2D,linedown: Line2D, xup_data, yup_data, xdown_data, ydown_data, 
-                ax: plt.Axes, fig: plt.Figure, pause_time: float = 0.05, scanaxis='Vb'):
+                ax: plt.Axes, fig: plt.Figure, scanaxis='Vb'):
     if scanaxis == 'Efield': xup_data,xdown_data = np.asarray(xup_data), np.asarray(xdown_data) 
     else: xup_data,xdown_data = np.asarray(xup_data)/sample.d , np.asarray(xdown_data)/sample.d 
     lineup.set_data(xup_data, yup_data)
@@ -144,7 +147,7 @@ def update_plot(sample, lineup: Line2D,linedown: Line2D, xup_data, yup_data, xdo
     ax.autoscale_view()
     fig.canvas.draw()
     fig.canvas.flush_events()
-    plt.pause(pause_time)
+    plt.pause(.05)
 
 def init_plot(sample,X_array,scanaxis):
     fig, ax1 = plt.subplots()
@@ -155,7 +158,7 @@ def init_plot(sample,X_array,scanaxis):
     ax1.add_line(lineup)
     ax1.add_line(linedown)
     if scanaxis == 'Efield': 
-        ax1.set_xlabel('$E_\perp$ (V nm$^{-1}$)')
+        ax1.set_xlabel('$E_{⟂}$ (V nm$^{-1}$)')
         xmin,xmax = np.min(X_array),np.max(X_array)
         ax1.set_xlim(xmin - .1*abs(xmin), xmax + .1*abs(xmax))
     else: 
@@ -224,7 +227,7 @@ if __name__ == "__main__":
     std_ascend,std_descend = R_Gr_std[:change_indices[0]+1],R_Gr_std[change_indices[0]:]
     # ax.set_xlabel('$V_{b}/d_b$ (Vnm$^{-1}$)'), ax.set_ylabel(r'$R_{Gr}$ (k$\Omega$)')
     # ax.set_xlabel('$V_{b}/d_t$ (Vnm$^{-1}$)'), ax.set_ylabel(r'$R_{Gr}$ (k$\Omega$)')
-    ax.set_xlabel('$E_{\perp}$ (Vnm$^{-1}$)'), ax.set_ylabel(r'$R_{Gr}$ (k$\Omega$)')
+    ax.set_xlabel('$E_{⟂}$ (Vnm$^{-1}$)'), ax.set_ylabel(r'$R_{Gr}$ (k$\Omega$)')
     
     ax.errorbar(E_ascend, ascend,yerr=std_ascend,color='r',marker='.',ms=3,label=r'$\rightarrow$',elinewidth=0)
     ax.errorbar(E_descend, descend,yerr=std_descend,color='b',marker='.',ms=3,label=r'$\leftarrow$',elinewidth=0)
