@@ -391,10 +391,13 @@ def plot_dualmap(image_ta,image_td,image_cda, image_cdd, x_unique,y_unique):
     im4 = ax4.imshow(image_cdd,origin='lower',extent=[x_unique.min(), x_unique.max(), y_unique.min(), y_unique.max()],vmin=-17,vmax=17,cmap='coolwarm') 
    
     fs=8
-    ax1.set_xlabel("$E_x$ (kV/cm)", fontsize=fs) 
-    ax1.set_ylabel("$E_y$ (kV/cm)", fontsize=fs,labelpad=-4) 
+    xlabel = "$E_x$ (kV cm$^{-1}$)"
+    ylabel = "$E_y$ (kV cm$^{-1}$)"
+    
+    ax1.set_xlabel(xlabel, fontsize=fs) 
+    ax1.set_ylabel(ylabel, fontsize=fs,labelpad=-4) 
     ax1.tick_params(axis="both", labelsize=fs) 
-    ax2.set_xlabel("$E_x$ (kV/cm)", fontsize=fs) 
+    ax2.set_xlabel(xlabel, fontsize=fs) 
     # ax2.set_ylabel("E$_y$ (kV/cm)", fontsize=fs) 
     ax2.set_yticks([-140,-70,0,70,140],[])
     ax1.set_xticks([-140,-70,0,70,140])
@@ -402,11 +405,10 @@ def plot_dualmap(image_ta,image_td,image_cda, image_cdd, x_unique,y_unique):
     ax1.set_yticks([-140,-70,0,70,140])
     ax1.tick_params(axis="both", labelsize=fs,length=2) 
     ax2.tick_params(axis="both", labelsize=fs,length=2) 
-    
-    ax3.set_xlabel("$E_x$ (kV/cm)", fontsize=fs) 
-    ax3.set_ylabel("$E_y$ (kV/cm)", fontsize=fs,labelpad=-4) 
+    ax3.set_xlabel(xlabel, fontsize=fs) 
+    ax3.set_ylabel(ylabel, fontsize=fs,labelpad=-4) 
     ax3.tick_params(axis="both", labelsize=fs) 
-    ax4.set_xlabel("$E_x$ (kV/cm)", fontsize=fs) 
+    ax4.set_xlabel(xlabel, fontsize=fs) 
     # ax4.set_ylabel("E$_y$ (kV/cm)", fontsize=fs) 
     ax4.set_yticks([-140,-70,0,70,140],[])
     ax3.set_xticks([-140,-70,0,70,140])
@@ -432,12 +434,12 @@ def plot_dualmap(image_ta,image_td,image_cda, image_cdd, x_unique,y_unique):
     ax1.annotate( "", xy=(-132.5, 140), xytext=(-132.5, -140), arrowprops=dict(arrowstyle="simple,head_length=0.3,head_width=0.2,tail_width=0.04",linestyle="--", color='white', linewidth=0.1) )    
     ax2.annotate( "", xy=(-132.5, 140), xytext=(-132.5, -140), arrowprops=dict(arrowstyle="simple,head_length=0.3,head_width=0.2,tail_width=0.04",linestyle="--", color='white', linewidth=0.1) )    
 
-    ax4.annotate( "", xy=(-120, 138), xytext=(-115, 138), arrowprops=dict(arrowstyle="simple,head_length=0.3,head_width=0.2,tail_width=0.04",linestyle="-", color='k', linewidth=0.1) )    
-    ax4.annotate( "", xy=(-124, 138), xytext=(140, 138), arrowprops=dict(arrowstyle="->,head_width=0.001,head_length=0.001",linestyle="--", color='k', linewidth=1) )    
-    ax3.annotate( "", xy=(140, 138), xytext=(-124, 138), arrowprops=dict(arrowstyle="->,head_width=0.001,head_length=0.001",linestyle="--", color='k', linewidth=1) )    
-    ax3.annotate( "", xy=(137, 138), xytext=(132, 138), arrowprops=dict(arrowstyle="simple,head_length=0.3,head_width=0.2,tail_width=0.04",linestyle="--", color='k', linewidth=0.1) )    
-    ax3.annotate( "", xy=(-132.5, 140), xytext=(-132.5, -140), arrowprops=dict(arrowstyle="simple,head_length=0.3,head_width=0.2,tail_width=0.04",linestyle="--", color='k', linewidth=0.1) )    
-    ax4.annotate( "", xy=(-132.5, 140), xytext=(-132.5, -140), arrowprops=dict(arrowstyle="simple,head_length=0.3,head_width=0.2,tail_width=0.04",linestyle="--", color='k', linewidth=0.1) )    
+    # ax4.annotate( "", xy=(-120, 138), xytext=(-115, 138), arrowprops=dict(arrowstyle="simple,head_length=0.3,head_width=0.2,tail_width=0.04",linestyle="-", color='k', linewidth=0.1) )    
+    # ax4.annotate( "", xy=(-124, 138), xytext=(140, 138), arrowprops=dict(arrowstyle="->,head_width=0.001,head_length=0.001",linestyle="--", color='k', linewidth=1) )    
+    # ax3.annotate( "", xy=(140, 138), xytext=(-124, 138), arrowprops=dict(arrowstyle="->,head_width=0.001,head_length=0.001",linestyle="--", color='k', linewidth=1) )    
+    # ax3.annotate( "", xy=(137, 138), xytext=(132, 138), arrowprops=dict(arrowstyle="simple,head_length=0.3,head_width=0.2,tail_width=0.04",linestyle="--", color='k', linewidth=0.1) )    
+    # ax3.annotate( "", xy=(-132.5, 140), xytext=(-132.5, -140), arrowprops=dict(arrowstyle="simple,head_length=0.3,head_width=0.2,tail_width=0.04",linestyle="--", color='k', linewidth=0.1) )    
+    # ax4.annotate( "", xy=(-132.5, 140), xytext=(-132.5, -140), arrowprops=dict(arrowstyle="simple,head_length=0.3,head_width=0.2,tail_width=0.04",linestyle="--", color='k', linewidth=0.1) )    
 
     bw=0.5
     for spine in ax1.spines.values(): spine.set_linewidth(bw) 
@@ -482,22 +484,22 @@ def plot_linecut(Ex_list,Ey_list,SHG,SHG_std,SHG_CD,SHG_CD_std,Esweep='x',Efixva
     
     ax0.errorbar(E_list_ascend, SHG_CD_ascend, yerr=SHG_CD_std_ascend,color='black',  label=r'$\rightarrow$',marker='.',elinewidth=elw,ms=ms)
     ax0.errorbar(E_list_descend, SHG_CD_descend, yerr=SHG_CD_std_descend,color=colord,  label=r'$\leftarrow$',marker='.',elinewidth=elw,ms=ms)
-    ax0.set_ylabel(r'SHG-CD ($\%$)', fontsize=fs,labelpad=0)
-    ax0.set_yticks([-16,-8,0,8,16])
-    ax0.set_ylim(-21,21)
-    ax0.text(-155,-5,'$E_y$=10kV/cm',fontsize=fs*.72)
-    ax0.annotate( "", xy=(85, 6), xytext=(20, 6), arrowprops=dict(arrowstyle="simple,head_length=0.3,head_width=0.2,tail_width=0.07",linestyle="-", color='k', linewidth=0.15) )    
-    ax0.annotate( "", xy=(20, -16.5), xytext=(85, -16.5), arrowprops=dict(arrowstyle="simple,head_length=0.3,head_width=0.2,tail_width=0.07",linestyle="-", color='r', linewidth=0.15) )    
+    ax0.set_ylabel(r'SHG-CD ($\%$)', fontsize=fs,labelpad=3)
+    ax0.set_yticks([-20,-10,0,10,20])
+    ax0.set_ylim(-24,24)
+    ax0.text(-155,-20.5,'$E_y$ = 10 kV cm$^{-1}$',fontsize=fs*.82)
+    ax0.annotate( "", xy=(65, 6), xytext=(0, 6), arrowprops=dict(arrowstyle="simple,head_length=0.3,head_width=0.2,tail_width=0.07",linestyle="-", color='k', linewidth=0.15) )    
+    ax0.annotate( "", xy=(40, -16.5), xytext=(105, -16.5), arrowprops=dict(arrowstyle="simple,head_length=0.3,head_width=0.2,tail_width=0.07",linestyle="-", color='r', linewidth=0.15) )    
         
     ax1.errorbar(E_list_ascend, SHG_ascend, yerr=SHG_std_ascend,color='black',  label=r'$\rightarrow$',marker='.',elinewidth=elw,ms=ms)
     ax1.errorbar(E_list_descend, SHG_descend, yerr=SHG_std_descend,color=colord,  label=r'$\leftarrow$',marker='.',elinewidth=elw,ms=ms)
-    ax1.set_ylabel(r'SHG Intensity', fontsize=fs) 
+    ax1.set_ylabel(r'SHG Intensity', fontsize=fs,labelpad=3) 
     # ax1.set_yticks([.3,.6,.9])
-    ax1.text(40,.71,'$E_y$=10kV/cm',fontsize=fs*.72)
+    ax1.text(-8,.74,'$E_y$ = 10 kV cm$^{-1}$',fontsize=fs*.82)
     ax1.annotate( "", xy=(40, .57), xytext=(-25, .57), arrowprops=dict(arrowstyle="simple,head_length=0.3,head_width=0.2,tail_width=0.07",linestyle="-", color='k', linewidth=0.15) )    
     ax1.annotate( "", xy=(-20, .38), xytext=(45, .38), arrowprops=dict(arrowstyle="simple,head_length=0.3,head_width=0.2,tail_width=0.07",linestyle="-", color='r', linewidth=0.15) )    
         
-    ax0.set_xlabel(Estr+r' (kV/cm)', fontsize=fs), ax1.set_xlabel(Estr+r' (kV/cm)', fontsize=fs)
+    ax0.set_xlabel(Estr+r' (kV cm$^{-1}$)', fontsize=fs), ax1.set_xlabel(Estr+r' (kV cm$^{-1}$)', fontsize=fs)
     ax0.set_xticks([-140,-70,0,70,140]), ax1.set_xticks([-140,-70,0,70,140])
     ax0.tick_params(axis="both", labelsize=fs,length=2), ax1.tick_params(axis="both", labelsize=fs,length=2) 
     
@@ -535,8 +537,8 @@ def plot_supp_linecut(Ex_list,Ey_list,
     ax1.set_ylim(ymin_T,ymax_T),ax3.set_ylim(ymin_T,ymax_T),ax5.set_ylim(ymin_T,ymax_T),ax7.set_ylim(ymin_T,ymax_T),ax9.set_ylim(ymin_T,ymax_T)
     
     ax1.set_ylabel(r'SHG Intensity', fontsize=fs), ax0.set_ylabel(r'SHG-CD ($\%$)', fontsize=fs)
-    ax0.set_xlabel(r'$E_x$ (kV/cm)', fontsize=fs),ax2.set_xlabel(r'$E_x$ (kV/cm)', fontsize=fs)
-    ax4.set_xlabel(r'$E_x$ (kV/cm)', fontsize=fs),ax6.set_xlabel(r'$E_x$ (kV/cm)', fontsize=fs), ax8.set_xlabel(r'$E_x$ (kV/cm)', fontsize=fs)
+    ax0.set_xlabel(r'$E_x$ (kV cm$^{-1}$)', fontsize=fs),ax2.set_xlabel(r'$E_x$ (kV cm$^{-1}$)', fontsize=fs)
+    ax4.set_xlabel(r'$E_x$ (kV cm$^{-1}$)', fontsize=fs),ax6.set_xlabel(r'$E_x$ (kV cm$^{-1}$)', fontsize=fs), ax8.set_xlabel(r'$E_x$ (kV cm$^{-1}$)', fontsize=fs)
 
     for ax in axs:
         for axx in ax:
@@ -560,7 +562,7 @@ def plot_supp_linecut(Ex_list,Ey_list,
     ax0.errorbar(E_list_descend, SHG_CD_descend, yerr=SHG_CD_std_descend,color=colord,  label=r'$\leftarrow$',marker='.',elinewidth=elw,ms=ms)            
     ax1.errorbar(E_list_ascend, SHG_ascend, yerr=SHG_std_ascend,color='black',  label=r'$\rightarrow$',marker='.',elinewidth=elw,ms=ms)
     ax1.errorbar(E_list_descend, SHG_descend, yerr=SHG_std_descend,color=colord,  label=r'$\leftarrow$',marker='.',elinewidth=elw,ms=ms)
-    ax1.set_title('$E_y$ = -140 kV/cm',fontsize=fs)
+    ax1.set_title('$E_y$ = -140 kV cm$^{-1}$',fontsize=fs)
     ax1.annotate( "", xy=(65, .8), xytext=(0, .85), arrowprops=dict(arrowstyle="simple,head_length=0.3,head_width=0.2,tail_width=0.07",linestyle="-", color='k', linewidth=0.15) )    
     ax1.annotate( "", xy=(0, .41), xytext=(65, .37), arrowprops=dict(arrowstyle="simple,head_length=0.3,head_width=0.2,tail_width=0.07",linestyle="-", color='r', linewidth=0.15) )    
         
@@ -574,7 +576,7 @@ def plot_supp_linecut(Ex_list,Ey_list,
     ax2.errorbar(E_list_descend, SHG_CD_descend, yerr=SHG_CD_std_descend,color=colord,  label=r'$\leftarrow$',marker='.',elinewidth=elw,ms=ms)            
     ax3.errorbar(E_list_ascend, SHG_ascend, yerr=SHG_std_ascend,color='black',  label=r'$\rightarrow$',marker='.',elinewidth=elw,ms=ms)
     ax3.errorbar(E_list_descend, SHG_descend, yerr=SHG_std_descend,color=colord,  label=r'$\leftarrow$',marker='.',elinewidth=elw,ms=ms)
-    ax3.set_title('$E_y$ = -100 kV/cm',fontsize=fs)
+    ax3.set_title('$E_y$ = -100 kV cm$^{-1}$',fontsize=fs)
 
     SHG,SHG_std,SHG_CD,SHG_CD_std = SHG_total_m3,SHG_total_std_m3,SHG_CD_m3,SHG_CD_std_m3
     SHG_CD_ascend,SHG_CD_descend = SHG_CD[0:transition_index],SHG_CD[transition_index:]
@@ -586,7 +588,7 @@ def plot_supp_linecut(Ex_list,Ey_list,
     ax4.errorbar(E_list_descend, SHG_CD_descend, yerr=SHG_CD_std_descend,color=colord,  label=r'$\leftarrow$',marker='.',elinewidth=elw,ms=ms)            
     ax5.errorbar(E_list_ascend, SHG_ascend, yerr=SHG_std_ascend,color='black',  label=r'$\rightarrow$',marker='.',elinewidth=elw,ms=ms)
     ax5.errorbar(E_list_descend, SHG_descend, yerr=SHG_std_descend,color=colord,  label=r'$\leftarrow$',marker='.',elinewidth=elw,ms=ms)
-    ax5.set_title('$E_y$ = -30 kV/cm',fontsize=fs)
+    ax5.set_title('$E_y$ = -30 kV cm$^{-1}$',fontsize=fs)
 
     SHG,SHG_std,SHG_CD,SHG_CD_std = SHG_total_1,SHG_total_std_1,SHG_CD_1,SHG_CD_std_1
     SHG_CD_ascend,SHG_CD_descend = SHG_CD[0:transition_index],SHG_CD[transition_index:]
@@ -598,7 +600,7 @@ def plot_supp_linecut(Ex_list,Ey_list,
     ax6.errorbar(E_list_descend, SHG_CD_descend, yerr=SHG_CD_std_descend,color=colord,  label=r'$\leftarrow$',marker='.',elinewidth=elw,ms=ms)            
     ax7.errorbar(E_list_ascend, SHG_ascend, yerr=SHG_std_ascend,color='black',  label=r'$\rightarrow$',marker='.',elinewidth=elw,ms=ms)
     ax7.errorbar(E_list_descend, SHG_descend, yerr=SHG_std_descend,color=colord,  label=r'$\leftarrow$',marker='.',elinewidth=elw,ms=ms)
-    ax7.set_title('$E_y$ = 10 kV/cm',fontsize=fs)
+    ax7.set_title('$E_y$ = 10 kV cm$^{-1}$',fontsize=fs)
 
     SHG,SHG_std,SHG_CD,SHG_CD_std = SHG_total_10,SHG_total_std_10,SHG_CD_10,SHG_CD_std_10
     SHG_CD_ascend,SHG_CD_descend = SHG_CD[0:transition_index],SHG_CD[transition_index:]
@@ -610,7 +612,7 @@ def plot_supp_linecut(Ex_list,Ey_list,
     ax8.errorbar(E_list_descend, SHG_CD_descend, yerr=SHG_CD_std_descend,color=colord,  label=r'$\leftarrow$',marker='.',elinewidth=elw,ms=ms)            
     ax9.errorbar(E_list_ascend, SHG_ascend, yerr=SHG_std_ascend,color='black',  label=r'$\rightarrow$',marker='.',elinewidth=elw,ms=ms)
     ax9.errorbar(E_list_descend, SHG_descend, yerr=SHG_std_descend,color=colord,  label=r'$\leftarrow$',marker='.',elinewidth=elw,ms=ms)
-    ax9.set_title('$E_y$ = 100 kV/cm',fontsize=fs)
+    ax9.set_title('$E_y$ = 100 kV cm$^{-1}$',fontsize=fs)
 
     return fig
 
@@ -622,20 +624,21 @@ if __name__ == "__main__":
     # txtfiles_sorted = sorted(txtfiles, key=os.path.getmtime)
     sample = FourTerminal('NbOI290deg4termS3', 5, path_d1)
     w = sample.channel_width
-    # file_path = path_d1+'mapping_fix_y_1p0_ascend.txt'
-    # data = np.loadtxt(file_path,comments='#')
-    # Vx,Vy,SHG_C1,SHG_C1_std,SHG_C2,SHG_C2_std,SHG_CD,SHG_CD_std,Ix,Iy = data[:,0],data[:,1],np.array(data[:,2]),np.array(data[:,3]),np.array(data[:,4]),np.array(data[:,5]),np.array(data[:,6]),np.array(data[:,7]),data[:,8],data[:,9]
-    # Ex_list, Ey_list = Vx/w*10, Vy/w*10
-    # SHG_total,SHG_total_std = SHG_C1 + SHG_C2, np.sqrt(SHG_C1_std**2 + SHG_C2_std**2)
-    # SHG_CD_std = get_SGH_CD_std(SHG_C1,SHG_C2,SHG_C1_std,SHG_C2_std)
-    
-    
-    # fig_t,fig_CD=plot_linecut(Ex_list,Ey_list,SHG_total,SHG_total_std,SHG_CD,SHG_CD_std,Esweep='x',Efixval=10,value='CD')
-    # fig_t.savefig(path_d1+'plot_supp_linecut1_total.svg',dpi=500)
-    # fig_CD.savefig(path_d1+'plot_supp_linecut1_CD.svg',dpi=500)
-    
-    
     '''
+    file_path = path_d1+'mapping_fix_y_1p0_ascend.txt'
+    data = np.loadtxt(file_path,comments='#')
+    Vx,Vy,SHG_C1,SHG_C1_std,SHG_C2,SHG_C2_std,SHG_CD,SHG_CD_std,Ix,Iy = data[:,0],data[:,1],np.array(data[:,2]),np.array(data[:,3]),np.array(data[:,4]),np.array(data[:,5]),np.array(data[:,6]),np.array(data[:,7]),data[:,8],data[:,9]
+    Ex_list, Ey_list = Vx/w*10, Vy/w*10
+    SHG_total,SHG_total_std = SHG_C1 + SHG_C2, np.sqrt(SHG_C1_std**2 + SHG_C2_std**2)
+    SHG_CD_std = get_SGH_CD_std(SHG_C1,SHG_C2,SHG_C1_std,SHG_C2_std)
+    
+    
+    fig_t,fig_CD=plot_linecut(Ex_list,Ey_list,SHG_total,SHG_total_std,SHG_CD,SHG_CD_std,Esweep='x',Efixval=10,value='CD')
+    fig_t.savefig(path_d1+'plot_supp_linecut1_total.svg',dpi=500)
+    fig_CD.savefig(path_d1+'plot_supp_linecut1_CD.svg',dpi=500)
+    '''
+    
+    
     file_path = path_d1+'mapping_fix_y_m14p0_ascend.txt'
     data = np.loadtxt(file_path,comments='#')
     Vx,Vy,SHG_C1,SHG_C1_std,SHG_C2,SHG_C2_std,SHG_CD,SHG_CD_std,Ix,Iy = data[:,0],data[:,1],np.array(data[:,2]),np.array(data[:,3]),np.array(data[:,4]),np.array(data[:,5]),np.array(data[:,6]),np.array(data[:,7]),data[:,8],data[:,9]
@@ -685,20 +688,35 @@ if __name__ == "__main__":
                           SHG_total_10,SHG_total_std_10,SHG_CD_10,SHG_CD_std_10,
                           Esweep='x',Efixval=10,value='CD')
     fig.savefig(path_d1+'plot_supp_linecuts.svg',dpi=500)
+    plt.show()
+    
     '''
-    # '''
 
-    path_map = '/Users/carterfox/My Drive (cdfox@wisc.edu)/StackingTransitions/NbOI2/Lvgroup/Efield-samples-for-optics/90deg_3L3L_4term_S3/SHG-CD-Efield/1-16-2dmap/'
-    x_unique,y_unique,image_cda,image_cdd,image_cdh,image_ta,image_td,image_th = analyze_files_2dmap(path_map,fast_axis='x',slow_direction='a')
+    # path_map = '/Users/carterfox/My Drive (cdfox@wisc.edu)/StackingTransitions/NbOI2/Lvgroup/Efield-samples-for-optics/90deg_3L3L_4term_S3/SHG-CD-Efield/1-16-2dmap/'
+    # x_unique,y_unique,image_cda,image_cdd,image_cdh,image_ta,image_td,image_th = analyze_files_2dmap(path_map,fast_axis='x',slow_direction='a')
+    # x_unique_d,y_unique_d,image_cda_d,image_cdd_d,image_cdh_d,image_ta_d,image_td_d,image_th_d = analyze_files_2dmap(path_map,fast_axis='x',slow_direction='a')
     # plot_map(image_cdd, x_unique, y_unique,vmin=-18,vmax=18)
-    fig_ta,fig_td,fig_cda,fig_cdd=plot_dualmap(image_ta,image_td, image_cda, image_cdd, x_unique, y_unique)
+    # fig_ta,fig_td,fig_cda,fig_cdd=plot_dualmap(image_ta,image_td, image_cda, image_cdd, x_unique, y_unique)
     # fig_ta.savefig(path_d1+'plot_fig4_c.svg',dpi=500)
     # fig_td.savefig(path_d1+'plot_fig4_d.svg',dpi=500)
     # fig_cda.savefig(path_d1+'plot_fig4_f.svg',dpi=500)
     # fig_cdd.savefig(path_d1+'plot_fig4_g.svg',dpi=500)
-    
-    plt.show()
-    
-    
-    
-
+    # plt.figure()
+    # for x in range(0,31):
+    #     fig,(ax0,ax1) = plt.subplots(2,1,figsize=(4.5,5),sharex=True)
+    #     ax0.plot(y_unique,image_td[:,x]/2743.3 ,color='k')
+    #     ax1.plot(y_unique,image_cdd[:,x],color='k')
+        
+    #     ax0.plot(y_unique_d,image_td_d[:,x]/2743.3 ,color='r')
+    #     ax1.plot(y_unique_d,image_cdd_d[:,x],color='r')
+    #     y = str(y_unique[x]) 
+    #     ystr = str(y_unique[x]).replace('-','m')
+    #     ax1.set_xlabel('$E_y$ (kV/cm)')
+    #     ax1.set_ylabel('SHG-CD (%)')
+    #     ax0.set_ylabel('SHG Intensity')
+    #     ax1.set_xticks([-140,-70,0,70,140])
+    #     plt.suptitle('$E_x$ = {} kV/cm'.format(y))
+        # plt.savefig(path_d1+'Eylinceuts/linecut_Ex_{}_ascend.png'.format(ystr),dpi=500)
+        # plt.close()
+    plt.show()   
+    # '''
