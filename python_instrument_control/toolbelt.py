@@ -21,6 +21,102 @@ import astropy.constants as cont
 import astropy.units as uu
 
 
+def dirac_resistance(Vg, R0, B, V_D, n0):
+    """
+    Graphene Dirac resistance vs gate voltage.
+
+    Parameters
+    ----------
+    Vg : array-like
+        Gate voltage.
+    R0 : float
+        Background/contact resistance.
+    B : float
+        Amplitude scaling factor.
+    V_D : float
+        Dirac point gate voltage.
+    n0 : float
+        Residual carrier density parameter (rounding).
+
+    Returns
+    -------
+    array-like
+        Resistance R(Vg).
+    """
+    return R0 + B / np.sqrt(n0**2 + (Vg - V_D)**2)
+
+
+
+def lorentzian_linear_bg(x, A, x0, gamma, m, b):
+    """
+    Lorentzian peak with linear background.
+
+    Parameters
+    ----------
+    x : array-like
+        Input x values.
+    A : float
+        Amplitude of the Lorentzian peak.
+    x0 : float
+        Center position of the peak.
+    gamma : float
+        Full width at half maximum (FWHM).
+    m : float
+        Slope of the linear background.
+    b : float
+        Intercept of the linear background.
+
+    Returns
+    -------
+    array-like
+        Lorentzian + linear background evaluated at x.
+    """
+    lor = A * (0.5 * gamma)**2 / ((x - x0)**2 + (0.5 * gamma)**2)
+    return lor + (m * x + b)
+
+
+def lorentzian(x, A, x0, gamma, C):
+    """
+    Lorentzian peak function.
+
+    Parameters
+    ----------
+    x : array-like
+        Input x values.
+    A : float
+        Amplitude of the peak.
+    x0 : float
+        Center position of the peak.
+    gamma : float
+        Full width at half maximum (FWHM).
+    C : float
+        Constant baseline offset.
+
+    Returns
+    -------
+    array-like
+        Lorentzian evaluated at x.
+    """
+    return A * (0.5 * gamma)**2 / ((x - x0)**2 + (0.5 * gamma)**2) + C
+
+
+def to_superscript(expr):
+    superscripts = {
+        "-": "⁻",
+        "0": "⁰",
+        "1": "¹",
+        "2": "²",
+        "3": "³",
+        "4": "⁴",
+        "5": "⁵",
+        "6": "⁶",
+        "7": "⁷",
+        "8": "⁸",
+        "9": "⁹"
+    }
+    return "".join(superscripts.get(ch, ch) for ch in expr)
+
+
 def create_axes_with_exact_size(ax_width_in, ax_height_in, margins_in=(0.1,0.1), dpi=500,proj='rectilinear'):
     """
     Create a figure where the axes area is exactly ax_width_in × ax_height_in inches.
