@@ -81,9 +81,11 @@ def main(sample: DualGate, lockin: LockInOE1022D, keithley_b: KeithleySourceMete
     setup_keithleys(keithley_b)
 
     Vb_list, R_Gr_list, Vb_list_up, Vb_list_down, R_Gr_list_up, R_Gr_list_down = [],[],[],[],[],[]
+    print('Eb(V/nm)  Vb(V)  Ib(nA)  Vgr(V)  Igr(nA)  Rgr(Kohm)')
     
     for Vb in Vb_array: # sweep Vb 
     
+        Eb = Vb/sample.d
         V_b_meas,I_b_meas,_,_ = set_gates(keithley_b,None,Vb,0)
         time.sleep(lockin.delay)
         
@@ -93,7 +95,7 @@ def main(sample: DualGate, lockin: LockInOE1022D, keithley_b: KeithleySourceMete
         I_Gr = Vbox/sample.Rbox *10**3 #nA  . Rbox should be in ohm
         
         R_Gr,R_Gr_std = V_Gr/I_Gr, V_Gr_std/I_Gr
-        print(round(V_b_meas,3),round(I_b_meas,3),round(V_Gr,4),round(I_Gr,4),round(R_Gr,3))
+        print(round(Eb,3),round(V_b_meas,3),round(I_b_meas,3),round(V_Gr,4),round(I_Gr,4),round(R_Gr,3))
         
         if len(Vb_list) != 0:
             if Vb >= Vb_list[-1]: Vb_list_up.append(Vb), R_Gr_list_up.append(R_Gr)
