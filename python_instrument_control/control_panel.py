@@ -18,15 +18,15 @@ import time
 logging.basicConfig(level=logging.INFO, format='%(levelname)s - %(message)s')
 logging.getLogger('matplotlib').setLevel(logging.WARNING)
 from homemade_servers.SSI_OE1022D import LockInOE1022D
-from homemade_servers.QDopticool import Opticool
+# from homemade_servers.QDopticool import Opticool
 # from homemade_servers.H11890PMT import HamamatsuH11890
 # from homemade_servers.AndorCameraSpectrometer import AndorCamSpec
 from homemade_servers.KeithleySourceMeter import KeithleySourceMeter
-from homemade_servers.ThorlabsKCube import RotationMount
+# from homemade_servers.ThorlabsKCube import RotationMount
 from devices.dualgate import DualGate, DualGate_MLGsense
 # from devices.optical import Optical
 # from devices.transport import FourTerminal
-from experiments import RMCD_bfield_scan, RMCD_mapping, RMCD_dualgate_Esweep
+# from experiments import RMCD_bfield_scan, RMCD_mapping, RMCD_dualgate_Esweep
 # from experiments import SHG_CD_Efield_4term
 # from experiments import PMT_continuous_read, SHG_polarization_scan, 
 from experiments import Gr_polarization_sensing, Gr_polarization_sensing_singlepoint
@@ -115,39 +115,28 @@ if __name__ == "__main__":
     
     ###### add it to servers_to_close if you want them to close each time. 
     ###### at this point only cam_spec should not be in it
-    base = "I:/.shortcut-targets-by-id/1-8q9lGFnGNt4mDzcxXwdk43m1aVWT66q/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round8/c4_2L_2-10/"
-    data_path=base+"GrSensorSingle/2K/Esweep/twoterm/"
-    sample = DualGate_MLGsense('CrI3_2L_MLG', d_b=20, d_m=7.4, d_t=6.6, d_flake=1.4, data_path=data_path)
+    base = "I:/.shortcut-targets-by-id/1-8q9lGFnGNt4mDzcxXwdk43m1aVWT66q/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round8/c6_2L2L_3-1/"
+    data_path=base+"GrSensorSingle/Vt_ground_fourterm/"
+    sample = DualGate_MLGsense('CrI3_2L2L_MLG_c5_big', d_b=11, d_m=2, d_t=11, d_flake=2.8, data_path=data_path)
     sample.temperature=2
-    lockin = get_lockin(delay=3,num_avgs=100)
+    lockin = get_lockin(delay=2,num_avgs=150)
     sample.Vsin=0.1
     sample.Rbox=1e6
-    keithley_b = get_keithley('GPIB1::16::INSTR','2400',compliance_current=50e-9)
-    keithley_t = get_keithley('GPIB1::1::INSTR','2400',compliance_current=50e-9)
-    servers_to_close=[lockin,keithley_b,keithley_t]
+    keithley_b = get_keithley('GPIB1::1::INSTR',compliance_current=3e-8)
+    # keithley_b.enable_source()
+    # keithley_t = get_keithley('GPIB1::16::INSTR','2400')
+    servers_to_close=[lockin,keithley_b]
     
     try:        
+    
+        Eb_array = np.arange(.5,-0.02,-0.02)
+        # Eb_array = np.arange(.1,-0.01,-0.01)
+        # Eb_array = np.append(Eb_array,np.flip(Eb_array))
+        Vb_array = Eb_array*(sample.d_b+sample.d_m+sample.d_flake)        
+        filesave = 'goingback.txt'
+        # filesave = 'loop2_reverse_2k_fourterm.txt'
         
-        # filesave = 'goingback.txt'
-        # E_array = np.arange(-0.10,0.005,0.005) #V/nm
-        # Vb_array = E_array*(sample.d_b+sample.d_m+sample.d_flake)
-        # E_array = np.append(E_array,np.flip(E_array))
-        # Gr_polarization_sensing_singlepoint.main(sample, lockin, keithley_b, Vb_array, filesave,scanaxis='Vb')
-        # Gr_polarization_sensing_singlepoint.sweep_Efield(sample, lockin, keithley_b, keithley_t, E_array,filesave)
-        
-        Et_array = np.linspace(-.15,.15,25)
-        Eb_array = np.linspace(-.09,.09,91)
-        Vb_array = np.append(Eb_array,np.flip(Eb_array))*(sample.d_b+sample.d_m+sample.d_flake)
-        Vt_array = Et_array*sample.d_t
-        
-        for Vt in Vt_array[1:]:
-
-            keithley_t.source_voltage=Vt
-            print(keithley_t.measure_current_avg(10))
-            
-            Vtstr = str(round(Vt,4)).replace('-','m').replace('.','p')
-            filesave = 'VbVt_mapping_Vt_{}_.txt'.format(Vtstr)
-            Gr_polarization_sensing_singlepoint.main(sample, lockin, keithley_b, Vb_array, filesave,scanaxis='Vb')
+        Gr_polarization_sensing_singlepoint.main(sample, lockin, keithley_b, Vb_array, filesave,scanaxis='Vb')
 
         
     

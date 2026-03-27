@@ -188,6 +188,7 @@ class LockInOE1022D():
         if sensitivity in self.sensitivities:
             index = str(np.where(self.sensitivities == sensitivity)[0][0])
             self.write(f"SENSD {channel},{index}")
+            
         else:
             logging.warning(f"Invalid sensitivity: {sensitivity}")
 

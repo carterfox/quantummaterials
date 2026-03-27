@@ -47,13 +47,16 @@ def KeithleySourceMeter(resource_name, model="2450"):
             self.filter_type = filter_type
             self.filter_state = filter_state
             
-        def measure_current_avg(self,num_points,nplc=.5):
+        def measure_current_avg(self,num_points,nplc=.5,absolute=False):
             self.measure_current(nplc=nplc)
             self.config_buffer(num_points)
             time.sleep(0.1)
             self.start_buffer()
             self.wait_for_buffer()
-            current_avg = np.average(self.buffer_data)
+            if absolute:
+                current_avg = np.average(np.absolute(self.buffer_data))
+            else:
+                current_avg = np.average(self.buffer_data)
             return current_avg
         
         def measure_voltage_avg(self,num_points,nplc=.1):

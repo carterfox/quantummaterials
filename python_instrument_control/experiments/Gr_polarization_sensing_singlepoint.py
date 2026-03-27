@@ -76,8 +76,10 @@ def main(sample: DualGate, lockin: LockInOE1022D, keithley_b: KeithleySourceMete
 
     Vb_list, R_Gr_list, Vb_list_up, Vb_list_down, R_Gr_list_up, R_Gr_list_down = [],[],[],[],[],[]
     
-    for Vb in Vb_array: # sweep Vb 
+    print('Eb(V/nm)  Vb(V)  Ib(nA)  Vgr(V)  Igr(nA)  Rgr(Kohm)')
     
+    for Vb in Vb_array: # sweep Vb 
+        Eb = Vb/sample.d
         V_b_meas,I_b_meas,_,_ = set_gates(keithley_b,None,Vb,0)
         time.sleep(lockin.delay)
         
@@ -87,7 +89,7 @@ def main(sample: DualGate, lockin: LockInOE1022D, keithley_b: KeithleySourceMete
         I_Gr = Vbox/sample.Rbox *10**3 #nA  . Rbox should be in ohm
         
         R_Gr,R_Gr_std = V_Gr/I_Gr, V_Gr_std/I_Gr
-        print(round(V_b_meas,3),round(I_b_meas,3),round(V_Gr,4),round(I_Gr,4),round(R_Gr,3))
+        print(round(Eb,3),round(V_b_meas,3),round(I_b_meas,3),round(V_Gr,4),round(I_Gr,4),round(R_Gr,3))
         
         if len(Vb_list) != 0:
             if Vb >= Vb_list[-1]: Vb_list_up.append(Vb), R_Gr_list_up.append(R_Gr)
@@ -200,9 +202,10 @@ if __name__ == "__main__":
 
 
     tb.init_plot_params()
-    path="/Users/carterfox/Library/CloudStorage/GoogleDrive-cdfox@wisc.edu/.shortcut-targets-by-id/1-8q9lGFnGNt4mDzcxXwdk43m1aVWT66q/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round8/c4_2L_2-10/GrSensorSingle/2K/"
-    sample = DualGate_MLGsense('CrI3_2L_MLG', d_b=20, d_m=7.4, d_t=6.6, d_flake=1.4, data_path=path)
-    file = path+'Esweep/twoterm/Esweep_loop1.txt'
+    base = "I:/.shortcut-targets-by-id/1-8q9lGFnGNt4mDzcxXwdk43m1aVWT66q/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round8/c5_2L2L_big_3-1/"
+    data_path=base+"GrSensorSingle/"
+    sample = DualGate_MLGsense('CrI3_2L_MLG', d_b=20, d_m=7.4, d_t=6.6, d_flake=1.4, data_path=base)
+    file = data_path+'fineloop1_200k.txt'
     data = np.loadtxt(file)
     Vb,V_b_meas,I_b_meas,R_Gr,R_Gr_std,V_Gr = data[:,0],data[:,1],data[:,2],data[:,3],data[:,4],data[:,5]
     db = sample.d_b
@@ -222,17 +225,17 @@ if __name__ == "__main__":
     Vsin=0.1
     Rbox=1e6
     
-    V_Gr = V_Gr/(1e6)
-    ascend,descend = R_Gr[:change_indices[0]+1], R_Gr[change_indices[0]:]
-    std_ascend,std_descend = R_Gr_std[:change_indices[0]+1],R_Gr_std[change_indices[0]:]
+    # V_Gr = V_Gr/(1e6)
+    # ascend,descend = R_Gr[:change_indices[0]+1], R_Gr[change_indices[0]:]
+    # std_ascend,std_descend = R_Gr_std[:change_indices[0]+1],R_Gr_std[change_indices[0]:]
     # ax.set_xlabel('$V_{b}/d_b$ (Vnm$^{-1}$)'), ax.set_ylabel(r'$R_{Gr}$ (k$\Omega$)')
     # ax.set_xlabel('$V_{b}/d_t$ (Vnm$^{-1}$)'), ax.set_ylabel(r'$R_{Gr}$ (k$\Omega$)')
-    ax.set_xlabel('$E_{⟂}$ (Vnm$^{-1}$)'), ax.set_ylabel(r'$R_{Gr}$ (k$\Omega$)')
+    # ax.set_xlabel('$E_{⟂}$ (Vnm$^{-1}$)'), ax.set_ylabel(r'$R_{Gr}$ (k$\Omega$)')
     
-    ax.errorbar(E_ascend, ascend,yerr=std_ascend,color='r',marker='.',ms=3,label=r'$\rightarrow$',elinewidth=0)
-    ax.errorbar(E_descend, descend,yerr=std_descend,color='b',marker='.',ms=3,label=r'$\leftarrow$',elinewidth=0)
-    ax.legend(loc='upper left')
-    plt.savefig(file.replace('.txt','_{}_plot.png'.format(plot)),dpi=500)
-    plt.show()
+    # ax.errorbar(E_ascend, ascend,yerr=std_ascend,color='r',marker='.',ms=3,label=r'$\rightarrow$',elinewidth=0)
+    # ax.errorbar(E_descend, descend,yerr=std_descend,color='b',marker='.',ms=3,label=r'$\leftarrow$',elinewidth=0)
+    # ax.legend(loc='upper left')
+    # plt.savefig(file.replace('.txt','_{}_plot.png'.format(plot)),dpi=500)
+    # plt.show()
     
 
