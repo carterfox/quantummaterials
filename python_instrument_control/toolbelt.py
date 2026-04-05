@@ -21,6 +21,57 @@ import astropy.constants as cont
 import astropy.units as uu
 
 
+def make_scanning_grid(Vbmin, Vbmax, Vtmin, Vtmax, fine_step, coarse_step, fine_width):
+    # Gate limits
+    # Vmin, Vmax = -0.5, 0.5
+    # Step sizes
+    # fine_step   = 0.001   # 1 mV
+    # coarse_step = 0.01    # 10 mV
+    
+    # Width of fine region around the diagonal
+    # fine_width = 0.1     # ±50 mV
+    
+    # Vt axis
+    Vt_array = np.arange(Vtmin, Vtmax + coarse_step, coarse_step)
+    
+    # First pass: build all Vb arrays (unequal length)
+    Vb_raw = []
+    
+    for Vt in Vt_array:
+    
+        center = -Vt
+    
+        fine_min = max(Vbmin, center - fine_width)
+        fine_max = min(Vbmax, center + fine_width)
+    
+        rough1 = np.arange(Vbmin, fine_min, coarse_step)
+        dense  = np.arange(fine_min, fine_max, fine_step)
+        rough2 = np.arange(fine_max, Vbmax + coarse_step, coarse_step)
+    
+        Vb = np.concatenate((rough1, dense, rough2))
+    
+        # Flip + append (loop sweep)
+        Vb = np.concatenate((Vb, np.flip(Vb)))
+    
+        Vb_raw.append(Vb)
+    
+    # Determine max length
+    max_len = max(len(v) for v in Vb_raw)
+    
+    # Second pass: pad/interpolate all rows to equal length
+    Vb_map = []
+    for v in Vb_raw:
+        x_old = np.linspace(0, 1, len(v))
+        x_new = np.linspace(0, 1, max_len)
+        v_fixed = np.interp(x_new, x_old, v)
+        Vb_map.append(v_fixed)
+    
+    Vb_grid = np.array(Vb_map)   # Now this works
+    
+    Vt_grid = np.repeat(Vt_array[:, None], Vb_grid.shape[1], axis=1)
+    return Vt_grid, Vb_grid
+
+
 def dirac_resistance(Vg, R0, B, V_D, n0):
     """
     Graphene Dirac resistance vs gate voltage.

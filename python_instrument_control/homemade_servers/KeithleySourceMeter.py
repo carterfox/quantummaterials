@@ -47,24 +47,31 @@ def KeithleySourceMeter(resource_name, model="2450"):
             self.filter_type = filter_type
             self.filter_state = filter_state
             
-        def measure_current_avg(self,num_points,nplc=.5,absolute=False):
-            self.measure_current(nplc=nplc)
+        def wait_complete(self):
+            self.ask("*OPC?")
+            
+        def measure_current_avg(self,num_points,nplc=.5,absolute=False,current_max=None):
+            if current_max != None: self.measure_current(nplc=nplc,auto_range=False,current=current_max)
+            else: self.measure_current(nplc=nplc)
             self.config_buffer(num_points)
+            self.wait_complete()
             time.sleep(0.1)
             self.start_buffer()
-            self.wait_for_buffer()
+            self.wait_for_buffer(interval=.5)
             if absolute:
                 current_avg = np.average(np.absolute(self.buffer_data))
             else:
                 current_avg = np.average(self.buffer_data)
             return current_avg
         
-        def measure_voltage_avg(self,num_points,nplc=.1):
-            self.measure_voltage(nplc=nplc)
+        def measure_voltage_avg(self,num_points,nplc=.5,voltage_max=None):
+            if voltage_max != None: self.measure_voltage(nplc=nplc,auto_range=False,voltage=voltage_max)
+            else: self.measure_voltage(nplc=nplc)
             self.config_buffer(num_points)
+            self.wait_complete()
             time.sleep(0.1)
             self.start_buffer()
-            self.wait_for_buffer()
+            self.wait_for_buffer(interval=.5)
             voltage_avg = np.average(self.buffer_data)
             return voltage_avg
         

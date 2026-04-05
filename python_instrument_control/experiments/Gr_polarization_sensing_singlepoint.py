@@ -28,7 +28,8 @@ from scipy.signal import savgol_filter
 logging.getLogger('matplotlib').setLevel(logging.WARNING)
 
 
-def sweep_Efield(sample: DualGate, lockin: LockInOE1022D, keithley_b: KeithleySourceMeter, keithley_t: KeithleySourceMeter,E_array,file_save='test.txt'):
+def sweep_Efield(sample: DualGate, lockin: LockInOE1022D, keithley_b: KeithleySourceMeter, keithley_t: KeithleySourceMeter,
+                 E_array,file_save='test.txt'):
     plt.ion()
     fig,ax1,lineup,linedown = init_plot(sample,E_array,'Efield')    
     saving_file = make_files(sample,lockin,file_save,'Efield')
@@ -38,6 +39,8 @@ def sweep_Efield(sample: DualGate, lockin: LockInOE1022D, keithley_b: KeithleySo
     d_b = sample.d_b + sample.d_m + sample.d_flake 
     d_t = sample.d_t
     E_list, E_list_up, E_list_down, R_Gr_list, R_Gr_list_up, R_Gr_list_down = [],[],[],[],[],[]
+
+    print('E(V/nm)  Vb(V)  Vt(V)  Ib(nA)  It(nA)  Vgr(V)  Igr(nA)  Rgr(Kohm)')
 
     for E in E_array:
         
@@ -51,7 +54,7 @@ def sweep_Efield(sample: DualGate, lockin: LockInOE1022D, keithley_b: KeithleySo
         I_Gr = Vbox/sample.Rbox *10**3 #nA  . Rbox should be in ohm
         
         R_Gr,R_Gr_std = V_Gr/I_Gr, V_Gr_std/I_Gr
-        print(round(E,3),round(I_b_meas,3),round(I_t_meas,3),round(V_Gr,4),round(I_Gr,4),round(R_Gr,3))
+        print(round(E,3),round(V_b_meas,3),round(V_t_meas,3),round(I_b_meas,3),round(I_t_meas,3),round(V_Gr,4),round(I_Gr,4),round(R_Gr,3))
         
         if len(E_list) != 0:
             if E >= E_list[-1]: E_list_up.append(E), R_Gr_list_up.append(R_Gr)
@@ -70,30 +73,26 @@ def sweep_Efield(sample: DualGate, lockin: LockInOE1022D, keithley_b: KeithleySo
     
 
 def main(sample: DualGate, lockin: LockInOE1022D, keithley_b: KeithleySourceMeter,Vb_array,file_save='test.txt',scanaxis='Vb'):
+    a=time.time()
     if scanaxis == 'Vb': sample.d = (sample.d_b+sample.d_m+sample.d_flake) # sample.d = sample.d_b
     elif scanaxis == 'Vt': sample.d = sample.d_t
-
     plt.ion()
     fig,ax1,lineup,linedown = init_plot(sample,Vb_array,scanaxis)
     saving_file = make_files(sample,lockin,file_save)
     sample.Vsin = lockin.get_sine_output(1)['amplitude_v']
     
     setup_keithleys(keithley_b)
-
     Vb_list, R_Gr_list, Vb_list_up, Vb_list_down, R_Gr_list_up, R_Gr_list_down = [],[],[],[],[],[]
-    print('Eb(V/nm)  Vb(V)  Ib(nA)  Vgr(V)  Igr(nA)  Rgr(Kohm)')
+    print('E'+scanaxis[-1]+'(V/nm)  '+scanaxis+'(V)  I'+scanaxis[-1]+'(nA)  Vgr(V)  Igr(nA)  Rgr(Kohm)')
     
     for Vb in Vb_array: # sweep Vb 
-    
         Eb = Vb/sample.d
         V_b_meas,I_b_meas,_,_ = set_gates(keithley_b,None,Vb,0)
-        time.sleep(lockin.delay)
-        
+        # time.sleep(lockin.delay)
         mean_R_chan, std_R_chan, mean_dR_chan, std_dR_chan = lockin.read_average_dual(params=[2, 3], num_avgs=lockin.num_avgs)
         V_Gr, V_Gr_std = mean_R_chan[0]*10**6, std_R_chan[0]*10**6   #uV
         Vbox = sample.Vsin*10**6 - V_Gr  #uV
         I_Gr = Vbox/sample.Rbox *10**3 #nA  . Rbox should be in ohm
-        
         R_Gr,R_Gr_std = V_Gr/I_Gr, V_Gr_std/I_Gr
         print(round(Eb,3),round(V_b_meas,3),round(I_b_meas,3),round(V_Gr,4),round(I_Gr,4),round(R_Gr,3))
         
@@ -107,10 +106,12 @@ def main(sample: DualGate, lockin: LockInOE1022D, keithley_b: KeithleySourceMete
         Vb_list.append(Vb), R_Gr_list.append(R_Gr) #kOhm
         save_data([Vb,V_b_meas,I_b_meas,R_Gr,R_Gr_std,V_Gr,I_Gr,Vbox],saving_file)
         update_plot(sample,lineup,linedown,Vb_list_up,R_Gr_list_up,Vb_list_down,R_Gr_list_down,ax1,fig,scanaxis)
-    
+    # b=time.time()
+    # print(b-a)
     plt.ioff()
     plt.savefig(saving_file.replace('.txt','_R_plot.png'),dpi=500)
     plt.show()
+    plt.close()
     
     return Vb_list, R_Gr_list
     
@@ -127,15 +128,17 @@ def set_gates(keithley_b=None,keithley_t=None,Vb=0,Vt=0):
     
     if keithley_b !=None:
         keithley_b.source_voltage = Vb
-        V_b_meas = keithley_b.measure_voltage_avg(10)
-        I_b_meas = 10**9 * keithley_b.measure_current_avg(20)
+        keithley_b.wait_complete()
+        V_b_meas = Vb#keithley_b.measure_voltage_avg(10)
+        I_b_meas = 10**9 * keithley_b.measure_current_avg(5)
     else: 
         V_b_meas,I_b_meas=0,0
     
     if keithley_t !=None:
         keithley_t.source_voltage = Vt
-        V_t_meas = keithley_t.measure_voltage_avg(10)
-        I_t_meas = 10**9 * keithley_t.measure_current_avg(20)
+        keithley_t.wait_complete()
+        V_t_meas = Vt#keithley_t.measure_voltage_avg(10)
+        I_t_meas = 10**9 * keithley_t.measure_current_avg(5)
     else: 
         V_t_meas,I_t_meas = 0,0
     
@@ -159,14 +162,14 @@ def update_plot(sample, lineup: Line2D,linedown: Line2D, xup_data, yup_data, xdo
 
 def init_plot(sample,X_array,scanaxis):
     fig, ax1 = plt.subplots()
-    fig.canvas.manager.window.move(1920, 100)  # (x, y) position in pixels
+    fig.canvas.manager.window.move(1920, 50)  # (x, y) position in pixels
     ax1.set_ylabel(r'R$_{Gr}$ (k$\Omega$)')
     lineup = Line2D([], [], color='red',marker='.',markersize=3)
     linedown = Line2D([], [], color='blue',marker='.',markersize=3)
     ax1.add_line(lineup)
     ax1.add_line(linedown)
     if scanaxis == 'Efield': 
-        ax1.set_xlabel('$E_{⟂}$ (V nm$^{-1}$)')
+        ax1.set_xlabel(r'$E_{⟂}$ (V nm$^{-1}$)')
         xmin,xmax = np.min(X_array),np.max(X_array)
         ax1.set_xlim(xmin - .1*abs(xmin), xmax + .1*abs(xmax))
     else: 
@@ -255,11 +258,11 @@ def plot_2dmap(folder_path,d_b,d_t):
     fig1,ax1 = tb.create_axes_with_exact_size(1.35, 1.2)
     im1=ax1.imshow(image_Rgr_a,origin='lower',extent=[x_unique.min(), x_unique.max(), y_unique.min(), y_unique.max()],vmin=.45,vmax=1)
     cbar = fig1.colorbar(im1, ax=ax1, location="right", fraction=0.05,pad=0.03) 
-    cbar.set_label('$R_{Gr}$ (k$\Omega$)', ha='center',fontsize=fs)
+    cbar.set_label(r'$R_{Gr}$ (k$\Omega$)', ha='center',fontsize=fs)
     cbar.ax.tick_params(labelsize=fs,length=1)
     cbar.set_ticks([.50,.75,1])
-    ax1.set_xlabel("$V_b/d_b$ (V)",fontsize=fs)
-    ax1.set_ylabel("$V_t/d_t$ (V)",fontsize=fs,labelpad=0)  
+    ax1.set_xlabel(r"$V_b/d_b$ (V)",fontsize=fs)
+    ax1.set_ylabel(r"$V_t/d_t$ (V)",fontsize=fs,labelpad=0)  
     ax1.set_xticks([-.08,0,.08],[-0.08,0,0.08])
     ax1.set_yticks([-.14,-.07,0,.07,.14])
     ax1.tick_params(axis="both", labelsize=fs,length=2,color='k') 
@@ -272,12 +275,12 @@ def plot_2dmap(folder_path,d_b,d_t):
     fig2,ax2 = tb.create_axes_with_exact_size(1.35, 1.2)
     im2=ax2.imshow(image_Rgr_d,origin='lower',extent=[x_unique.min(), x_unique.max(), y_unique.min(), y_unique.max()],vmin=.45,vmax=1)
     cbar2 = fig2.colorbar(im2, ax=ax2, location="right", fraction=0.05,pad=0.03) 
-    cbar2.set_label('$R_{Gr}$ (k$\Omega$)', ha='center',fontsize=fs)
-    cbar2.set_label('$R_{Gr}$ ', ha='center',fontsize=fs)
+    cbar2.set_label(r'$R_{Gr}$ (k$\Omega$)', ha='center',fontsize=fs)
+    cbar2.set_label(r'$R_{Gr}$ ', ha='center',fontsize=fs)
     cbar2.ax.tick_params(labelsize=fs,length=1)
     cbar2.set_ticks([.5,.75,1])
-    ax2.set_xlabel("$V_b/d_b$ (V)",fontsize=fs)
-    ax2.set_ylabel("$V_t/d_t$ (V)",fontsize=fs,labelpad=0)  
+    ax2.set_xlabel(r"$V_b/d_b$ (V)",fontsize=fs)
+    ax2.set_ylabel(r"$V_t/d_t$ (V)",fontsize=fs,labelpad=0)  
     ax2.set_xticks([-.08,0,.08],[-0.08,0,0.08])
     ax2.set_yticks([-.14,-.07,0,.07,.14])
     ax2.tick_params(axis="both", labelsize=fs,length=2,color='k') 
@@ -290,11 +293,11 @@ def plot_2dmap(folder_path,d_b,d_t):
     fig3,ax3 = tb.create_axes_with_exact_size(1.35, 1.2)
     im3=ax3.imshow(image_Rgr_hyst,origin='lower',extent=[x_unique.min(), x_unique.max(), y_unique.min(), y_unique.max()],vmin=-1,vmax=1)
     cbar3 = fig3.colorbar(im3, ax=ax3, location="right", fraction=0.05,pad=0.03) 
-    cbar3.set_label('$\Delta R_{Gr}$ (k$\Omega$)', ha='center',fontsize=fs)
+    cbar3.set_label(r'$\Delta R_{Gr}$ (k$\Omega$)', ha='center',fontsize=fs) 
     cbar3.ax.tick_params(labelsize=fs,length=1)
     # cbar3.set_ticks([100,125,150,175,200])
-    ax3.set_xlabel("$V_b/d_b$ (V)",fontsize=fs)
-    ax3.set_ylabel("$V_t/d_t$ (V)",fontsize=fs,labelpad=0)  
+    ax3.set_xlabel(r"$V_b/d_b$ (V)",fontsize=fs)
+    ax3.set_ylabel(r"$V_t/d_t$ (V)",fontsize=fs,labelpad=0)  
     ax3.set_xticks([-.08,0,.08],[-0.08,0,0.08])
     ax3.set_yticks([-.14,-.07,0,.07,.14])
     ax3.tick_params(axis="both", labelsize=fs,length=2,color='k') 
@@ -312,10 +315,12 @@ def plot_2dmap(folder_path,d_b,d_t):
 if __name__ == "__main__":
 
     tb.init_plot_params()
-    path="/Users/carterfox/Library/CloudStorage/GoogleDrive-cdfox@wisc.edu/.shortcut-targets-by-id/1-8q9lGFnGNt4mDzcxXwdk43m1aVWT66q/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round8/c5_2L2L_big_3-1/GrSensorSingle/"
-    sample = DualGate_MLGsense('CrI3_2L_MLG', d_b=19.2, d_m=5.3, d_t=14.7, d_flake=2.8, data_path=path)
+    # path="/Users/carterfox/Library/CloudStorage/GoogleDrive-cdfox@wisc.edu/.shortcut-targets-by-id/1-8q9lGFnGNt4mDzcxXwdk43m1aVWT66q/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round8/c5_2L2L_big_3-1/GrSensorSingle/"
+    base = "I:/.shortcut-targets-by-id/1-8q9lGFnGNt4mDzcxXwdk43m1aVWT66q/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round8/c6_2L2L_3-1/"
+    path=base+"GrSensorSingle/Vt_ground_twoterm/"
+    sample = DualGate_MLGsense('CrI3_2L_MLG', d_b=12, d_m=2, d_t=11, d_flake=2.8, data_path=path)
     Vsin,Rbox=0.1,1e6
-    file = path+'fineloop1_300k.txt'
+    file = path+'loop1_2k_E1E5.txt'
     data = np.loadtxt(file)
     Vb,V_b_meas,I_b_meas,R_Gr,R_Gr_std,V_Gr = data[:,0],data[:,1],data[:,2],data[:,3],data[:,4],data[:,5]
     R_Gr_der = np.gradient(R_Gr)
@@ -340,17 +345,17 @@ if __name__ == "__main__":
     
     ax.set_ylabel(r'$R_{Gr}$ (k$\Omega$)') # , ax.set_xlabel('$E_{⟂}$ (Vnm$^{-1}$)')
     
-    x1,x2 = 210,275
-    x1d,x2d = 180,245
-    coeffs_a = np.polyfit(E_ascend[x1:x2], ascend[x1:x2], 5)   # linear fit
-    y_fit_a = np.polyval(coeffs_a, E_ascend[x1:x2])
-    dcoeffs_a = np.polyder(coeffs_a)
-    critical_points_a = np.roots(dcoeffs_a)
+    # x1,x2 = 210,275
+    # x1d,x2d = 180,245
+    # coeffs_a = np.polyfit(E_ascend[x1:x2], ascend[x1:x2], 5)   # linear fit
+    # y_fit_a = np.polyval(coeffs_a, E_ascend[x1:x2])
+    # dcoeffs_a = np.polyder(coeffs_a)
+    # critical_points_a = np.roots(dcoeffs_a)
     
-    coeffs_d = np.polyfit(E_descend[x1d:x2d], descend[x1d:x2d], 5)   # linear fit
-    y_fit_d = np.polyval(coeffs_d, E_descend[x1d:x2d])
-    dcoeffs_d = np.polyder(coeffs_d)
-    critical_points_d = np.roots(dcoeffs_d)
+    # coeffs_d = np.polyfit(E_descend[x1d:x2d], descend[x1d:x2d], 5)   # linear fit
+    # y_fit_d = np.polyval(coeffs_d, E_descend[x1d:x2d])
+    # dcoeffs_d = np.polyder(coeffs_d)
+    # critical_points_d = np.roots(dcoeffs_d)
     
     if plot == 'R':
         ax.errorbar(E_ascend, ascend,yerr=std_ascend,color='r',marker='.',linestyle='-',ms=3,label=r'$\rightarrow$',elinewidth=0)
@@ -393,7 +398,7 @@ if __name__ == "__main__":
         # ax_top.set_xticks(xticks*db*1000)
     
     ax.legend(loc='best')
-    # plt.savefig(file.replace('.txt','_{}_plot.png'.format(plot)),dpi=500)
+    plt.savefig(file.replace('.txt','_{}_plot.png'.format(plot)),dpi=500)
     plt.show()
     
 
