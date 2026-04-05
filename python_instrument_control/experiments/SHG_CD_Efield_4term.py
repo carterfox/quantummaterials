@@ -509,8 +509,71 @@ def plot_linecut(Ex_list,Ey_list,SHG,SHG_std,SHG_CD,SHG_CD_std,Esweep='x',Efixva
     # ax1.tick_params(axis="both", labelsize=fs,length=2) 
     return fig_t,fig_CD
     
+def plot_supp_linecut_Ey(path_d1,indices=[0,1,2,3,4]):
+    x_unique,y_unique,image_cda,image_cdd,image_cdh,image_ta,image_td,image_th = analyze_files_2dmap(path_d1)
+    
+    # image_t = image_ta/np.max(image_ta)
+    image_t = image_td/np.max(image_td)
+    
+    plt.rcParams["font.size"] = 10
+    plt.rcParams["figure.constrained_layout.use"] = False
+    ms,lw,elw,fs,bw = 5,1.5,1,8,.5
+    fig, axs = plt.subplots(1,5,figsize=(6.4,1.2), dpi=500,sharex=True,gridspec_kw={'hspace':0,'wspace':.05})
+    fig.subplots_adjust(left=0, right=1, top=1, bottom=0)
+    # ax1,ax0,ax3,ax2,ax5,ax4,ax7,ax6,ax9,ax8 = axs[0,0],axs[1,0],axs[0,1],axs[1,1],axs[0,2],axs[1,2],axs[0,3],axs[1,3],axs[0,4],axs[1,4]
+    ax1,ax3,ax5,ax7,ax9 = axs[0],axs[1],axs[2],axs[3],axs[4]
+    ax1.set_xlabel(r'$E_y$ (kV cm$^{-1}$)', fontsize=fs)
+    ax3.set_xlabel(r'$E_y$ (kV cm$^{-1}$)', fontsize=fs)
+    ax5.set_xlabel(r'$E_y$ (kV cm$^{-1}$)', fontsize=fs)
+    ax7.set_xlabel(r'$E_y$ (kV cm$^{-1}$)', fontsize=fs)
+    ax9.set_xlabel(r'$E_y$ (kV cm$^{-1}$)', fontsize=fs)
+    # ax0.set_ylabel(r'SHG-CD ($\%$)', fontsize=fs)
+    ax1.set_ylabel(r'SHG Intensity', fontsize=fs)
+    ax1.set_title(r'$E_y$ = '+str(y_unique[indices[0]])+' kV cm$^{-1}$',fontsize=fs)
+    ax3.set_title(r'$E_y$ = '+str(y_unique[indices[1]])+' kV cm$^{-1}$',fontsize=fs)
+    ax5.set_title(r'$E_y$ = '+str(y_unique[indices[2]])+' kV cm$^{-1}$',fontsize=fs)
+    ax7.set_title(r'$E_y$ = '+str(y_unique[indices[3]])+' kV cm$^{-1}$',fontsize=fs)
+    ax9.set_title(r'$E_y$ = '+str(y_unique[indices[4]])+' kV cm$^{-1}$',fontsize=fs)
 
-def plot_supp_linecut(Ex_list,Ey_list,
+    xticks=[-140,-70,0,70,140]
+    ax1.set_xlim(-170,170)
+    yticksCD, yticksT = [-30,-20,-10,0,10,20], [0,.2,.4,.6,.8,1,1.2]
+    ymin_CD,ymax_CD = -30,21
+    ymin_T,ymax_T = .05,1.25
+    ax1.set_xticks(xticks),ax3.set_xticks(xticks),ax5.set_xticks(xticks),ax7.set_xticks(xticks),ax9.set_xticks(xticks)
+    # ax0.set_yticks(yticksCD)
+    ax1.set_yticks(yticksT)
+    # ax2.set_yticks(yticksCD,[]),ax4.set_yticks(yticksCD,[]),ax6.set_yticks(yticksCD,[]),ax8.set_yticks(yticksCD,[])
+    ax3.set_yticks(yticksT,[]),ax5.set_yticks(yticksT,[]),ax7.set_yticks(yticksT,[]),ax9.set_yticks(yticksT,[])
+    # ax0.set_ylim(ymin_CD,ymax_CD),ax2.set_ylim(ymin_CD,ymax_CD),ax4.set_ylim(ymin_CD,ymax_CD),ax6.set_ylim(ymin_CD,ymax_CD),ax8.set_ylim(ymin_CD,ymax_CD)
+    ax1.set_ylim(ymin_T,ymax_T),ax3.set_ylim(ymin_T,ymax_T),ax5.set_ylim(ymin_T,ymax_T),ax7.set_ylim(ymin_T,ymax_T),ax9.set_ylim(ymin_T,ymax_T)
+    
+    # ax0.set_xlabel(r'$E_x$ (kV cm$^{-1}$)', fontsize=fs),ax2.set_xlabel(r'$E_x$ (kV cm$^{-1}$)', fontsize=fs)
+    # ax4.set_xlabel(r'$E_x$ (kV cm$^{-1}$)', fontsize=fs),ax6.set_xlabel(r'$E_x$ (kV cm$^{-1}$)', fontsize=fs), ax8.set_xlabel(r'$E_x$ (kV cm$^{-1}$)', fontsize=fs)
+
+    for ax in axs:
+        ax.tick_params(axis="both", labelsize=fs,length=2) 
+        for spine in ax.spines.values(): spine.set_linewidth(bw) 
+            
+    ax1.errorbar(y_unique, image_t[:,indices[0]], color='black', label=r'$\rightarrow$',marker='.',ms=ms)
+    # ax0.errorbar(y_u1nique, image_cda[:,indices[0]],color='black', label=r'$\rightarrow$',marker='.',ms=ms)
+
+    ax3.errorbar(y_unique, image_t[:,indices[1]], color='black', label=r'$\rightarrow$',marker='.',ms=ms)
+    # ax2.errorbar(y_1unique, image_cda[:,indices[1]],color='black', label=r'$\rightarrow$',marker='.',ms=ms)
+    
+    ax5.errorbar(y_unique, image_t[:,indices[2]], color='black', label=r'$\rightarrow$',marker='.',ms=ms)
+    # ax4.errorbar(y_unique, image_cda[:,indices[2]],color='black', label=r'$\rightarrow$',marker='.',ms=ms)
+    
+    ax7.errorbar(y_unique, image_t[:,indices[3]], color='black', label=r'$\rightarrow$',marker='.',ms=ms)
+    # ax6.errorbar(y_unique, image_cda[:,indices[3]],color='black', label=r'$\rightarrow$',marker='.',ms=ms)
+    
+    ax9.errorbar(y_unique, image_t[:,indices[4]], color='black', label=r'$\rightarrow$',marker='.',ms=ms)
+    # ax8.errorbar(y_unique, image_cda[:,indices[4]],color='black', label=r'$\rightarrow$',marker='.',ms=ms)
+
+    return fig,str(y_unique[indices])
+
+    
+def plot_supp_linecut(Ex_list,
                       SHG_total_m14,SHG_total_std_m14,SHG_CD_m14,SHG_CD_std_m14,
                       SHG_total_m10,SHG_total_std_m10,SHG_CD_m10,SHG_CD_std_m10,
                       SHG_total_m3,SHG_total_std_m3,SHG_CD_m3,SHG_CD_std_m3,
@@ -624,6 +687,15 @@ if __name__ == "__main__":
     # txtfiles_sorted = sorted(txtfiles, key=os.path.getmtime)
     sample = FourTerminal('NbOI290deg4termS3', 5, path_d1)
     w = sample.channel_width
+    
+    # x_unique,y_unique,image_cda,image_cdd,image_cdh,image_ta,image_td,image_th = analyze_files_2dmap(path_d1)
+    # plot_map(image_cdd, x_unique, y_unique,vmin=-20,vmax=20)
+    # plt.show()
+    fig,ystr=plot_supp_linecut_Ey(path_d1, [2,7,13,25,29])
+    filesave = path_d1+'Eylinecuts_v2/Ey_linceuts_intensity_Exdescend.svg'
+    fig.savefig(filesave, dpi=500)
+    plt.show()    
+    
     '''
     file_path = path_d1+'mapping_fix_y_1p0_ascend.txt'
     data = np.loadtxt(file_path,comments='#')
@@ -633,12 +705,12 @@ if __name__ == "__main__":
     SHG_CD_std = get_SGH_CD_std(SHG_C1,SHG_C2,SHG_C1_std,SHG_C2_std)
     
     
-    fig_t,fig_CD=plot_linecut(Ex_list,Ey_list,SHG_total,SHG_total_std,SHG_CD,SHG_CD_std,Esweep='x',Efixval=10,value='CD')
+    fig_t,fig_CD=plot_linecut(Ex_list,SHG_total,SHG_total_std,SHG_CD,SHG_CD_std,Esweep='x',Efixval=10,value='CD')
     fig_t.savefig(path_d1+'plot_supp_linecut1_total.svg',dpi=500)
     fig_CD.savefig(path_d1+'plot_supp_linecut1_CD.svg',dpi=500)
     '''
     
-    
+    '''
     file_path = path_d1+'mapping_fix_y_m14p0_ascend.txt'
     data = np.loadtxt(file_path,comments='#')
     Vx,Vy,SHG_C1,SHG_C1_std,SHG_C2,SHG_C2_std,SHG_CD,SHG_CD_std,Ix,Iy = data[:,0],data[:,1],np.array(data[:,2]),np.array(data[:,3]),np.array(data[:,4]),np.array(data[:,5]),np.array(data[:,6]),np.array(data[:,7]),data[:,8],data[:,9]
@@ -680,7 +752,7 @@ if __name__ == "__main__":
     SHG_CD_10 = SHG_CD
     
     
-    fig=plot_supp_linecut(Ex_list,Ey_list,
+    fig=plot_supp_linecut(Ex_list,
                           SHG_total_m14,SHG_total_std_m14,SHG_CD_m14,SHG_CD_std_m14,
                           SHG_total_m10,SHG_total_std_m10,SHG_CD_m10,SHG_CD_std_m10,
                           SHG_total_m3,SHG_total_std_m3,SHG_CD_m3,SHG_CD_std_m3,
@@ -689,7 +761,7 @@ if __name__ == "__main__":
                           Esweep='x',Efixval=10,value='CD')
     fig.savefig(path_d1+'plot_supp_linecuts.svg',dpi=500)
     plt.show()
-    
+    '''
     '''
 
     # path_map = '/Users/carterfox/My Drive (cdfox@wisc.edu)/StackingTransitions/NbOI2/Lvgroup/Efield-samples-for-optics/90deg_3L3L_4term_S3/SHG-CD-Efield/1-16-2dmap/'

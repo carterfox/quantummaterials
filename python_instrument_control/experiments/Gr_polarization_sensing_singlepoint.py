@@ -24,6 +24,7 @@ from pathlib import Path
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import logging
 from scipy.signal import savgol_filter
+from scipy.interpolate import interp1d
 
 logging.getLogger('matplotlib').setLevel(logging.WARNING)
 
@@ -207,11 +208,87 @@ def make_Gr_resistance_saving_file(filename,sample,lockin,sweeptype='singlegate'
     return filename
 
 
+def plot_2dmap_irreg(path,d_b,d_t):
+    
+    files = glob.glob(path+"/*.txt")
+    files_with_Vt = [(f, tb.parse_Vt_from_filename(f)) for f in files]
+    files_sorted = [f for f, Vt in sorted(files_with_Vt, key=lambda x: x[1])]
+    
+    files = glob.glob(path+"/*.txt")
+    files = sorted(files, key=tb.parse_Vt_from_filename)
+    
+    Vt_list, Vb_list_a, Vb_list_d, R_list_a, R_list_d = [],[],[],[],[]
+    
+    for f in files:
+        data = np.loadtxt(f)
+        Vb = data[:,0]/d_b
+        R  = data[:,3]
+    
+        # Keep only ascending part of the Vb sweep
+        imax = np.argmax(Vb)
+        Vb_a = Vb[:imax+1]
+        R_a  = R[:imax+1]
+        Vb_d = np.flip(Vb[imax+1:])
+        R_d  = np.flip(R[imax+1:])
+    
+        Vt = tb.parse_Vt_from_filename(f)/d_t
+    
+        Vt_list.append(Vt)
+        Vb_list_a.append(Vb_a)
+        Vb_list_d.append(Vb_d)
+        R_list_a.append(R_a)
+        R_list_d.append(R_d)
+    
+    Vb_min = min(v.min() for v in Vb_list_a)
+    Vb_max = max(v.max() for v in Vb_list_a)
+    
+    Nvb = 600
+    Vb_uniform = np.linspace(Vb_min, Vb_max, Nvb)
+
+    R_matrix_a = np.zeros((len(Vt_list), Nvb))
+    R_matrix_d = np.zeros((len(Vt_list), Nvb))
+    
+    for i, (Vb, R) in enumerate(zip(Vb_list_a, R_list_a)):
+        f_interp = interp1d(Vb, R, kind='linear', fill_value="extrapolate")
+        R_matrix_a[i,:] = f_interp(Vb_uniform)
+    
+    for i, (Vb, R) in enumerate(zip(Vb_list_d, R_list_d)):
+        f_interp = interp1d(Vb, R, kind='linear', fill_value="extrapolate")
+        R_matrix_d[i,:] = f_interp(Vb_uniform)
+    hyst = R_matrix_d - R_matrix_a
+    
+    fig,axes=plt.subplots(1,2,figsize=(5,2),sharex=True,sharey=True)
+    ax0,ax1 = axes[0], axes[1]#, axes[2]
+    vmin,vmax=1.45,2.35
+    cmap='magma'
+    c0=ax0.pcolormesh(Vb_uniform, Vt_list, R_matrix_a, shading='auto', cmap=cmap,vmin=vmin,vmax=vmax)
+    c1=ax1.pcolormesh(Vb_uniform, Vt_list, R_matrix_d, shading='auto', cmap=cmap,vmin=vmin,vmax=vmax)
+    # c2=ax2.pcolormesh(Vb_uniform, Vt_list, hyst, shading='auto', cmap=cmap,vmin=-.02,vmax=.02)
+    ax0.set_xticks([-0.5,-0.25,0,0.25,0.5],[-0.5,-0.25,0,0.25,0.5])
+    ax0.tick_params(axis="both", labelsize=8) 
+    ax1.tick_params(axis="both", labelsize=8) 
+    ax1.tick_params(axis="both", labelsize=8) 
+    # ax0.set_xticks([-8,-4,0,4,8])
+    cbar=fig.colorbar(c0, ax=[ax0,ax1], location='right')
+    cbar.ax.tick_params(labelsize=8,length=2,color='k')
+    cbar.set_label('$R_{Gr}$ (k$\Omega$)',fontsize=8)
+    ax0.set_xlabel('$V_b/d_b$ (Vnm$^{-1}$)',fontsize=8)
+    ax1.set_xlabel('$V_b/d_b$ (Vnm$^{-1}$)',fontsize=8)
+    ax0.set_ylabel('$V_t/d_t$ (Vnm$^{-1}$)',fontsize=8)
+    ax0.annotate( "", xy=(.55, -.4), xytext=(-.45, -.4), arrowprops=dict(arrowstyle="simple,head_length=0.2,head_width=0.1,tail_width=0.015",linestyle="-", color='white', linewidth=0.04) )    
+    ax1.annotate( "", xy=(-.45, -.4), xytext=(.55, -.4), arrowprops=dict(arrowstyle="simple,head_length=0.2,head_width=0.1,tail_width=0.015",linestyle="-", color='white', linewidth=0.04) )    
+    ax1.annotate( "", xy=(-.45, -.38), xytext=(-.45, .4), arrowprops=dict(arrowstyle="->,head_width=0.001,head_length=0.001",linestyle="--", color='white', linewidth=.4) )    
+    ax1.annotate( "", xy=(-.45, .41), xytext=(-.45, .4), arrowprops=dict(arrowstyle="simple,head_length=0.2,head_width=0.1,tail_width=0.04",linestyle="--", color='white', linewidth=0.03) )    
+    ax0.annotate( "", xy=(-.45, -.38), xytext=(-.45, .4), arrowprops=dict(arrowstyle="->,head_width=0.001,head_length=0.001",linestyle="--", color='white', linewidth=.4) )    
+    ax0.annotate( "", xy=(-.45, .41), xytext=(-.45, .4), arrowprops=dict(arrowstyle="simple,head_length=0.2,head_width=0.1,tail_width=0.04",linestyle="--", color='white', linewidth=0.03) )    
+
+    return fig
+
 def plot_2dmap(folder_path,d_b,d_t):
     files = np.array([Path(p) for p in glob.glob(str(Path(folder_path) / "*.txt"))])
     Vtvals = []
     for f in files:
-        fss = float(str(f).split('/')[-1].replace('_0p','_0.').replace('_m0p','_-0.').split('_')[3])
+        fss = float(str(f).split('/')[-1].replace('_0p','_0.').replace('_m0p','_-0.').replace('_m1p','_-1.').replace('_m2p','_-2.').replace('_m3p','_-3.').replace('_m4p','_-4.').replace('_0p','_0.').replace('_1p','_1.').replace('_2p','_2.').replace('_3p','_3.').replace('_4p','_4.').split('_')[3])
         Vtvals.append(fss)
     Vtvals = np.asarray(Vtvals)
     Vtvalssort = np.argsort(Vtvals)
@@ -251,45 +328,47 @@ def plot_2dmap(folder_path,d_b,d_t):
     image_Rgr_a=np.transpose(image_Rgr_a)    
     image_Rgr_d=np.transpose(image_Rgr_d)   
     maxval = np.max(np.append(image_Rgr_a,image_Rgr_d))
-    image_Rgr_a, image_Rgr_d = image_Rgr_a/maxval, image_Rgr_d/maxval
+    # image_Rgr_a, image_Rgr_d = image_Rgr_a/maxval, image_Rgr_d/maxval
     fs=8
     bw=0.5
 
     fig1,ax1 = tb.create_axes_with_exact_size(1.35, 1.2)
-    im1=ax1.imshow(image_Rgr_a,origin='lower',extent=[x_unique.min(), x_unique.max(), y_unique.min(), y_unique.max()],vmin=.45,vmax=1)
+    im1=ax1.imshow(image_Rgr_a,origin='lower',extent=[x_unique.min(), x_unique.max(), y_unique.min(), y_unique.max()],vmin=1.5,vmax=2.5)
     cbar = fig1.colorbar(im1, ax=ax1, location="right", fraction=0.05,pad=0.03) 
     cbar.set_label(r'$R_{Gr}$ (k$\Omega$)', ha='center',fontsize=fs)
     cbar.ax.tick_params(labelsize=fs,length=1)
-    cbar.set_ticks([.50,.75,1])
-    ax1.set_xlabel(r"$V_b/d_b$ (V)",fontsize=fs)
-    ax1.set_ylabel(r"$V_t/d_t$ (V)",fontsize=fs,labelpad=0)  
-    ax1.set_xticks([-.08,0,.08],[-0.08,0,0.08])
-    ax1.set_yticks([-.14,-.07,0,.07,.14])
+
+    # cbar.set_ticks([.50,.75,1])
+    ax1.set_xlabel("$V_b/d_b$ (V)",fontsize=fs)
+    ax1.set_ylabel("$V_t/d_t$ (V)",fontsize=fs,labelpad=0)  
+    # ax1.set_xticks([-.08,0,.08],[-0.08,0,0.08])
+    # ax1.set_yticks([-.14,-.07,0,.07,.14])
     ax1.tick_params(axis="both", labelsize=fs,length=2,color='k') 
     cbar.outline.set_linewidth(bw)
     for spine in ax1.spines.values(): spine.set_linewidth(bw) 
-    ax1.annotate( "", xy=(.08, -.14), xytext=(-.08, -.14), arrowprops=dict(arrowstyle="simple,head_length=0.2,head_width=0.1,tail_width=0.015",linestyle="-", color='white', linewidth=0.02) )    
-    ax1.annotate( "", xy=(-.08, -.14), xytext=(-.08, .14), arrowprops=dict(arrowstyle="->,head_width=0.001,head_length=0.001",linestyle="--", color='white', linewidth=.3) )    
-    ax1.annotate( "", xy=(-.08, .14), xytext=(-.08, .13), arrowprops=dict(arrowstyle="simple,head_length=0.2,head_width=0.1,tail_width=0.04",linestyle="--", color='white', linewidth=0.03) )    
+    # ax1.annotate( "", xy=(.08, -.14), xytext=(-.08, -.14), arrowprops=dict(arrowstyle="simple,head_length=0.2,head_width=0.1,tail_width=0.015",linestyle="-", color='white', linewidth=0.02) )    
+    # ax1.annotate( "", xy=(-.08, -.14), xytext=(-.08, .14), arrowprops=dict(arrowstyle="->,head_width=0.001,head_length=0.001",linestyle="--", color='white', linewidth=.3) )    
+    # ax1.annotate( "", xy=(-.08, .14), xytext=(-.08, .13), arrowprops=dict(arrowstyle="simple,head_length=0.2,head_width=0.1,tail_width=0.04",linestyle="--", color='white', linewidth=0.03) )    
 
     fig2,ax2 = tb.create_axes_with_exact_size(1.35, 1.2)
-    im2=ax2.imshow(image_Rgr_d,origin='lower',extent=[x_unique.min(), x_unique.max(), y_unique.min(), y_unique.max()],vmin=.45,vmax=1)
+    im2=ax2.imshow(image_Rgr_d,origin='lower',extent=[x_unique.min(), x_unique.max(), y_unique.min(), y_unique.max()],vmin=1.5,vmax=2.5)
     cbar2 = fig2.colorbar(im2, ax=ax2, location="right", fraction=0.05,pad=0.03) 
     cbar2.set_label(r'$R_{Gr}$ (k$\Omega$)', ha='center',fontsize=fs)
     cbar2.set_label(r'$R_{Gr}$ ', ha='center',fontsize=fs)
     cbar2.ax.tick_params(labelsize=fs,length=1)
-    cbar2.set_ticks([.5,.75,1])
-    ax2.set_xlabel(r"$V_b/d_b$ (V)",fontsize=fs)
-    ax2.set_ylabel(r"$V_t/d_t$ (V)",fontsize=fs,labelpad=0)  
-    ax2.set_xticks([-.08,0,.08],[-0.08,0,0.08])
-    ax2.set_yticks([-.14,-.07,0,.07,.14])
+    # cbar2.set_ticks([.5,.75,1])
+    ax2.set_xlabel("$V_b/d_b$ (V)",fontsize=fs)
+    ax2.set_ylabel("$V_t/d_t$ (V)",fontsize=fs,labelpad=0)  
+    # ax2.set_xticks([-.08,0,.08],[-0.08,0,0.08])
+    # ax2.set_yticks([-.14,-.07,0,.07,.14])
     ax2.tick_params(axis="both", labelsize=fs,length=2,color='k') 
     cbar2.outline.set_linewidth(bw)
     for spine in ax2.spines.values(): spine.set_linewidth(bw) 
-    ax2.annotate( "", xy=(-.08, -.14), xytext=(.08, -.14), arrowprops=dict(arrowstyle="simple,head_length=0.2,head_width=0.1,tail_width=0.015",linestyle="-", color='white', linewidth=0.02) )    
-    ax2.annotate( "", xy=(-.08, -.14), xytext=(-.08, .14), arrowprops=dict(arrowstyle="->,head_width=0.001,head_length=0.001",linestyle="--", color='white', linewidth=.3) )    
-    ax2.annotate( "", xy=(-.08, .14), xytext=(-.08, .13), arrowprops=dict(arrowstyle="simple,head_length=0.2,head_width=0.1,tail_width=0.04",linestyle="--", color='white', linewidth=0.03) )    
+    # ax2.annotate( "", xy=(-.08, -.14), xytext=(.08, -.14), arrowprops=dict(arrowstyle="simple,head_length=0.2,head_width=0.1,tail_width=0.015",linestyle="-", color='white', linewidth=0.02) )    
+    # ax2.annotate( "", xy=(-.08, -.14), xytext=(-.08, .14), arrowprops=dict(arrowstyle="->,head_width=0.001,head_length=0.001",linestyle="--", color='white', linewidth=.3) )    
+    # ax2.annotate( "", xy=(-.08, .14), xytext=(-.08, .13), arrowprops=dict(arrowstyle="simple,head_length=0.2,head_width=0.1,tail_width=0.04",linestyle="--", color='white', linewidth=0.03) )    
 
+    '''
     fig3,ax3 = tb.create_axes_with_exact_size(1.35, 1.2)
     im3=ax3.imshow(image_Rgr_hyst,origin='lower',extent=[x_unique.min(), x_unique.max(), y_unique.min(), y_unique.max()],vmin=-1,vmax=1)
     cbar3 = fig3.colorbar(im3, ax=ax3, location="right", fraction=0.05,pad=0.03) 
@@ -304,91 +383,107 @@ def plot_2dmap(folder_path,d_b,d_t):
     cbar3.outline.set_linewidth(bw)
     for spine in ax3.spines.values(): spine.set_linewidth(bw) 
     ax3.annotate( "", xy=(-.08, -.14), xytext=(.08, -.14), arrowprops=dict(arrowstyle="simple,head_length=0.2,head_width=0.1,tail_width=0.015",linestyle="-", color='white', linewidth=0.02) )    
+    '''
     
-    fig1.savefig(folder_path+'R_Gr_map_Vb_ascend.png',dpi=500)
-    fig2.savefig(folder_path+'R_Gr_map_Vb_descend.png',dpi=500)
-    fig3.savefig(folder_path+'R_Gr_map_Vb_hyst.png',dpi=500)
-    
+    fig1.savefig(folder_path+'R_Gr_map_Vb_ascend.png',dpi=1000)
+    fig2.savefig(folder_path+'R_Gr_map_Vb_descend.png',dpi=1000)
+    # fig3.savefig(folder_path+'R_Gr_map_Vb_hyst.png',dpi=500)
     return image_Rgr_a
 
 
 if __name__ == "__main__":
 
     tb.init_plot_params()
-    # path="/Users/carterfox/Library/CloudStorage/GoogleDrive-cdfox@wisc.edu/.shortcut-targets-by-id/1-8q9lGFnGNt4mDzcxXwdk43m1aVWT66q/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round8/c5_2L2L_big_3-1/GrSensorSingle/"
-    base = "I:/.shortcut-targets-by-id/1-8q9lGFnGNt4mDzcxXwdk43m1aVWT66q/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round8/c6_2L2L_3-1/"
-    path=base+"GrSensorSingle/Vt_ground_twoterm/"
-    sample = DualGate_MLGsense('CrI3_2L_MLG', d_b=12, d_m=2, d_t=11, d_flake=2.8, data_path=path)
+
+    path="/Users/carterfox/Library/CloudStorage/GoogleDrive-cdfox@wisc.edu/.shortcut-targets-by-id/1-8q9lGFnGNt4mDzcxXwdk43m1aVWT66q/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/"
+    path = path + "round8/c6_2L2L_3-1/GrSensorSingle/VtVb_2dmapping_300k_fine/"
+    sample = DualGate_MLGsense('CrI3_2L_MLG', d_b=11, d_m=2, d_t=11, d_flake=2.8, data_path=path)
     Vsin,Rbox=0.1,1e6
-    file = path+'loop1_2k_E1E5.txt'
-    data = np.loadtxt(file)
-    Vb,V_b_meas,I_b_meas,R_Gr,R_Gr_std,V_Gr = data[:,0],data[:,1],data[:,2],data[:,3],data[:,4],data[:,5]
-    R_Gr_der = np.gradient(R_Gr)
+
     db,dt,dm,dc = sample.d_b, sample.d_t, sample.d_m, sample.d_flake
     db = db+dm+dc
-    # db=1
-    # image_Rgr_a=plot_2dmap(file, d_b=sample.d_b+sample.d_m+sample.d_flake, d_t=sample.d_t)
+    linestyle='-'
+    # image_Rgr_a=plot_2dmap(path, d_b=sample.d_b+sample.d_m+sample.d_flake, d_t=sample.d_t)
+    fig = plot_2dmap_irreg(path, d_b=sample.d_b+sample.d_m+sample.d_flake, d_t=sample.d_t)
+    plt.savefig(path+'2dmap_plot.png',dpi=500)
+
     
+    # plt.show()
+    
+    '''
+    file = path+'VbVt_mappingfine_Vt_4p51_.txt'
+    data = np.loadtxt(file)
+    Vb,V_b_meas,I_b_meas,R_Gr,R_Gr_std,V_Gr = data[:,0],data[:,1],data[:,2],data[:,3],data[:,4],data[:,5]
+
     diffs = np.diff(Vb)
     change_indices = np.where(diffs < 0)[0]  # descending starts here
     if len(change_indices)==0: change_indices = np.array([len(Vb)-1])
     Vb_ascend, Vb_descend = Vb[:change_indices[0] + 1], Vb[change_indices[0]:]
     E_ascend, E_descend = Vb_ascend/db, Vb_descend/db
     ascend,descend = R_Gr[:change_indices[0]+1], R_Gr[change_indices[0]:]
-    ascend_der,descend_der = R_Gr_der[:change_indices[0]+1], R_Gr_der[change_indices[0]:]
     std_ascend,std_descend = R_Gr_std[:change_indices[0]+1],R_Gr_std[change_indices[0]:]
-    
+
     plot = 'R'
     # plot = 'dRdV'
     
     fig, ax = plt.subplots(1,1,figsize=(6,5))
-    
     ax.set_ylabel(r'$R_{Gr}$ (k$\Omega$)') # , ax.set_xlabel('$E_{⟂}$ (Vnm$^{-1}$)')
     
-    # x1,x2 = 210,275
-    # x1d,x2d = 180,245
-    # coeffs_a = np.polyfit(E_ascend[x1:x2], ascend[x1:x2], 5)   # linear fit
-    # y_fit_a = np.polyval(coeffs_a, E_ascend[x1:x2])
-    # dcoeffs_a = np.polyder(coeffs_a)
-    # critical_points_a = np.roots(dcoeffs_a)
-    
-    # coeffs_d = np.polyfit(E_descend[x1d:x2d], descend[x1d:x2d], 5)   # linear fit
-    # y_fit_d = np.polyval(coeffs_d, E_descend[x1d:x2d])
-    # dcoeffs_d = np.polyder(coeffs_d)
-    # critical_points_d = np.roots(dcoeffs_d)
-    
-    if plot == 'R':
-        ax.errorbar(E_ascend, ascend,yerr=std_ascend,color='r',marker='.',linestyle='-',ms=3,label=r'$\rightarrow$',elinewidth=0)
-        ax.errorbar(E_descend, descend,yerr=std_descend,color='b',marker='.',linestyle='-',ms=3,label=r'$\leftarrow$',elinewidth=0)
-        
-        # ax.plot(E_ascend[x1:x2],y_fit_a,ms=0,zorder=5,linewidth=2,c='r')
-        # ax.plot(E_descend[x1d:x2d],y_fit_d,ms=0,zorder=5,linewidth=2,c='b')
-        # ax.axvline(critical_points_a[3],ms=0,color='grey')
-        # ax.axvline(critical_points_d[3],ms=0,color='grey')
-        # ax.set_xlim(-.006,.012)
-        # ax.set_ylim(.36,.51)
-        ax.set_xlabel('$V_{b}/d_b$ (Vnm$^{-1}$)')
-        # ax.text(.0035,.4,'13.4mV',fontsize=16)
-        # ax.annotate( "", xy=(.0022, .4), xytext=(0.0028, .4), arrowprops=dict(arrowstyle="simple,head_length=0.2,head_width=0.2,tail_width=0.05",linestyle="-", color='k', linewidth=0.15) )    
-        # ax.annotate( "", xy=(.003, .4), xytext=(0.0028, .4), arrowprops=dict(arrowstyle="simple,head_length=0.2,head_width=0.2,tail_width=0.05",linestyle="-", color='k', linewidth=0.15) )    
 
-        # print((critical_points_d[-1] - critical_points_a[-1])*db*1000)
+    if plot == 'R':
+        ax.set_xlabel('$V_{b}/d_b$ (Vnm$^{-1}$)')
+        if True: 
+            linestyle = ''
+            plot = plot+'_zoom'
+            ax.set_xlim(-.4,-.34)
+            ax.set_ylim(2.0,2.17)
+            # 
+            x1,x2 = 210,255
+            x1d,x2d = 240,280
+            xfine = np.linspace(E_ascend[x1],E_ascend[x2],100)
+            coeffs_a = np.polyfit(E_ascend[x1:x2], ascend[x1:x2], 6)   # linear fit
+            y_fit_a = np.polyval(coeffs_a, xfine)
+            dcoeffs_a = np.polyder(coeffs_a)
+            critical_points_a = np.roots(dcoeffs_a)
+            
+            coeffs_d = np.polyfit(E_descend[x1d:x2d], descend[x1d:x2d], 6)   # linear fit
+            xfine_d = np.linspace(E_descend[x1d],E_descend[x2d],100)
+            y_fit_d = np.polyval(coeffs_d, xfine_d)
+            dcoeffs_d = np.polyder(coeffs_d)
+            critical_points_d = np.roots(dcoeffs_d)
+            
+            a,d = 2,2
+            dV = round(np.abs(np.real(critical_points_d[d] - critical_points_a[a])*db*1000),2)
+            ax.plot(xfine,y_fit_a,ms=0,zorder=5,linewidth=2,c='r')
+            ax.plot(xfine_d,y_fit_d,ms=0,zorder=5,linewidth=2,c='b')
+            ax.axvline(critical_points_a[a],ms=0,color='r',linestyle='-',linewidth=.75)
+            ax.axvline(critical_points_d[d],ms=0,color='b',linestyle='-',linewidth=.75)
+            ax.text(-.38,2.025,str(dV)+'mV',fontsize=16)
+            # ax.annotate( "", xy=(.0008, 2.21), xytext=(0.0022, 2.21), arrowprops=dict(arrowstyle="simple,head_length=0.2,head_width=0.2,tail_width=0.05",linestyle="-", color='k', linewidth=0.15) )    
+            # ax.annotate( "", xy=(.0025, 2.21), xytext=(0.0011, 2.21), arrowprops=dict(arrowstyle="simple,head_length=0.2,head_width=0.2,tail_width=0.05",linestyle="-", color='k', linewidth=0.15) )    
+            print(str(dV))
+        ax.errorbar(E_ascend, ascend,yerr=std_ascend,color='r',marker='.',linestyle=linestyle,ms=3,label=r'$\rightarrow$',elinewidth=0)
+        ax.errorbar(E_descend, descend,yerr=std_descend,color='b',marker='.',linestyle=linestyle,ms=3,label=r'$\leftarrow$',elinewidth=0)
+        
         
     elif plot == 'dRdV':
-        ax.errorbar(E_ascend, ascend_der*1000,yerr=0,color='r',marker='.',ms=3,label=r'$\rightarrow$',elinewidth=0)
-        ax.errorbar(E_descend, descend_der*1000,yerr=0,color='b',marker='.',ms=3,label=r'$\leftarrow$',elinewidth=0,zorder=0)
+        R_Gr_der = np.gradient(R_Gr)
+        ascend_der,descend_der = R_Gr_der[:change_indices[0]+1], R_Gr_der[change_indices[0]:]
+        ax.errorbar(E_ascend, ascend_der*1000,yerr=0,color='r',marker='.',ms=5,label=r'$\rightarrow$',elinewidth=0)
+        ax.errorbar(E_descend, descend_der*1000,yerr=0,color='b',marker='.',ms=5,label=r'$\leftarrow$',elinewidth=0,zorder=0)
         ax.axhline(0,zorder=0,c='k',ms=0)
-        ax.axvline(0.00228,c='gray',zorder=0,ms=0,ymax=1)
-        ax.axvline(0.002884,c='gray',zorder=0,ms=0,ymax=1)
-        ax.axvline(0.003401,c='gray',zorder=0,ms=0,ymax=1)
-        ax.text(-.0004,1.7,'16.5mV',fontsize=16)
-        ax.text(.0035,1.2,'30.6mV',fontsize=16)
-        ax.set_xlim(-.006,.012)
-        ax.annotate( "", xy=(.0022, 1.6), xytext=(0.0028, 1.6), arrowprops=dict(arrowstyle="simple,head_length=0.2,head_width=0.2,tail_width=0.05",linestyle="-", color='k', linewidth=0.15) )    
-        ax.annotate( "", xy=(.003, 1.6), xytext=(0.0028, 1.6), arrowprops=dict(arrowstyle="simple,head_length=0.2,head_width=0.2,tail_width=0.05",linestyle="-", color='k', linewidth=0.15) )    
-        ax.annotate( "", xy=(.0023, 1.2), xytext=(0.0034, 1.2), arrowprops=dict(arrowstyle="simple,head_length=0.2,head_width=0.2,tail_width=0.05",linestyle="-", color='k', linewidth=0.15) )    
-        ax.annotate( "", xy=(.0035, 1.2), xytext=(0.0028, 1.2), arrowprops=dict(arrowstyle="simple,head_length=0.2,head_width=0.2,tail_width=0.05",linestyle="-", color='k', linewidth=0.15) )    
-        ax.set_ylim(-2.5,2.5)
+        # ax.axvline(0.00175,c='gray',zorder=0,ms=0,ymax=1)
+        # ax.axvline(0.00254,c='gray',zorder=0,ms=0,ymax=1)
+        # ax.axvline(0.002785,c='gray',zorder=0,ms=0,ymax=1)
+        # ax.text(-.0004,1.7,'16.5mV',fontsize=16)
+        # ax.text(.0026,7.4,'12.48V',fontsize=16)
+        # ax.set_xlim(-.003,.006)
+        # ax.set_ylim(-4,4)
+        # ax.annotate( "", xy=(.0017, 7.5), xytext=(0.0025, 7.5), arrowprops=dict(arrowstyle="simple,head_length=0.2,head_width=0.2,tail_width=0.05",linestyle="-", color='k', linewidth=0.15) )    
+        # ax.annotate( "", xy=(.0026, 7.5), xytext=(0.0018, 7.5), arrowprops=dict(arrowstyle="simple,head_length=0.2,head_width=0.2,tail_width=0.05",linestyle="-", color='k', linewidth=0.15) )    
+        # ax.annotate( "", xy=(.001983, .01), xytext=(0.002, .01), arrowprops=dict(arrowstyle="simple,head_length=0.2,head_width=0.2,tail_width=0.05",linestyle="-", color='k', linewidth=0.15) )    
+        # ax.annotate( "", xy=(.00205, .01), xytext=(0.00199, .01), arrowprops=dict(arrowstyle="simple,head_length=0.2,head_width=0.2,tail_width=0.05",linestyle="-", color='k', linewidth=0.15) )    
+        # ax.set_ylim(-2.5,2.5)
         # xticks=np.array([-.005,0,.005,.01])
         # ax.set_xticks(xticks)
         ax.set_ylabel(r'$R_{Gr}^\prime$ ($\Omega$V$^{-1}$)')
@@ -399,6 +494,8 @@ if __name__ == "__main__":
     
     ax.legend(loc='best')
     plt.savefig(file.replace('.txt','_{}_plot.png'.format(plot)),dpi=500)
+    '''
     plt.show()
-    
+    # '''
+
 
