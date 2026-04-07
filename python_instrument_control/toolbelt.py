@@ -284,7 +284,9 @@ def make_rmcd_saving_file(filename,experiment):
     elif experiment == 'mapping':
         header = "#X(V) Y(V) R_mean(V) R_std(V) thetaR_mean(deg) thetaR_std(deg) dR_mean(V) dR_std(V) thetadR_mean(deg) thetadR_std(deg)"
     elif experiment == 'Esweep-Vb':
-        header = "#Vb_set(V) Vb(V) Ib(nA) R(V) R_std(V) thetaR(deg) thetaR_std(deg) dR(V) dR_std(V) thetadR(deg) thetadR_std(deg)"
+        header = "#Vb_set(V) Vb(V) Ib(nA) R(V) R_std(V) thetaR(deg) thetaR_std(deg) dR(V) dR_std(V) thetadR(deg) thetadR_std(deg)"     
+    elif experiment == 'Esweep-dual':
+        header = "#Vb_set(V) Vb(V) Ib(nA) R(V) R_std(V) thetaR(deg) thetaR_std(deg) dR(V) dR_std(V) thetadR(deg) thetadR_std(deg) Vt_set(V) Vt(V) It(nA)"
 
     if not os.path.exists(filename):
         with open(filename, 'a') as file:

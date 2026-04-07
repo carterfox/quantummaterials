@@ -198,17 +198,17 @@ if __name__ == "__main__":
     # 
     # path_d4 = 'D:/LabData/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round7/d4/RMCD/bfield_scan/'
     # path_d3 = '/Users/carterfox/Google Drive/My Drive/StackingTransitions/CrI3/round7/d3/RMCD/mapping/'
-    data_path="I:/.shortcut-targets-by-id/1-8q9lGFnGNt4mDzcxXwdk43m1aVWT66q/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round8/c4_2L_2-10/RMCD/"
+    data_path="I:/.shortcut-targets-by-id/1-8q9lGFnGNt4mDzcxXwdk43m1aVWT66q/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round8/c6_2L2L_3-1/RMCD/mapping/"
     # file = path_s6+'sixlayer-scan3.txt'
     # file = path_s6+'fourlayer-scan1.txt'
     # file = path_s6+'map1_0T.txt'
-    file = data_path+'RMCD/mapping/1p3T_map1.txt'
+    file = data_path+'test_new.txt'
     # file = data_path+'map_after_m2T_8-19.txt'
     tb.init_plot_params()
 
     plottype = 'RMCD'
     # fig,ax,im = replot_rmcd_map(file,plottype,0,2.1)
-    fig,ax,im = replot_rmcd_map(file,'R')
+    fig,ax,im = replot_rmcd_map(file,'thetadR')
 
     # fig,ax,b_field,theta_dr = replot_rmcd_bfield_scan(file)
     # tb.plot_arrow_legend(ax,r'$B_{\perp}$',x1=1.7,y1=-7,ls=18,yratio=.058,xratio=.12,wratio=.0872)

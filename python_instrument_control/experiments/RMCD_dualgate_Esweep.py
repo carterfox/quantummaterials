@@ -24,9 +24,7 @@ import toolbelt as tb
 from tqdm import tqdm
 import numpy as np
 
-def main(sample: DualGate, lockin: LockInOE1022D,
-         keithley_b: KeithleySourceMeter,
-         E_array,file_save):
+def main(sample: DualGate, lockin: LockInOE1022D, keithley_b: KeithleySourceMeter, E_array,file_save):
     
     """
     Perform a pure out-of-plane electric field sweep using a dual-gated sample
@@ -92,13 +90,93 @@ def main(sample: DualGate, lockin: LockInOE1022D,
             if E <0:
                 E_list_up.append(E)
                 rmcd_list_up.append(rmcd)
-            elif Vb>0:
+            elif E>0:
                 E_list_down.append(E)
                 rmcd_list_down.append(rmcd)
-        
+        E_list.append(E)
         update_plot(fig,ax,lineup,linedown,E_list_up,E_list_down,rmcd_list_up,rmcd_list_down)
         
     plt.ioff()
+    plt.savefig(saving_file.replace('.txt','_plot.png'),dpi=500)
+    plt.show()
+    
+    return E_array,rmcd_list
+
+
+def main_dualgate(sample: DualGate, lockin: LockInOE1022D, keithley_b: KeithleySourceMeter, keithley_t: KeithleySourceMeter, E_array,file_save):
+    
+    """
+    Perform a pure out-of-plane electric field sweep using a dual-gated sample
+    and record RMCD data at each field point.
+
+    Parameters
+    ----------
+    sample : DualGate
+        Sample object containing geometry and file path info, including gate thicknesses.
+    lockin : LockInOE1022D
+        Lock-in amplifier used to collect RMCD signals.
+    keithley_b : KeithleySourceMeter
+        Source meter connected to the bottom gate.
+    keithley_t : KeithleySourceMeter
+        Source meter connected to the top gate.
+    E_array : array-like
+        List or array of electric field values (in V/nm) to apply.
+    file_save : str
+        Filename for saving the sweep data.
+
+    Returns
+    -------
+    None
+    """
+    if not os.path.exists(sample.data_path+"/RMCD/Esweepdual"):
+        os.makedirs(sample.data_path+"/RMCD/Esweepdual")
+
+    gen_path = sample.data_path+'/RMCD/Esweepdual/'+file_save
+    saving_file = tb.make_rmcd_saving_file(gen_path,'Esweep-dual')
+    
+    plt.ion()
+    fig, ax, lineup,linedown = init_main_plot()
+    setup_keithleys(keithley_b,keithley_t)
+    
+    d_b = sample.d_b + sample.d_m + sample.d_flake 
+    d_t = sample.d_t
+    E_list,E_list_up,E_list_down,rmcd_list,rmcd_list_up,rmcd_list_down = [],[],[],[],[],[]
+    print('E(V/nm)  Vb(V)  Vt(V)  Ib(nA)  It(nA)  RMCD(%)')
+
+    for E in E_array:
+        V_b,V_t = E*d_b, -E*d_t
+        V_b_meas, I_b_meas, V_t_meas, I_t_meas = set_gates(keithley_b,keithley_t,V_b,V_t)
+
+        lockin.reset_buffer()
+        time.sleep(lockin.delay)
+        rmcd_data = tb.read_lockin_rmcd_data(lockin)#tb.read_lockin_rmcd_data(lockin)
+        rmcd = rmcd_data[4]/rmcd_data[0]*100
+        rmcd_list.append(rmcd)
+        save_data_dual(E,V_b,V_b_meas,I_b_meas,rmcd_data,V_t,V_t_meas,I_t_meas,saving_file)
+        # print('E',E)
+        # print('u',E_list_up)
+        # print('d',E_list_down)
+        if len(E_list) != 0:
+            if E >= E_list[-1]:
+                E_list_up.append(E)
+                rmcd_list_up.append(rmcd)
+            if E <= E_list[-1]:
+                E_list_down.append(E)
+                rmcd_list_down.append(rmcd)
+        else:
+            if E <0:
+                E_list_up.append(E)
+                rmcd_list_up.append(rmcd)
+            elif E>0:
+                E_list_down.append(E)
+                rmcd_list_down.append(rmcd)
+        E_list.append(E)
+        # print('u',E_list_up)
+        # print('d',E_list_down)
+        update_plot(fig,ax,lineup,linedown,E_list_up,E_list_down,rmcd_list_up,rmcd_list_down)
+        
+    plt.ioff()
+    plt.savefig(saving_file.replace('.txt','_dualgate_plot.png'),dpi=500)
     plt.show()
     
     return E_array,rmcd_list
@@ -110,6 +188,16 @@ def save_data(V_b,V_b_meas,I_b_meas,rmcd_data,saving_file):
         file.write(' '.join(f"{d:.9f}" for d in rmcd_data) + '\n') 
     values.append(round(rmcd_data[4]/rmcd_data[0]*100,3))
     print(" ".join(f"{v:.4f}" for v in values))
+
+def save_data_dual(E,V_b,V_b_meas,I_b_meas,rmcd_data,V_t,V_t_meas,I_t_meas,saving_file):
+    values = [round(E,3),round(V_b,3),round(V_b_meas,3), round(I_b_meas,4), round(V_t,3),round(V_t_meas,3), round(I_t_meas,4)]
+    with open(saving_file, 'a') as file:
+        file.write(' '.join(f"{v:.4f}" for v in values)+ ' ') 
+        file.write(' '.join(f"{d:.9f}" for d in rmcd_data) + '\n') 
+    values.append(round(rmcd_data[4]/rmcd_data[0]*100,3))
+    values_short = [round(E,3),round(V_b,3),round(V_t,4), round(I_b_meas,3),round(I_t_meas,4),round(rmcd_data[4]/rmcd_data[0]*100,3)]
+
+    print(" ".join(f"{v:.4f}" for v in values_short))
     
 def update_plot(fig,ax,lineup,linedown,E_list_up,E_list_down,rmcd_list_up,rmcd_list_down):
 
@@ -122,6 +210,7 @@ def update_plot(fig,ax,lineup,linedown,E_list_up,E_list_down,rmcd_list_up,rmcd_l
 
 def init_main_plot():
     fig, ax = plt.subplots()
+    fig.canvas.manager.window.move(1920, 50) 
     ax.set_xlabel('E (V/nm)')
     ax.set_ylabel('RMCD %')
     lineup = Line2D([], [], color='black',marker='.',label=r'$\rightarrow$')
@@ -185,6 +274,35 @@ def smooth_err(arr):
         return smoothed
     else:
         return arr
+
+
+def setup_keithleys(keithley_b=None,keithley_t=None):
+    if keithley_b!=None:
+        keithley_b.enable_source() 
+        keithley_b.apply_voltage(compliance_current=keithley_b.compliance_current)
+    if keithley_t!=None:
+        keithley_t.enable_source() 
+        keithley_t.apply_voltage(compliance_current=keithley_t.compliance_current)
+        
+def set_gates(keithley_b=None,keithley_t=None,Vb=0,Vt=0):
+    
+    if keithley_b !=None:
+        keithley_b.source_voltage = Vb
+        keithley_b.wait_complete()
+        V_b_meas = Vb#keithley_b.measure_voltage_avg(10)
+        I_b_meas = 10**9 * keithley_b.measure_current_avg(5)
+    else: 
+        V_b_meas,I_b_meas=0,0
+    
+    if keithley_t !=None:
+        keithley_t.source_voltage = Vt
+        keithley_t.wait_complete()
+        V_t_meas = Vt#keithley_t.measure_voltage_avg(10)
+        I_t_meas = 10**9 * keithley_t.measure_current_avg(5)
+    else: 
+        V_t_meas,I_t_meas = 0,0
+    
+    return V_b_meas, I_b_meas, V_t_meas, I_t_meas
 
 
 if __name__ == "__main__":

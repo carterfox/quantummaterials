@@ -89,7 +89,7 @@ def main(sample: DualGate, lockin: LockInOE1022D, keithley_b: KeithleySourceMete
     for Vb in Vb_array: # sweep Vb 
         Eb = Vb/sample.d
         V_b_meas,I_b_meas,_,_ = set_gates(keithley_b,None,Vb,0)
-        # time.sleep(lockin.delay)
+        time.sleep(lockin.delay)
         mean_R_chan, std_R_chan, mean_dR_chan, std_dR_chan = lockin.read_average_dual(params=[2, 3], num_avgs=lockin.num_avgs)
         V_Gr, V_Gr_std = mean_R_chan[0]*10**6, std_R_chan[0]*10**6   #uV
         Vbox = sample.Vsin*10**6 - V_Gr  #uV
@@ -112,7 +112,6 @@ def main(sample: DualGate, lockin: LockInOE1022D, keithley_b: KeithleySourceMete
     plt.ioff()
     plt.savefig(saving_file.replace('.txt','_R_plot.png'),dpi=500)
     plt.show()
-    plt.close()
     
     return Vb_list, R_Gr_list
     
