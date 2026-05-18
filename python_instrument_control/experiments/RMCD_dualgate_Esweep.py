@@ -183,21 +183,40 @@ def main_dualgate(sample: DualGate, lockin: LockInOE1022D, keithley_b: KeithleyS
 
 def save_data(V_b,V_b_meas,I_b_meas,rmcd_data,saving_file):
     values = [round(V_b,3),round(V_b_meas,3), round(I_b_meas,4)]
-    with open(saving_file, 'a') as file:
-        file.write(' '.join(f"{v:.4f}" for v in values)+ ' ') 
-        file.write(' '.join(f"{d:.9f}" for d in rmcd_data) + '\n') 
-    values.append(round(rmcd_data[4]/rmcd_data[0]*100,3))
-    print(" ".join(f"{v:.4f}" for v in values))
+    # with open(saving_file, 'a') as file:
+        # file.write(' '.join(f"{v:.4f}" for v in values)+ ' ') 
+        # file.write(' '.join(f"{d:.9f}" for d in rmcd_data) + '\n') 
+    # values.append(round(rmcd_data[4]/rmcd_data[0]*100,3))
+    # print(" ".join(f"{v:.4f}" for v in values))
+    for attempt in range(10): 
+        try: 
+            with open(saving_file, 'a') as file:
+                file.write(' '.join(f"{v:.4f}" for v in values)+ ' ') 
+                file.write(' '.join(f"{d:.9f}" for d in rmcd_data) + '\n') 
+            values.append(round(rmcd_data[4]/rmcd_data[0]*100,3))
+            print(" ".join(f"{v:.4f}" for v in values))
+            break 
+        except FileNotFoundError: time.sleep(0.2)
 
 def save_data_dual(E,V_b,V_b_meas,I_b_meas,rmcd_data,V_t,V_t_meas,I_t_meas,saving_file):
     values = [round(E,3),round(V_b,3),round(V_b_meas,3), round(I_b_meas,4), round(V_t,3),round(V_t_meas,3), round(I_t_meas,4)]
-    with open(saving_file, 'a') as file:
-        file.write(' '.join(f"{v:.4f}" for v in values)+ ' ') 
-        file.write(' '.join(f"{d:.9f}" for d in rmcd_data) + '\n') 
-    values.append(round(rmcd_data[4]/rmcd_data[0]*100,3))
-    values_short = [round(E,3),round(V_b,3),round(V_t,4), round(I_b_meas,3),round(I_t_meas,4),round(rmcd_data[4]/rmcd_data[0]*100,3)]
+    # with open(saving_file, 'a') as file:
+    #     file.write(' '.join(f"{v:.4f}" for v in values)+ ' ') 
+    #     file.write(' '.join(f"{d:.9f}" for d in rmcd_data) + '\n') 
+    # values.append(round(rmcd_data[4]/rmcd_data[0]*100,3))
+    # values_short = [round(E,3),round(V_b,3),round(V_t,4), round(I_b_meas,3),round(I_t_meas,4),round(rmcd_data[4]/rmcd_data[0]*100,3)]
 
-    print(" ".join(f"{v:.4f}" for v in values_short))
+    for attempt in range(10): 
+        try: 
+            with open(saving_file, 'a') as file:
+                file.write(' '.join(f"{v:.4f}" for v in values)+ ' ') 
+                file.write(' '.join(f"{d:.9f}" for d in rmcd_data) + '\n') 
+            values.append(round(rmcd_data[4]/rmcd_data[0]*100,3))
+            values_short = [round(E,3),round(V_b,3),round(V_t,4), round(I_b_meas,3),round(I_t_meas,4),round(rmcd_data[4]/rmcd_data[0]*100,3)]
+            print(" ".join(f"{v:.4f}" for v in values_short))
+            break 
+        except FileNotFoundError: time.sleep(0.2)
+    # print(" ".join(f"{v:.4f}" for v in values_short))
     
 def update_plot(fig,ax,lineup,linedown,E_list_up,E_list_down,rmcd_list_up,rmcd_list_down):
 

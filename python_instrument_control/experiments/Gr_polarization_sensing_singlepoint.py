@@ -145,9 +145,15 @@ def set_gates(keithley_b=None,keithley_t=None,Vb=0,Vt=0):
     return V_b_meas, I_b_meas, V_t_meas, I_t_meas
 
 def save_data(data_save,saving_file):
-    with open(saving_file, 'a') as file:
-        file.write(' '.join(f"{d:.9f}" for d in data_save) + '\n') 
-        
+    for attempt in range(10): 
+        try: 
+            with open(saving_file, 'a') as file:
+                file.write(' '.join(f"{d:.9f}" for d in data_save) + '\n') 
+            break 
+        except FileNotFoundError: time.sleep(0.4)
+    # with open(saving_file, 'a') as file:
+        # file.write(' '.join(f"{d:.9f}" for d in data_save) + '\n') 
+            
 def update_plot(sample, lineup: Line2D,linedown: Line2D, xup_data, yup_data, xdown_data, ydown_data, 
                 ax: plt.Axes, fig: plt.Figure, scanaxis='Vb'):
     if scanaxis == 'Efield': xup_data,xdown_data = np.asarray(xup_data), np.asarray(xdown_data) 
@@ -201,7 +207,7 @@ def make_Gr_resistance_saving_file(filename,sample,lockin,sweeptype='singlegate'
         h6 = '# Middle BN = {} nm'.format(sample.d_m)
         h7 = '# Bottom BN = {} nm'.format(sample.d_b)
         h8 = '# Flake = {} nm'.format(sample.d_flake)
-        h9 = '# Temperature = {} nm'.format(sample.temperature)
+        h9 = '# Temperature = {} K'.format(sample.temperature)
         for h in [h0,h1,h2,h3,h4,h5,h6,h7,h8,h9,h]:
             file.write(h + '\n') 
     return filename

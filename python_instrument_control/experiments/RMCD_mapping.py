@@ -107,9 +107,14 @@ def main(sample, lockin: LockInOE1022D, ANC: ANC300, x_start, x_end, y_start=Non
             time.sleep(lockin.delay)
             data = tb.read_lockin_rmcd_data(lockin)
             
-            with open(saving_file, 'a') as file:
-                file.write(str(x)+' '+str(y)+' ') 
-                file.write(' '.join(f"{d:.9f}" for d in data) + '\n') 
+            for attempt in range(10): 
+                try: 
+                    with open(saving_file, 'a') as file:
+                        file.write(str(x)+' '+str(y)+' ') 
+                        file.write(' '.join(f"{d:.9f}" for d in data) + '\n') 
+                    break 
+                except FileNotFoundError: time.sleep(0.2)
+                
             rmcd_value = data[4]/data[0]*100
             scan_array[j, x_points-1-i] = rmcd_value
         

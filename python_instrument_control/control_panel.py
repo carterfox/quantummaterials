@@ -18,7 +18,7 @@ import time
 logging.basicConfig(level=logging.INFO, format='%(levelname)s - %(message)s')
 logging.getLogger('matplotlib').setLevel(logging.WARNING)
 from homemade_servers.SSI_OE1022D import LockInOE1022D
-from homemade_servers.QDopticool import Opticool
+# from homemade_servers.QDopticool import Opticool
 # from homemade_servers.H11890PMT import HamamatsuH11890
 # from homemade_servers.AndorCameraSpectrometer import AndorCamSpec
 from homemade_servers.KeithleySourceMeter import KeithleySourceMeter
@@ -26,7 +26,7 @@ from homemade_servers.KeithleySourceMeter import KeithleySourceMeter
 from devices.dualgate import DualGate, DualGate_MLGsense
 # from devices.optical import Optical
 # from devices.transport import FourTerminal
-from experiments import RMCD_bfield_scan, RMCD_mapping, RMCD_dualgate_Esweep
+# from experiments import RMCD_bfield_scan, RMCD_mapping, RMCD_dualgate_Esweep
 # from experiments import SHG_CD_Efield_4term
 # from experiments import PMT_continuous_read, SHG_polarization_scan, 
 from experiments import Gr_polarization_sensing, Gr_polarization_sensing_singlepoint
@@ -112,29 +112,25 @@ def ramp(start,stop,step):
 
 
 if __name__ == "__main__":
-    
     ###### add it to servers_to_close if you want them to close each time. 
     ###### at this point only cam_spec should not be in it
-    base = "I:/.shortcut-targets-by-id/1-8q9lGFnGNt4mDzcxXwdk43m1aVWT66q/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round8/c6_2L2L_3-1/"
-    data_path=base#+"RMCD/"
-    sample = DualGate_MLGsense('CrI3_2L2L_MLG_c5_big', d_b=11, d_m=2, d_t=11.4, d_flake=2.8, data_path=data_path)
-    sample.temperature=2
-    lockin = get_lockin(delay=1,num_avgs=50)
-    sample.Vsin=0.1
+    base = "I:/.shortcut-targets-by-id/1-8q9lGFnGNt4mDzcxXwdk43m1aVWT66q/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round8/c3_4L/GrSensorSingle/"
+    sample = DualGate_MLGsense(sample_name='4L', d_b=8.7, d_m=3,d_t=.01, d_flake=2.8, data_path=base)
+    lockin = get_lockin(num_avgs=100,delay=5)
+    sample.Vsin = .1
     sample.Rbox=1e6
-    keithley_b = get_keithley('GPIB1::1::INSTR',compliance_current=3e-8)
-    keithley_t = get_keithley('GPIB0::16::INSTR','2400',compliance_current=3e-8)
-    # ANC = get_ANC300()
-    opticool = get_opticool()
-    servers_to_close=[lockin,keithley_b,keithley_t,opticool]
+    sample.temperature=295
+    keithley_b = get_keithley('GPIB0::16::INSTR','2400',compliance_current=5e-8)
+    servers_to_close = [lockin,keithley_b]
     
     try:        
-        # ret=RMCD_mapping.main(sample, lockin, ANC, x_start=0, x_end=30,points=30,file_save='test.txt')
-        E_array = np.arange(-0.55,0.56,0.01)
-        E_array = np.append(E_array,np.flip(E_array))
-        file_save = 'loop1_Vtground_2k_0T_after_m2T.txt'
-
-        # RMCD_dualgate_Esweep.main_dualgate(sample, lockin, keithley_b, keithley_t, E_array, file_save)
+        filesave = 'loop6_p2.txt'
+        Eb_array = np.arange(-.33,.3302,.0002)
+        Vb_array = Eb_array*(sample.d_b+sample.d_m+sample.d_flake)
+        Vb_array = np.append(Vb_array,np.flip(Vb_array))
+        Vb_array = Vb_array[902:]
+        Gr_polarization_sensing_singlepoint.main(sample, lockin, keithley_b,Vb_array,filesave)
+            
         
     except Exception: traceback.print_exc()
     finally: exit_session()
