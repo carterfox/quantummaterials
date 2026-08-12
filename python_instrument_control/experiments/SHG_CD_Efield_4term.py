@@ -47,7 +47,7 @@ def main(sample: FourTerminal, keithley_x: KeithleySourceMeter, keithley_y: Keit
             update_rotation_stage(qwp_rotstage,qwp_angles[angle_ind]) 
             data = pmt.run_collection(gate_time_ms,num_gates,remove_first=True)
             SHG_C_vals[angle_ind].append(np.mean(data)), SHG_C_stds[angle_ind].append(np.mean(np.std(data)/np.sqrt(num_gates)))
-            print(f"{Ex:^7.2f}" f"{Ix_meas:^8.2f}" f"{Ey:^7.2f}" f"{Iy_meas:^8.2f}" f"{angle_ind:^6}" f"{np.mean(data):^9.1f}")
+            print(f"{Ex:^7.4f}" f"{Ix_meas:^8.3f}" f"{Ey:^7.2f}" f"{Iy_meas:^8.2f}" f"{angle_ind:^6}" f"{np.mean(data):^9.1f}")
 
         SHG_C1, SHG_C1_std, SHG_C2, SHG_C2_std, SHG_total, SHG_CD, SHG_CD_std = get_SHG_vals(SHG_C_vals,SHG_C_stds)
         SHG_total_list.append(SHG_total), SHG_CD_list.append(SHG_CD), SHG_CD_std_list.append(SHG_CD_std), Ex_list.append(Ex), Ey_list.append(Ey), Ix_list.append(Ix_meas),Iy_list.append(Iy_meas)
@@ -123,7 +123,7 @@ def update_saved_data(file_path,Vx,Vy,C1_mean,C1_std,C2_mean,C2_std,CD,CD_std,Ix
         try: 
             with open(file_path, 'a') as f:
                 data_save = [Vx,Vy,C1_mean,C1_std,C2_mean,C2_std,CD,CD_std,Ix,Iy,Vxmeas,Vymeas]
-                f.write(' '.join(f"{d:.3f}" for d in data_save) + '\n') 
+                f.write(' '.join(f"{d:.4f}" for d in data_save) + '\n') 
             break 
         except FileNotFoundError: time.sleep(0.2)
 

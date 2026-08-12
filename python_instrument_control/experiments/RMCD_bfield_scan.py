@@ -67,9 +67,13 @@ def main(sample, lockin: LockInOE1022D,opticool: Opticool,bfield_array,file_save
         if theta_dr>0:
             rmcd = -1*rmcd
         
-        with open(saving_file, 'a') as file:
-            file.write(str(field_T)+' ') 
-            file.write(' '.join(f"{d:.9f}" for d in data) + '\n') 
+        for attempt in range(10): 
+            try: 
+                with open(saving_file, 'a') as file:
+                    file.write(str(field_T)+' ') 
+                    file.write(' '.join(f"{d:.9f}" for d in data) + '\n') 
+                break 
+            except FileNotFoundError: time.sleep(0.2)
         
         try:
             if field_T>=b_list[-1]:

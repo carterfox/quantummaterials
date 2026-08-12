@@ -128,10 +128,14 @@ def make_data_file(sample,waveplate,polarizer,laser_power,gate_time_ms,num_gates
     return file_path
 
 def update_saved_data(file_path,exc_stage_ang,det_stage_ang,means,std_errs):
-    with open(file_path, 'a') as f:
-        data_save = [exc_stage_ang,det_stage_ang,means,std_errs]
-        f.write(' '.join(f"{d:.2f}" for d in data_save) + '\n') 
-    
+    for attempt in range(10): 
+        try: 
+            with open(file_path, 'a') as f:
+                data_save = [exc_stage_ang,det_stage_ang,means,std_errs]
+                f.write(' '.join(f"{d:.2f}" for d in data_save) + '\n') 
+            break 
+        except FileNotFoundError: time.sleep(0.2)
+
     
 def update_rotation_stages(exc_hwp: RotationMount, det_hwp: RotationMount,exc_angle,det_angle):
     exc_home,det_home =None,None

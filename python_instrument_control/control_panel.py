@@ -112,7 +112,6 @@ def ramp(start,stop,step):
 
 
 if __name__ == "__main__":
-    
     ###### add it to servers_to_close if you want them to close each time. 
     ###### at this point only cam_spec should not be in it
     base = "/Users/carterfox/Library/CloudStorage/GoogleDrive-cdfox@wisc.edu/.shortcut-targets-by-id/1-8q9lGFnGNt4mDzcxXwdk43m1aVWT66q/XiaoWang_Group_data_2024on/StackingTransitions/option1_chip1/"
