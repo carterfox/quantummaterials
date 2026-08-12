@@ -89,7 +89,7 @@ def main(sample: DualGate, lockin: LockInOE1022D, keithley_b: KeithleySourceMete
     for Vb in Vb_array: # sweep Vb 
         Eb = Vb/sample.d
         V_b_meas,I_b_meas,_,_ = set_gates(keithley_b,None,Vb,0)
-        # time.sleep(lockin.delay)
+        time.sleep(lockin.delay)
         mean_R_chan, std_R_chan, mean_dR_chan, std_dR_chan = lockin.read_average_dual(params=[2, 3], num_avgs=lockin.num_avgs)
         V_Gr, V_Gr_std = mean_R_chan[0]*10**6, std_R_chan[0]*10**6   #uV
         Vbox = sample.Vsin*10**6 - V_Gr  #uV
@@ -257,14 +257,16 @@ def plot_2dmap_irreg(path,d_b,d_t):
         R_matrix_d[i,:] = f_interp(Vb_uniform)
     hyst = R_matrix_d - R_matrix_a
     
-    fig,axes=plt.subplots(1,2,figsize=(5,2),sharex=True,sharey=True)
+    fig,axes=plt.subplots(1,2,figsize=(5,2.3),sharex=True,sharey=True)
     ax0,ax1 = axes[0], axes[1]#, axes[2]
     vmin,vmax=1.45,2.35
     cmap='magma'
-    c0=ax0.pcolormesh(Vb_uniform, Vt_list, R_matrix_a, shading='auto', cmap=cmap,vmin=vmin,vmax=vmax)
-    c1=ax1.pcolormesh(Vb_uniform, Vt_list, R_matrix_d, shading='auto', cmap=cmap,vmin=vmin,vmax=vmax)
+    R_matrix_a_T = R_matrix_a.T
+    R_matrix_d_T = R_matrix_d.T
+    c0=ax0.pcolormesh(Vt_list,Vb_uniform, R_matrix_a_T, shading='auto', cmap=cmap,vmin=vmin,vmax=vmax)
+    c1=ax1.pcolormesh(Vt_list,Vb_uniform, R_matrix_d_T, shading='auto', cmap=cmap,vmin=vmin,vmax=vmax)
     # c2=ax2.pcolormesh(Vb_uniform, Vt_list, hyst, shading='auto', cmap=cmap,vmin=-.02,vmax=.02)
-    ax0.set_xticks([-0.5,-0.25,0,0.25,0.5],[-0.5,-0.25,0,0.25,0.5])
+    ax0.set_yticks([-0.5,-0.25,0,0.25,0.5],[-0.5,-0.25,0,0.25,0.5])
     ax0.tick_params(axis="both", labelsize=8) 
     ax1.tick_params(axis="both", labelsize=8) 
     ax1.tick_params(axis="both", labelsize=8) 
@@ -272,15 +274,15 @@ def plot_2dmap_irreg(path,d_b,d_t):
     cbar=fig.colorbar(c0, ax=[ax0,ax1], location='right')
     cbar.ax.tick_params(labelsize=8,length=2,color='k')
     cbar.set_label('$R_{Gr}$ (k$\Omega$)',fontsize=8)
-    ax0.set_xlabel('$V_b/d_b$ (Vnm$^{-1}$)',fontsize=8)
-    ax1.set_xlabel('$V_b/d_b$ (Vnm$^{-1}$)',fontsize=8)
-    ax0.set_ylabel('$V_t/d_t$ (Vnm$^{-1}$)',fontsize=8)
-    ax0.annotate( "", xy=(.55, -.4), xytext=(-.45, -.4), arrowprops=dict(arrowstyle="simple,head_length=0.2,head_width=0.1,tail_width=0.015",linestyle="-", color='white', linewidth=0.04) )    
-    ax1.annotate( "", xy=(-.45, -.4), xytext=(.55, -.4), arrowprops=dict(arrowstyle="simple,head_length=0.2,head_width=0.1,tail_width=0.015",linestyle="-", color='white', linewidth=0.04) )    
-    ax1.annotate( "", xy=(-.45, -.38), xytext=(-.45, .4), arrowprops=dict(arrowstyle="->,head_width=0.001,head_length=0.001",linestyle="--", color='white', linewidth=.4) )    
-    ax1.annotate( "", xy=(-.45, .41), xytext=(-.45, .4), arrowprops=dict(arrowstyle="simple,head_length=0.2,head_width=0.1,tail_width=0.04",linestyle="--", color='white', linewidth=0.03) )    
-    ax0.annotate( "", xy=(-.45, -.38), xytext=(-.45, .4), arrowprops=dict(arrowstyle="->,head_width=0.001,head_length=0.001",linestyle="--", color='white', linewidth=.4) )    
-    ax0.annotate( "", xy=(-.45, .41), xytext=(-.45, .4), arrowprops=dict(arrowstyle="simple,head_length=0.2,head_width=0.1,tail_width=0.04",linestyle="--", color='white', linewidth=0.03) )    
+    ax0.set_xlabel('$V_t/d_t$ (Vnm$^{-1}$)',fontsize=8)
+    ax1.set_xlabel('$V_t/d_t$ (Vnm$^{-1}$)',fontsize=8)
+    ax0.set_ylabel('$V_b/d_b$ (Vnm$^{-1}$)',fontsize=8)
+    ax0.annotate( "", xy=(-.4,.55), xytext=(-.4,-.45), arrowprops=dict(arrowstyle="simple,head_length=0.2,head_width=0.1,tail_width=0.015",linestyle="-", color='white', linewidth=0.04) )    
+    ax1.annotate( "", xy=(-.4,-.45), xytext=(-.4,.55), arrowprops=dict(arrowstyle="simple,head_length=0.2,head_width=0.1,tail_width=0.015",linestyle="-", color='white', linewidth=0.04) )    
+    ax1.annotate( "", xy=(-.38, -.45), xytext=(.4, -.45), arrowprops=dict(arrowstyle="->,head_width=0.001,head_length=0.001",linestyle="--", color='white', linewidth=.4) )    
+    ax1.annotate( "", xy=(.41, -.45), xytext=(.4, -.45), arrowprops=dict(arrowstyle="simple,head_length=0.2,head_width=0.1,tail_width=0.04",linestyle="--", color='white', linewidth=0.03) )    
+    ax0.annotate( "", xy=(-.38, -.45), xytext=(.4, -.45), arrowprops=dict(arrowstyle="->,head_width=0.001,head_length=0.001",linestyle="--", color='white', linewidth=.4) )    
+    ax0.annotate( "", xy=(.41, -.45), xytext=(.4, -.45), arrowprops=dict(arrowstyle="simple,head_length=0.2,head_width=0.1,tail_width=0.04",linestyle="--", color='white', linewidth=0.03) )    
 
     return fig
 
@@ -394,107 +396,120 @@ def plot_2dmap(folder_path,d_b,d_t):
 if __name__ == "__main__":
 
     tb.init_plot_params()
+    acolor='peru'
+    dcolor='steelblue'
+    fitascend_color='darkred'
+    fitdescend_color='mediumblue'
 
-    path="/Users/carterfox/Library/CloudStorage/GoogleDrive-cdfox@wisc.edu/.shortcut-targets-by-id/1-8q9lGFnGNt4mDzcxXwdk43m1aVWT66q/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/"
-    path = path + "round8/c6_2L2L_3-1/GrSensorSingle/VtVb_2dmapping_300k_fine/"
-    sample = DualGate_MLGsense('CrI3_2L_MLG', d_b=11, d_m=2, d_t=11, d_flake=2.8, data_path=path)
+    path="/Users/carterfox/Library/CloudStorage/GoogleDrive-cdfox@wisc.edu/.shortcut-targets-by-id/1-8q9lGFnGNt4mDzcxXwdk43m1aVWT66q/XiaoWang_Group_data_2024on/StackingTransitions/"
+    path2=path+"option1_chip1/TM_S6/after_2ndclean/fourterm_RgrV1V2/"
+    # path=path+"option1_chip1/BM_S8/fourterm_Rgr_V1V2/"
+    path1 = path + "CrI3/round8/firstrun/c6_2L2L_3-1/GrSensorSingle/Vt_ground_twoterm/"
+    path3 = path + "CrI3/round8/c3_4L/GrSensorSingle/295K/"
+    # data_path = path + 'loop3.txt'
+    sample1 = DualGate_MLGsense('CrI3_2L+2L_MLG', d_b=11, d_m=2, d_t=11, d_flake=2.8, data_path=path)
+    sample2 = DualGate_MLGsense('option1test_TM', d_b=7, d_m=0, d_t=0, d_flake=0, data_path=path)
+    # sample = DualGate_MLGsense('option1test_BM', d_b=28, d_m=0, d_t=0, d_flake=0, data_path=path)
+    sample3 = DualGate_MLGsense('4L', d_b=8.7, d_m=3, d_t=0.01, d_flake=2.8, data_path=path)
+
+    file1 = path1+'loop2_300k_E1E5.txt'
+    file2 = path2+'scan3.txt'
+    file3 = path3+'loop7.txt'
     Vsin,Rbox=0.1,1e6
-
-    db,dt,dm,dc = sample.d_b, sample.d_t, sample.d_m, sample.d_flake
-    db = db+dm+dc
-    linestyle='-'
-    # image_Rgr_a=plot_2dmap(path, d_b=sample.d_b+sample.d_m+sample.d_flake, d_t=sample.d_t)
-    fig = plot_2dmap_irreg(path, d_b=sample.d_b+sample.d_m+sample.d_flake, d_t=sample.d_t)
-    plt.savefig(path+'2dmap_plot.png',dpi=500)
-
-    
-    # plt.show()
-    
-    '''
-    file = path+'VbVt_mappingfine_Vt_4p51_.txt'
-    data = np.loadtxt(file)
-    Vb,V_b_meas,I_b_meas,R_Gr,R_Gr_std,V_Gr = data[:,0],data[:,1],data[:,2],data[:,3],data[:,4],data[:,5]
-
-    diffs = np.diff(Vb)
-    change_indices = np.where(diffs < 0)[0]  # descending starts here
-    if len(change_indices)==0: change_indices = np.array([len(Vb)-1])
-    Vb_ascend, Vb_descend = Vb[:change_indices[0] + 1], Vb[change_indices[0]:]
-    E_ascend, E_descend = Vb_ascend/db, Vb_descend/db
-    ascend,descend = R_Gr[:change_indices[0]+1], R_Gr[change_indices[0]:]
-    std_ascend,std_descend = R_Gr_std[:change_indices[0]+1],R_Gr_std[change_indices[0]:]
-
-    plot = 'R'
-    # plot = 'dRdV'
-    
     fig, ax = plt.subplots(1,1,figsize=(6,5))
-    ax.set_ylabel(r'$R_{Gr}$ (k$\Omega$)') # , ax.set_xlabel('$E_{⟂}$ (Vnm$^{-1}$)')
-    
 
-    if plot == 'R':
-        ax.set_xlabel('$V_{b}/d_b$ (Vnm$^{-1}$)')
-        if True: 
-            linestyle = ''
+    for sample,file in zip([sample1,sample2,sample3],[file1,file2,file3]):
+
+        db,dt,dm,dc = sample.d_b, sample.d_t, sample.d_m, sample.d_flake
+        db = db+dm+dc
+        gate = 'b'
+        if gate == 't': d_gate = dt
+        elif gate == 'b': d_gate = db
+        # '''
+        # image_Rgr_a=plot_2dmap(path, d_b=sample.d_b+sample.d_m+sample.d_flake, d_t=sample.d_t)
+        # fig = plot_2dmap_irreg(path, d_b=sample.d_b+sample.d_m+sample.d_flake, d_t=sample.d_t)
+        # plt.savefig(path+'2dmap_plot.png',dpi=1000)
+        # plt.show()
+        # '''
+        # file = path+'goingback_new_new_new.txt'
+        data = np.loadtxt(file)
+        Vb,V_b_meas,I_b_meas,R_Gr,R_Gr_std,V_Gr = data[:,0],data[:,1],data[:,2],data[:,3],data[:,4],data[:,5]
+    
+        diffs = np.diff(Vb)
+        change_indices = np.where(diffs < 0)[0]  # descending starts here
+        if len(change_indices)==0: change_indices = np.array([len(Vb)-1])
+        Vb_ascend, Vb_descend = Vb[:change_indices[0] + 1], Vb[change_indices[0]:]
+        E_ascend, E_descend = Vb_ascend/d_gate, Vb_descend/d_gate
+        ascend,descend = R_Gr[:change_indices[0]+1], R_Gr[change_indices[0]:]
+        std_ascend,std_descend = R_Gr_std[:change_indices[0]+1],R_Gr_std[change_indices[0]:]
+    
+        ax.set_ylabel(r'$R_{Gr}$ (k$\Omega$)') # , ax.set_xlabel('$E_{⟂}$ (Vnm$^{-1}$)')
+        ax.set_xlabel('$V_{'+gate+'}/d_{'+gate+'}$ (V nm$^{-1}$)')
+        
+        plot = 'R'
+        ax.set_xlim(-.4,.4)
+        # ax.set_ylim(.0,.65)
+    
+        if False: 
             plot = plot+'_zoom'
-            ax.set_xlim(-.4,-.34)
-            ax.set_ylim(2.0,2.17)
-            # 
-            x1,x2 = 210,255
-            x1d,x2d = 240,280
+            center_a = np.argmax(ascend)
+            center_d = np.argmax(descend)
+            width =25
+            x1,x2 = center_a-width,center_a+width
+            x1d,x2d = center_d-width,center_d+width
+            ymax = np.max(ascend[x1:x2]+.01)
+            ymin = np.min(ascend[x1:x2]-.03)
+            ax.set_ylim(ymin-.04,ymax)
+            ax.set_xlim(E_ascend[center_a]-.013,E_ascend[center_a]+.013)
+            order = 2
             xfine = np.linspace(E_ascend[x1],E_ascend[x2],100)
-            coeffs_a = np.polyfit(E_ascend[x1:x2], ascend[x1:x2], 6)   # linear fit
+            coeffs_a = np.polyfit(E_ascend[x1:x2], ascend[x1:x2], order)   # linear fit
             y_fit_a = np.polyval(coeffs_a, xfine)
             dcoeffs_a = np.polyder(coeffs_a)
             critical_points_a = np.roots(dcoeffs_a)
-            
-            coeffs_d = np.polyfit(E_descend[x1d:x2d], descend[x1d:x2d], 6)   # linear fit
+            coeffs_d = np.polyfit(E_descend[x1d:x2d], descend[x1d:x2d], order)   # linear fit
             xfine_d = np.linspace(E_descend[x1d],E_descend[x2d],100)
             y_fit_d = np.polyval(coeffs_d, xfine_d)
             dcoeffs_d = np.polyder(coeffs_d)
             critical_points_d = np.roots(dcoeffs_d)
-            
-            a,d = 2,2
-            dV = round(np.abs(np.real(critical_points_d[d] - critical_points_a[a])*db*1000),2)
-            ax.plot(xfine,y_fit_a,ms=0,zorder=5,linewidth=2,c='r')
-            ax.plot(xfine_d,y_fit_d,ms=0,zorder=5,linewidth=2,c='b')
-            ax.axvline(critical_points_a[a],ms=0,color='r',linestyle='-',linewidth=.75)
-            ax.axvline(critical_points_d[d],ms=0,color='b',linestyle='-',linewidth=.75)
-            ax.text(-.38,2.025,str(dV)+'mV',fontsize=16)
-            # ax.annotate( "", xy=(.0008, 2.21), xytext=(0.0022, 2.21), arrowprops=dict(arrowstyle="simple,head_length=0.2,head_width=0.2,tail_width=0.05",linestyle="-", color='k', linewidth=0.15) )    
-            # ax.annotate( "", xy=(.0025, 2.21), xytext=(0.0011, 2.21), arrowprops=dict(arrowstyle="simple,head_length=0.2,head_width=0.2,tail_width=0.05",linestyle="-", color='k', linewidth=0.15) )    
-            print(str(dV))
-        ax.errorbar(E_ascend, ascend,yerr=std_ascend,color='r',marker='.',linestyle=linestyle,ms=3,label=r'$\rightarrow$',elinewidth=0)
-        ax.errorbar(E_descend, descend,yerr=std_descend,color='b',marker='.',linestyle=linestyle,ms=3,label=r'$\leftarrow$',elinewidth=0)
-        
-        
-    elif plot == 'dRdV':
-        R_Gr_der = np.gradient(R_Gr)
-        ascend_der,descend_der = R_Gr_der[:change_indices[0]+1], R_Gr_der[change_indices[0]:]
-        ax.errorbar(E_ascend, ascend_der*1000,yerr=0,color='r',marker='.',ms=5,label=r'$\rightarrow$',elinewidth=0)
-        ax.errorbar(E_descend, descend_der*1000,yerr=0,color='b',marker='.',ms=5,label=r'$\leftarrow$',elinewidth=0,zorder=0)
-        ax.axhline(0,zorder=0,c='k',ms=0)
-        # ax.axvline(0.00175,c='gray',zorder=0,ms=0,ymax=1)
-        # ax.axvline(0.00254,c='gray',zorder=0,ms=0,ymax=1)
-        # ax.axvline(0.002785,c='gray',zorder=0,ms=0,ymax=1)
-        # ax.text(-.0004,1.7,'16.5mV',fontsize=16)
-        # ax.text(.0026,7.4,'12.48V',fontsize=16)
-        # ax.set_xlim(-.003,.006)
-        # ax.set_ylim(-4,4)
-        # ax.annotate( "", xy=(.0017, 7.5), xytext=(0.0025, 7.5), arrowprops=dict(arrowstyle="simple,head_length=0.2,head_width=0.2,tail_width=0.05",linestyle="-", color='k', linewidth=0.15) )    
-        # ax.annotate( "", xy=(.0026, 7.5), xytext=(0.0018, 7.5), arrowprops=dict(arrowstyle="simple,head_length=0.2,head_width=0.2,tail_width=0.05",linestyle="-", color='k', linewidth=0.15) )    
-        # ax.annotate( "", xy=(.001983, .01), xytext=(0.002, .01), arrowprops=dict(arrowstyle="simple,head_length=0.2,head_width=0.2,tail_width=0.05",linestyle="-", color='k', linewidth=0.15) )    
-        # ax.annotate( "", xy=(.00205, .01), xytext=(0.00199, .01), arrowprops=dict(arrowstyle="simple,head_length=0.2,head_width=0.2,tail_width=0.05",linestyle="-", color='k', linewidth=0.15) )    
-        # ax.set_ylim(-2.5,2.5)
-        # xticks=np.array([-.005,0,.005,.01])
-        # ax.set_xticks(xticks)
-        ax.set_ylabel(r'$R_{Gr}^\prime$ ($\Omega$V$^{-1}$)')
-        ax.set_xlabel('$V_{b}/d_b$ (V nm$^{-1}$)')
-        ax_top = ax.secondary_xaxis('top', functions=(lambda x: db*x*1000, lambda x: x/db/1000))
-        ax_top.set_xlabel("$V_{b}$ (mV)")
-        # ax_top.set_xticks(xticks*db*1000)
-    
-    ax.legend(loc='best')
-    plt.savefig(file.replace('.txt','_{}_plot.png'.format(plot)),dpi=500)
-    '''
+            a,d = -1,-1
+            dV = round(np.abs(np.real(critical_points_d[d] - critical_points_a[a])*d_gate*1000),2)
+            ax.plot(xfine,y_fit_a,ms=0,zorder=5,linewidth=2,c=fitascend_color)
+            ax.plot(xfine_d,y_fit_d,ms=0,zorder=5,linewidth=2,c=fitdescend_color)
+            ax.axvline(critical_points_a[a],ms=0,color=fitascend_color,linestyle='-',linewidth=.75)
+            ax.axvline(critical_points_d[d],ms=0,color=fitdescend_color,linestyle='-',linewidth=.75)
+            ax.text(E_ascend[center_a]+.001,(ymax+ymin)/2-.05,str(dV)+'mV',fontsize=16)
+            ax.errorbar(E_ascend, ascend,yerr=std_ascend,color=acolor,marker='.',linestyle='',ms=3,label=r'$\rightarrow$',elinewidth=0)
+            ax.errorbar(E_descend, descend,yerr=std_descend,color=dcolor,marker='.',linestyle='',ms=3,label=r'$\leftarrow$',elinewidth=0)
+            ax.legend(loc='best')
+            # ax.legend(title='n={}'.format(order),loc='best')
+        else:
+            if sample.d_b == 7:
+                ascend = ascend+1.6
+                E_ascend = E_ascend-.018
+                acolor='r'
+                label='control sample (+1.6k$\Omega$)'
+            elif sample.d_b==11:
+                acolor='b'
+                label='CrI3 with dualcap Gr'
+            else:
+                acolor='g'
+                label='CrI3 with singlecap Gr (+1.3k$\Omega$)'
+                ascend = ascend+1.3
+                E_ascend = E_ascend-.003
+
+
+                
+            ax.errorbar(E_ascend, ascend,yerr=std_ascend,color=acolor,marker='.',linestyle='-',lw=3,ms=0,label=label,elinewidth=0)
+            # ax.errorbar(E_descend, descend,yerr=std_descend,color=dcolor,marker='.',linestyle='-',ms=4,label=r'$\leftarrow$',elinewidth=0)
+        ax.legend(loc='lower right',fontsize=10)
+        # ax.axvline(.02,c='grey',linestyle='--',lw=1,ms=0)
+        # ax.axvline(-.018,c='grey',linestyle='--',lw=1,ms=0)
+        ax.set_xlim(-.25,.25)
+        ax.set_ylim(1.4)
+        ax.set_xlabel("$V_b/d_b$ (V nm$^{-1})$")
+        # plt.savefig(file.replace('.txt','_{}_plot.png'.format(plot)),dpi=500)
+    # '''
     plt.show()
     # '''
 

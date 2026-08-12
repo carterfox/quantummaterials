@@ -351,17 +351,19 @@ def get_CD_data(file):
 
 def init_plot_params():
     mpl.rcParams.update(mpl.rcParamsDefault)
+    mpl._mathtext.FontConstantsBase.sup1 = 0.5  # Default varies by font
     fontsize = 18
     plt.rcParams["lines.marker"] = '.'
     plt.rcParams["lines.linewidth"] = 2
     plt.rcParams["axes.labelpad"] = 4
     plt.rcParams['font.family'] = 'Arial' 
     # plt.rcParams['mathtext.sans-serif'] = ['Arial'] 
+    plt.rcParams['mathtext.fontset'] = 'custom'
     plt.rcParams['mathtext.rm'] = 'Arial' 
     plt.rcParams['mathtext.it'] = 'Arial:italic' 
     plt.rcParams['mathtext.bf'] = 'Arial:bold'
     plt.rcParams['mathtext.sf'] = 'Arial' 
-    plt.rcParams['mathtext.tt'] = 'Arial' 
+    plt.rcParams['mathtext.tt'] = 'Times New Roman:italic' 
     plt.rcParams['mathtext.cal'] = 'Arial' 
     plt.rcParams['mathtext.default'] = 'it' 
     plt.rcParams["font.size"] = fontsize
@@ -370,13 +372,14 @@ def init_plot_params():
     plt.rcParams["savefig.dpi"] = 500
     plt.rcParams["savefig.format"] = "png"  # "svg"
     plt.rcParams["image.cmap"] = "magma"
-    plt.rcParams["figure.constrained_layout.use"] = True
+    # plt.rcParams["figure.constrained_layout.use"] = True
     plt.rcParams["legend.fontsize"] = 0.7 * fontsize
     plt.rcParams["legend.handlelength"] = 0.9
     plt.rcParams["legend.handletextpad"] = 0.5
     plt.rcParams["xtick.direction"] = 'in'
     plt.rcParams["ytick.direction"] = 'in'
     plt.rcParams["savefig.bbox"] = "tight"
+    plt.rcParams['figure.constrained_layout.use'] = False
     # plt.rcParams['text.usetex'] = True
     # plt.rcParams['text.latex.preamble'] =r"\usepackage{xcolor} "
     # plt.rcParams.update({
