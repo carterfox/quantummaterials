@@ -35,7 +35,8 @@ def sweep_Efield(sample: DualGate, lockin: LockInOE1022D, keithley_b: KeithleySo
     fig,ax1,lineup,linedown = init_plot(sample,E_array,'Efield')    
     saving_file = make_files(sample,lockin,file_save,'Efield')
     sample.Vsin = lockin.get_sine_output(1)['amplitude_v']
-    setup_keithleys(keithley_b,keithley_t)
+    if True:
+        setup_keithleys(keithley_b,keithley_t)
     
     d_b = sample.d_b + sample.d_m + sample.d_flake 
     d_t = sample.d_t
@@ -122,7 +123,7 @@ def setup_keithleys(keithley_b=None,keithley_t=None):
         keithley_b.apply_voltage(compliance_current=keithley_b.compliance_current)
     if keithley_t!=None:
         keithley_t.enable_source() 
-        keithley_t.apply_voltage(compliance_current=keithley_t.compliance_current)
+        keithley_t.apply_voltage(compliance_current=keithley_b.compliance_current)
         
 def set_gates(keithley_b=None,keithley_t=None,Vb=0,Vt=0):
     
@@ -168,7 +169,7 @@ def update_plot(sample, lineup: Line2D,linedown: Line2D, xup_data, yup_data, xdo
 
 def init_plot(sample,X_array,scanaxis):
     fig, ax1 = plt.subplots()
-    fig.canvas.manager.window.move(1920, 50)  # (x, y) position in pixels
+    # fig.canvas.manager.window.move(1920, 50)  # (x, y) position in pixels
     ax1.set_ylabel(r'R$_{Gr}$ (k$\Omega$)')
     lineup = Line2D([], [], color='red',marker='.',markersize=3)
     linedown = Line2D([], [], color='blue',marker='.',markersize=3)
