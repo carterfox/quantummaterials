@@ -114,29 +114,29 @@ def ramp(start,stop,step):
 if __name__ == "__main__":
     ###### add it to servers_to_close if you want them to close each time. 
     ###### at this point only cam_spec should not be in it
-    base = "G:/Other computers/My Computer/XiaoWang_Group_data_2024on/StackingTransitions/option1_chip1/BM_S8/after-dualcap/fourterm_Rgr_V3V4/"
-    sample = DualGate_MLGsense(sample_name='option1_TM', d_b=7, d_m=0,d_t=0, d_flake=0, data_path=base)
+    base = "G:/Other computers/My Computer/XiaoWang_Group_data_2024on/StackingTransitions/option4-chip1/twoterm_Rgr_V1V2/"
+    sample = DualGate_MLGsense(sample_name='option4_chip1', d_b=31, d_m=0,d_t=0, d_flake=0, data_path=base)
     # sample = DualGate_MLGsense(sample_name='option1_BM', d_b=28, d_m=0,d_t=0, d_flake=0, data_path=base)
-    lockin = get_lockin(resource_name='ASRL5::INSTR',num_avgs=50,delay=1.5)
+    lockin = get_lockin(resource_name='ASRL5::INSTR',num_avgs=50,delay=3)
     sample.Vsin = .1
     sample.Rbox=1e6
     sample.temperature=295
     keithley_b = get_keithley('GPIB0::16::INSTR','2400',compliance_current=None)
-    keithley_b.compliance_current=1e-7
+    keithley_b.compliance_current=1e-6
     servers_to_close = [lockin,keithley_b]
     # keithley_b.enable_source()
-    # keithley_b.compliance_current=1e-8
+    # keithley_b.compliance_current=5e-8
     
     try:        
-        filesave = 'goingback.txt'
-        # filesave = 'scan1.txt'
-        Eb_array = np.arange(.10,-.01,-.01)
-        # Eb_array = np.array([0,0,0,0,0])
+        # filesave = 'goingback.txt'
+        filesave = 'loop2.txt'
+        Eb_array = np.arange(-0.2,.21,.002)
+        # Eb_array = np.array([0,0])
         # a = np.arange(-.2,.2025,.0025) 
         # b = np.arange(.2,-.0025,-.0025)
         # Eb_array = np.concatenate((a, b))
         Vb_array = Eb_array*(sample.d_b+sample.d_m+sample.d_flake)
-        # Vb_array = np.append(Vb_array,np.flip(Vb_array))
+        Vb_array = np.append(Vb_array,np.flip(Vb_array))
         Gr_polarization_sensing_singlepoint.main(sample, lockin, keithley_b,Vb_array,filesave)
             
         
