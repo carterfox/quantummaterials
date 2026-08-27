@@ -128,15 +128,15 @@ if __name__ == "__main__":
     # keithley_b.compliance_current=5e-8
     
     try:        
-        filesave = 'goingback.txt'
-        # filesave = 'loop2.txt'
-        Eb_array = np.arange(0,-.21,-.01)
+        # filesave = 'goingback.txt'
+        filesave = 'loop1.txt'
+        Eb_array = np.arange(-.2,.202,.002)
         # Eb_array = np.array([0,0])
         # a = np.arange(-.2,.2025,.0025) 
         # b = np.arange(.2,-.0025,-.0025)
         # Eb_array = np.concatenate((a, b))
         Vb_array = Eb_array*(sample.d_b+sample.d_m+sample.d_flake)
-        # Vb_array = np.append(Vb_array,np.flip(Vb_array))
+        Vb_array = np.append(Vb_array,np.flip(Vb_array))
         Gr_polarization_sensing_singlepoint.main(sample, lockin, keithley_b,Vb_array,filesave)
             
         

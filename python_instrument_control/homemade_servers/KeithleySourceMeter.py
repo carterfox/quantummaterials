@@ -30,8 +30,11 @@ def KeithleySourceMeter(resource_name, model="2450"):
                 self.ask(":TRAC:POIN?")
             except Exception as e:
                 logging.ERROR('Instrument must be in 2400 emulation mode. Manually set it in settings')
-            self.source_voltage_range=210
-            
+            try:
+                self.source_voltage_range=210
+            except:
+                vrange = self.source_voltage_range
+                logging.ERROR(f"Error setting source voltage range. Range is {vrange} V")                
 
         def close(self):
             """Only closes the VISA connection. Does NOT change instrument state."""
