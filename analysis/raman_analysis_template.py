@@ -18,11 +18,11 @@ def lin(x,m,b):
     return m*x + b
 
 # tb.init_plot_params()
-lab_data_folder = '/Users/carterfox/Library/CloudStorage/GoogleDrive-cdfox@wisc.edu/.shortcut-targets-by-id/1-8q9lGFnGNt4mDzcxXwdk43m1aVWT66q/XiaoWang_Group_data_2024on/StackingTransitions/Gr_for_devices/contrast-calibration/raman/633/'
-scana = lab_data_folder + '1ML_a_.txt'
-scanb = lab_data_folder + '1ML_b_.txt'
-scanc = lab_data_folder + '1ML_c_.txt'
-scand = lab_data_folder + '1ML_d_.txt'
+lab_data_folder = '/Users/carterfox/Library/CloudStorage/GoogleDrive-cdfox@wisc.edu/.shortcut-targets-by-id/1-8q9lGFnGNt4mDzcxXwdk43m1aVWT66q/XiaoWang_Group_data_2024on/StackingTransitions/NbOI2/Lvgroup/XRD_samples/monalayer-bilayer-sample/fab/raman-3-27-25/'
+scana = lab_data_folder + 'raman_pol0.txt'
+scanb = lab_data_folder + 'raman_pol90.txt'
+# scanc = lab_data_folder + '1ML_c_.txt'
+# scand = lab_data_folder + '1ML_d_.txt'
 # scane = lab_data_folder + '1ML_e_.txt'
 # scan5 = lab_data_folder + '5p_scan5.txt'
 
@@ -31,20 +31,20 @@ scand = lab_data_folder + '1ML_d_.txt'
 # FGT_file3 = data_subfolder + 'raman_21.txt'
 
 
-sample = r'Graphene'
-laser = '633nm'
-power = '5'
+sample = r'NbOI2 '
+laser = '532nm'
+power = '0.01'
 
 file_a_data = pd.read_table(scana,comment='#',names=['Raman Shift','Counts'],encoding='latin1')
 file_b_data = pd.read_table(scanb,comment='#',names=['Raman Shift','Counts'],encoding='latin1')
-file_c_data = pd.read_table(scanc,comment='#',names=['Raman Shift','Counts'],encoding='latin1')
-file_d_data = pd.read_table(scand,comment='#',names=['Raman Shift','Counts'],encoding='latin1')
+# file_c_data = pd.read_table(scanc,comment='#',names=['Raman Shift','Counts'],encoding='latin1')
+# file_d_data = pd.read_table(scand,comment='#',names=['Raman Shift','Counts'],encoding='latin1')
 # file_e_data = pd.read_table(scane,comment='#',names=['Raman Shift','Counts'],encoding='latin1')
 
-maxval = np.max(file_a_data['Counts'][600:1000])
+maxval = 1#np.max(file_a_data['Counts'][600:1000])
 file_a_data['Counts'] = file_a_data['Counts']/maxval
 file_b_data['Counts'] = file_b_data['Counts']/maxval
-file_c_data['Counts'] = file_c_data['Counts']/maxval
+# file_c_data['Counts'] = file_c_data['Counts']/maxval
 # file5_data = pd.read_table(scan5,comment='#',names=['Raman Shift','Counts'],encoding='latin1')
 # file2_data = pd.read_table(s1_p2,comment='#',names=['Raman Shift','Counts'])
 # file5_data = pd.read_table(r5,comment='#',names=['Raman Shift','Counts'])
@@ -67,10 +67,10 @@ file_c_data['Counts'] = file_c_data['Counts']/maxval
 # y=119
 z=1.5
 fig = plt.figure(figsize=(7,5))
-bax = brokenaxes(xlims=((1500, 1650), (2580, 2790)))
-bax.plot(file_a_data['Raman Shift'],file_a_data['Counts'],linewidth=z,label='1L',ms=0)
-bax.plot(file_b_data['Raman Shift'],file_b_data['Counts'],linewidth=z,label='2L',ms=0)
-bax.plot(file_c_data['Raman Shift'],file_c_data['Counts'],linewidth=z,label='3L',ms=0)
+# bax = brokenaxes(xlims=((1500, 1650), (2580, 2790)))
+plt.plot(file_a_data['Raman Shift'],file_a_data['Counts'],label='pol0')
+plt.plot(file_b_data['Raman Shift'],file_b_data['Counts'],label='pol90')
+# plt bax.plot(file_c_data['Raman Shift'],file_c_data['Counts'],linewidth=z,label='3L',ms=0)
 # plt.plot(file_d_data['Raman Shift'],file_d_data['Counts'],linewidth=z,label='d',ms=0)
 # plt.plot(file_e_data['Raman Shift'],file_e_data['Counts'],linewidth=z,label='e',ms=0)
 # plt.plot(file5_data['Raman Shift'],file5_data['Counts'],linewidth=z,c='g',label='Scan5',ms=0)
@@ -85,16 +85,15 @@ bax.plot(file_c_data['Raman Shift'],file_c_data['Counts'],linewidth=z,label='3L'
 # plt.yticks([400,600,800,1000,1200],['','','','',''])
 # bax.axvline(1587.94,c='C0')
 # bax.axvline(1584.16,c='C1')
-bax.set_ylabel('Intensity (a.u.)',fontsize=15,labelpad=30)
+# plt.set_ylabel('Intensity (a.u.)',fontsize=15,labelpad=30)
 # plt.xlim(1470,1700)
 # plt.xlim(2570,2800)
 # plt.yscale('log')
-bax.set_xlabel('Raman Shift (cm$^{-1}$)',fontsize=15,labelpad=20)
+# plt.set_xlabel('Raman Shift (cm$^{-1}$)',fontsize=15,labelpad=20)
 # plt.ylim(1000,2000)
 # plt.ylim(0,14000)
 # bax.set_yticks([])
-bax.legend(loc='center')
-# plt.title(sample+' - '+laser+' - '+power+'%')
+plt.legend()# plt.title(sample+' - '+laser+' - '+power+'%')
 
 # plt.savefig(lab_data_folder+'comparison.png',bbox_inches='tight',dpi=500)
 # plt.savefig(lab_data_folder+'power5-plot.png',bbox_inches='tight',dpi=500)
