@@ -114,10 +114,10 @@ def ramp(start,stop,step):
 if __name__ == "__main__":
     ###### add it to servers_to_close if you want them to close each time. 
     ###### at this point only cam_spec should not be in it
-    base = "G:/Other computers/My Computer/XiaoWang_Group_data_2024on/StackingTransitions/option4-chip1/twoterm_Rgr_V1V3/"
-    sample = DualGate_MLGsense(sample_name='option4_chip1', d_b=31, d_m=0,d_t=0, d_flake=0, data_path=base)
-    # sample = DualGate_MLGsense(sample_name='option1_BM', d_b=28, d_m=0,d_t=0, d_flake=0, data_path=base)
-    lockin = get_lockin(resource_name='ASRL5::INSTR',num_avgs=50,delay=3)
+    base = "G:/Other computers/My Computer/XiaoWang_Group_data_2024on/StackingTransitions/Cri3/round9/r9_b2_chip1/fourterm_Rgr_I_36_V12/"
+    # sample = DualGate_MLGsense(sample_name='r9_batch2_chip2', d_b=6.5, d_m=14.8,d_t=5.8, d_flake=2.8, data_path=base)
+    sample = DualGate_MLGsense(sample_name='r9_batch2_chip1', d_b=33, d_m=14,d_t=6.4, d_flake=2.8, data_path=base)
+    lockin = get_lockin(resource_name='ASRL5::INSTR',num_avgs=50,delay=2)
     sample.Vsin = .1
     sample.Rbox=1e6
     sample.temperature=295
@@ -125,19 +125,32 @@ if __name__ == "__main__":
     keithley_b.compliance_current=1e-6
     servers_to_close = [lockin,keithley_b]
     # keithley_b.enable_source()
-    # keithley_b.compliance_current=5e-8
+    keithley_b.compliance_current=10e-8
     
     try:        
+        filesave = 'goingback.txt'
+        # filesave = 'loop1.txt'
+        Eb_array = np.arange(.2,-.1,-.1)
+        # a = np.arange(-.2,-.01,.005)
+        # b = np.arange(-.01,.01,.002)
+        # c = np.arange(.01,.205,.005)
+        # Eb_array = np.array([0,])
+        # Eb_array = np.concatenate((a, b, c))
+        Vb_array = Eb_array*(sample.d_b+sample.d_m+sample.d_flake)
+        # Vb_array = np.append(Vb_array,np.flip(Vb_array))
+        Gr_polarization_sensing_singlepoint.main(sample, lockin, keithley_b,Vb_array,filesave)
+        
+        # time.sleep(2)
         # filesave = 'goingback.txt'
-        filesave = 'loop1.txt'
-        Eb_array = np.arange(-.2,.202,.002)
+        # filesave = 'loop1.txt'
+        # Eb_array = np.arange(-.2,.01,.01)
         # Eb_array = np.array([0,0])
         # a = np.arange(-.2,.2025,.0025) 
         # b = np.arange(.2,-.0025,-.0025)
         # Eb_array = np.concatenate((a, b))
-        Vb_array = Eb_array*(sample.d_b+sample.d_m+sample.d_flake)
-        Vb_array = np.append(Vb_array,np.flip(Vb_array))
-        Gr_polarization_sensing_singlepoint.main(sample, lockin, keithley_b,Vb_array,filesave)
+        # Vb_array = Eb_array*(sample.d_b+sample.d_m+sample.d_flake)
+        # Vb_array = np.append(Vb_array,np.flip(Vb_array))
+        # Gr_polarization_sensing_singlepoint.main(sample, lockin, keithley_b,Vb_array,filesave)
             
         
     except Exception: traceback.print_exc()
