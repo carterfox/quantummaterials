@@ -29,13 +29,13 @@ class AndorCamSpec:
         
         self.spec = Andor.ShamrockSpectrograph(0)
         self.excitation_nm = excitation_nm
-        self.central_wavelength = 644.21e-9
+        self.central_wavelength = 644.22e-9
         self.grating = 3
         self.configure_spectrometer(grating=self.grating, central_wl=self.central_wavelength)
         self.accumulations = accumulations
         
         ret, START_TEMP = self.sdk.GetTemperature()    
-        TARGET_TEMP = -80
+        TARGET_TEMP = -79
         progress_bar = tqdm(total=START_TEMP - TARGET_TEMP,
         bar_format="{l_bar}{bar}",leave=False)
         while True:

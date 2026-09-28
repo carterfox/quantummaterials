@@ -20,9 +20,9 @@ logging.getLogger('matplotlib').setLevel(logging.WARNING)
 from homemade_servers.SSI_OE1022D import LockInOE1022D
 # from homemade_servers.QDopticool import Opticool
 # from homemade_servers.H11890PMT import HamamatsuH11890
-# from homemade_servers.AndorCameraSpectrometer import AndorCamSpec
+from homemade_servers.AndorCameraSpectrometer import AndorCamSpec
 from homemade_servers.KeithleySourceMeter import KeithleySourceMeter
-# from homemade_servers.ThorlabsKCube import RotationMount
+from homemade_servers.ThorlabsKCube import RotationMount
 from devices.dualgate import DualGate, DualGate_MLGsense
 # from devices.optical import Optical
 # from devices.transport import FourTerminal
@@ -30,7 +30,7 @@ from devices.dualgate import DualGate, DualGate_MLGsense
 # from experiments import SHG_CD_Efield_4term
 # from experiments import PMT_continuous_read, SHG_polarization_scan, 
 from experiments import Gr_polarization_sensing, Gr_polarization_sensing_singlepoint
-# from experiments import raman_basic
+from experiments import raman_basic
 
 tb.init_plot_params()
 if 'servers' not in globals(): 
@@ -114,23 +114,58 @@ def ramp(start,stop,step):
 if __name__ == "__main__":
     ###### add it to servers_to_close if you want them to close each time. 
     ###### at this point only cam_spec should not be in it
-    base = "I:/.shortcut-targets-by-id/1-8q9lGFnGNt4mDzcxXwdk43m1aVWT66q/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round8/c3_4L/GrSensorSingle/"
-    sample = DualGate_MLGsense(sample_name='4L', d_b=8.7, d_m=3,d_t=.01, d_flake=2.8, data_path=base)
-    lockin = get_lockin(num_avgs=100,delay=5)
-    sample.Vsin = .1
-    sample.Rbox=1e6
-    sample.temperature=295
-    keithley_b = get_keithley('GPIB0::16::INSTR','2400',compliance_current=5e-8)
-    servers_to_close = [lockin,keithley_b]
+    #base = "I:/.shortcut-targets-by-id/1-8q9lGFnGNt4mDzcxXwdk43m1aVWT66q/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round8/c3_4L/GrSensorSingle/2K/"
+    #sample = DualGate_MLGsense(sample_name='4L', d_b=8.7, d_m=3,d_t=.01, d_flake=2.8, data_path=base)
+    #lockin = get_lockin(num_avgs=100,delay=2)
+    #sample.Vsin = .1
+    #sample.Rbox=1e6
+    #sample.temperature=2
+    #keithley_b = get_keithley('GPIB0::16::INSTR','2400',compliance_current=5e-8)
+    #servers_to_close = [lockin,keithley_b]
     
+    #polarization = get_rotation_stage(27261255)
+    
+    #data_path = ""
+    #waveplate = get_rotation_stage(27268499)
+    #cam_spec = get_AndorCamSpec()
+    #servers_to_close = []
+    
+    #try:        
+        #filesave = 'goingback.txt'
+        #Eb_array = np.arange(-.32,0.01,.01)
+        #Vb_array = Eb_array*(sample.d_b+sample.d_m+sample.d_flake)
+        # Vb_array = np.append(Vb_array,np.flip(Vb_array))
+
+        # Gr_polarization_sensing_singlepoint.main(sample, lockin, keithley_b,Vb_array,filesave)
+        #exposure_time = 60
+        #averages = 1
+        #angles = np.repeat(np.arange(0,91,10),30)
+        #raman_basic.angle_sweep(cam_spec, waveplate, exposure_time, averages, angles)
+        
+    data_path = ""
+    waveplate = get_rotation_stage(27268499)
+    polarization_stage = get_rotation_stage(27261255)
+    cam_spec = get_AndorCamSpec()
+    servers_to_close = [waveplate, polarization_stage]
+        
     try:        
-        filesave = 'loop6_p2.txt'
-        Eb_array = np.arange(-.33,.3302,.0002)
-        Vb_array = Eb_array*(sample.d_b+sample.d_m+sample.d_flake)
-        Vb_array = np.append(Vb_array,np.flip(Vb_array))
-        Vb_array = Vb_array[902:]
-        Gr_polarization_sensing_singlepoint.main(sample, lockin, keithley_b,Vb_array,filesave)
-            
+            #filesave = 'goingback.txt'
+            #Eb_array = np.arange(-.32,0.01,.01)
+            #Vb_array = Eb_array*(sample.d_b+sample.d_m+sample.d_flake)
+            # Vb_array = np.append(Vb_array,np.flip(Vb_array))
+
+            # Gr_polarization_sensing_singlepoint.main(sample, lockin, keithley_b,Vb_array,filesave)
+        exposure_time = 10
+        averages = 1
+        #angles = np.repeat(np.arange(0,91,5),10)
+        angles = np.repeat((67.5, 50),300)
+        raman_basic.angle_sweep(cam_spec,
+            waveplate,
+            polarization_stage,
+            exposure_time,
+            averages,
+            angles,
+        )
         
     except Exception: traceback.print_exc()
     finally: exit_session()

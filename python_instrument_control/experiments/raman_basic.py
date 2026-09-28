@@ -11,24 +11,22 @@ import os
 
 tb.init_plot_params()
 
-def angle_sweep(cam_spec: AndorCamSpec, waveplate: RotationMount, exposure_time, averages, angles, polarization='POL', save_path=None):
+def angle_sweep(cam_spec: AndorCamSpec, waveplate: RotationMount, polarization_stage: RotationMount, exposure_time, averages, angles, polarization='POL', save_path=None):
     """
-    Performs a Raman measurement sweep. 
+    Performs xx and xy Raman measurement sweeps.
     Optimized for consecutive measurements: skips motor delays if angle hasn't changed.
     """
     cam_spec.set_exposure(exposure_time)
     
-    # Use the provided save_path, or fall back to default if None
+    # Use the provided base save path, or fall back to default if None
     if save_path is None:
-        save_dir = r'D:\LabData\XiaoWang_Group_data_2024on\Hongrui\Raman\collabration\Zizhong\D3\2knew\D\XY_pol15'
+        save_root = r'I:\.shortcut-targets-by-id\1-8q9lGFnGNt4mDzcxXwdk43m1aVWT66q\XiaoWang_Group_data_2024on\Hongrui\Raman\Measurements\TaIrTe4\tai9\blinking\2k\0924\50_67.5\0.02p'
     else:
-        save_dir = save_path
-
-    os.makedirs(save_dir, exist_ok=True)
+        save_root = save_path
     
     plt.ion()
     fig, ax = plt.subplots()
-    ax.set_title(f"Angle-Dependent Raman Spectra ({polarization})")
+    ax.set_title(f"Angle-Dependent Raman Spectra ({polarization}, xx + xy)")
     ax.set_xlabel("Raman Shift (cm$^{-1}$)")
     ax.set_ylabel("Counts")
     ax.grid(True)
@@ -44,59 +42,87 @@ def angle_sweep(cam_spec: AndorCamSpec, waveplate: RotationMount, exposure_time,
     print(f"\nStarting Raman sweep from {angles[0]}° to {angles[-1]}°...")
     
     raman_shift_axis = None
-    previous_angle = None # To track the last angle and avoid redundant moves
+    #polarization_configs = [("xx", 0.0),("xy", 90.0),]
 
-    for i, angle in enumerate(angles):
-        
-        # --- OPTIMIZATION 1: Only move motor if the angle actually changes ---
-        if waveplate:
-            if angle != previous_angle:
-                print(f"\nMoving to {angle}°...")
-                waveplate.move_to(angle)
-                # We only check position when we actually move to save time
-                time.sleep(2)
-                current_pos = waveplate.get_pos()
-                print(f"Move complete. Current position: {current_pos:.2f}°")
-                previous_angle = angle
-            else:
-                # If angle is the same, skip the communication delay
-                print(f"\nAngle unchanged ({angle}°). Skipping motor move.")
+    #polarization_configs = [("xy", 90.0),]
+    polarization_configs = [("xx", 0.0),]
 
-        print(f"Acquiring {averages} frames at {exposure_time}s exposure...")
-        collected_frames = []
-        for j in range(averages):
-            data = cam_spec.acquire_image()
-            collected_frames.append(data)
-            
-        frames_array = np.array(collected_frames)    
-        summed_spectrum = np.sum(frames_array, axis=0)
-        
-        if raman_shift_axis is None:
-            raman_shift_axis = np.arange(len(summed_spectrum))
-            
-        ax.plot(raman_shift_axis, summed_spectrum, label=f'{angle}° ({i+1})')
-        # ax.legend() # Optional: Comment out if legend gets too crowded/slow
-        
-        # --- OPTIMIZATION 2: Non-blocking plot update ---
-        # plt.pause(0.01)  <-- Removed this slow pause
-        fig.canvas.draw()
-        fig.canvas.flush_events() 
 
-        all_data.append(collected_frames)
-        summed_spectra_data.append(summed_spectrum)
-        
-        try:
-            # Filename includes index 'i' to prevent overwriting
-            filename = f"D3_PtPrT_N_{angle}_{polarization}_{i}_xy_sweepD.txt"
-            full_path = os.path.join(save_dir, filename)
+    for measurement_mode, polarization_angle in polarization_configs:
+        print(f"\nSwitching to {measurement_mode}: {polarization_angle}°...")
+        polarization_stage.move_to(polarization_angle)
+        time.sleep(2)
+        current_polarization_pos = polarization_stage.get_pos()
+        print(
+            f"Polarization move complete. "
+            f"Current position: {current_polarization_pos:.2f}°"
+        )
+
+        if abs(current_polarization_pos - polarization_angle) > 0.2:
+            raise RuntimeError(
+                f"Polarization stage failed to reach {polarization_angle}°. "
+                f"Current position: {current_polarization_pos:.2f}°"
+            )
+
+        save_dir = os.path.join(save_root, measurement_mode)
+        os.makedirs(save_dir, exist_ok=True)
+        previous_angle = None
+
+        for i, angle in enumerate(angles):
             
-            data_to_save = np.column_stack((raman_shift_axis, summed_spectrum))
-            np.savetxt(full_path, data_to_save, delimiter='\t', header='Raman Shift (cm-1)\tCounts')
+            # --- OPTIMIZATION 1: Only move motor if the angle actually changes ---
+            if waveplate:
+                if angle != previous_angle:
+                    print(f"\nMoving to {angle}°...")
+                    waveplate.move_to(angle)
+                    # We only check position when we actually move to save time
+                    time.sleep(2)
+                    current_pos = waveplate.get_pos()
+                    print(f"Move complete. Current position: {current_pos:.2f}°")
+                    previous_angle = angle
+                else:
+                    # If angle is the same, skip the communication delay
+                    print(f"\nAngle unchanged ({angle}°). Skipping motor move.")
+
+            print(f"Acquiring {averages} frames at {exposure_time}s exposure...")
+            collected_frames = []
+            for j in range(averages):
+                data = cam_spec.acquire_image()
+                collected_frames.append(data)
+                
+            frames_array = np.array(collected_frames)    
+            summed_spectrum = np.sum(frames_array, axis=0)
             
-            print(f"✅ Saved: {filename}")
+            if raman_shift_axis is None:
+                raman_shift_axis = np.arange(len(summed_spectrum))
+                
+            ax.plot(
+                raman_shift_axis,
+                summed_spectrum,
+                label=f'{measurement_mode} {angle}° ({i+1})',
+            )
+            # ax.legend() # Optional: Comment out if legend gets too crowded/slow
             
-        except Exception as e:
-            print(f"❌ Error saving data for {angle}°: {e}")
+            # --- OPTIMIZATION 2: Non-blocking plot update ---
+            # plt.pause(0.01)  <-- Removed this slow pause
+            fig.canvas.draw()
+            fig.canvas.flush_events() 
+
+            all_data.append(collected_frames)
+            summed_spectra_data.append(summed_spectrum)
+            
+            try:
+                # Filename includes index 'i' to prevent overwriting
+                filename = f"GRT3_Exp10x1_tai9_0923_2_k_hwp_{angle}_{polarization}_{i}_{measurement_mode}.txt"
+                full_path = os.path.join(save_dir, filename)
+                
+                data_to_save = np.column_stack((raman_shift_axis, summed_spectrum))
+                np.savetxt(full_path, data_to_save, delimiter='\t', header='Raman Shift (cm-1)\tCounts')
+                
+                print(f"✅ Saved: {filename}")
+                
+            except Exception as e:
+                print(f"❌ Error saving data for {angle}°: {e}")
 
     # Return to initial position only if we actually moved significantly
     # (Optional: you can comment this out if you want to stay at the last angle)
