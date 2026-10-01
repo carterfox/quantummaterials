@@ -399,6 +399,10 @@ def plot_2dmap(folder_path,d_b,d_t):
     return image_Rgr_a
 
 
+
+
+
+
 if __name__ == "__main__":
 
     tb.init_plot_params()
@@ -407,114 +411,66 @@ if __name__ == "__main__":
     fitascend_color='darkred'
     fitdescend_color='mediumblue'
 
-    path="/Users/carterfox/Library/CloudStorage/GoogleDrive-cdfox@wisc.edu/.shortcut-targets-by-id/1-8q9lGFnGNt4mDzcxXwdk43m1aVWT66q/XiaoWang_Group_data_2024on/StackingTransitions/"
-    path2=path+"option1_chip1/TM_S6/after_2ndclean/fourterm_RgrV1V2/"
-    # path=path+"option1_chip1/BM_S8/fourterm_Rgr_V1V2/"
-    path1 = path + "CrI3/round8/firstrun/c6_2L2L_3-1/GrSensorSingle/Vt_ground_twoterm/"
-    path3 = path + "CrI3/round8/c3_4L/GrSensorSingle/295K/"
-    # data_path = path + 'loop3.txt'
-    sample1 = DualGate_MLGsense('CrI3_2L+2L_MLG', d_b=11, d_m=2, d_t=11, d_flake=2.8, data_path=path)
-    sample2 = DualGate_MLGsense('option1test_TM', d_b=7, d_m=0, d_t=0, d_flake=0, data_path=path)
-    # sample = DualGate_MLGsense('option1test_BM', d_b=28, d_m=0, d_t=0, d_flake=0, data_path=path)
-    sample3 = DualGate_MLGsense('4L', d_b=8.7, d_m=3, d_t=0.01, d_flake=2.8, data_path=path)
+    path="/Users/carterfox/Library/CloudStorage/GoogleDrive-cdfox@wisc.edu/.shortcut-targets-by-id/1-8q9lGFnGNt4mDzcxXwdk43m1aVWT66q/XiaoWang_Group_data_2024on/StackingTransitions/CrI3/round9/"
+    # sample = DualGate_MLGsense('r9-batch2-chip1', d_b= 33, d_m=14, d_t=6.4, d_flake=2.8, data_path=path)
+    sample = DualGate_MLGsense('r9-batch2-chip2', d_b=6.5, d_m=14.8, d_t=5.8, d_flake=2.8, data_path=path)
+    sample.Rbox
+    db,dt,dm,dc = sample.d_b, sample.d_t, sample.d_m, sample.d_flake
+    db = db+dm+dc   
+    path = path + "r9_b2_chip2/duringpumpdown/fourterm_Rgr_I_I2_V34/"
+    file = glob.glob(os.path.join(path, "loop6*.txt"))[0]
 
-    file1 = path1+'loop2_300k_E1E5.txt'
-    file2 = path2+'scan3.txt'
-    file3 = path3+'loop7.txt'
-    Vsin,Rbox=0.1,1e6
     fig, ax = plt.subplots(1,1,figsize=(6,5))
-
-    for sample,file in zip([sample1,sample2,sample3],[file1,file2,file3]):
-
-        db,dt,dm,dc = sample.d_b, sample.d_t, sample.d_m, sample.d_flake
-        db = db+dm+dc
-        gate = 'b'
-        if gate == 't': d_gate = dt
-        elif gate == 'b': d_gate = db
-        # '''
-        # image_Rgr_a=plot_2dmap(path, d_b=sample.d_b+sample.d_m+sample.d_flake, d_t=sample.d_t)
-        # fig = plot_2dmap_irreg(path, d_b=sample.d_b+sample.d_m+sample.d_flake, d_t=sample.d_t)
-        # plt.savefig(path+'2dmap_plot.png',dpi=1000)
-        # plt.show()
-        # '''
-        # file = path+'goingback_new_new_new.txt'
-        data = np.loadtxt(file)
-        Vb,V_b_meas,I_b_meas,R_Gr,R_Gr_std,V_Gr = data[:,0],data[:,1],data[:,2],data[:,3],data[:,4],data[:,5]
+    ax.set_ylabel(r'$R_{Gr}$ (k$\Omega$)') # , ax.set_xlabel('$E_{⟂}$ (Vnm$^{-1}$)')
+    ax.set_xlabel('$V_b/d_b$ (V nm$^{-1}$)')
     
-        diffs = np.diff(Vb)
-        change_indices = np.where(diffs < 0)[0]  # descending starts here
-        if len(change_indices)==0: change_indices = np.array([len(Vb)-1])
-        Vb_ascend, Vb_descend = Vb[:change_indices[0] + 1], Vb[change_indices[0]:]
-        E_ascend, E_descend = Vb_ascend/d_gate, Vb_descend/d_gate
-        ascend,descend = R_Gr[:change_indices[0]+1], R_Gr[change_indices[0]:]
-        std_ascend,std_descend = R_Gr_std[:change_indices[0]+1],R_Gr_std[change_indices[0]:]
-    
-        ax.set_ylabel(r'$R_{Gr}$ (k$\Omega$)') # , ax.set_xlabel('$E_{⟂}$ (Vnm$^{-1}$)')
-        ax.set_xlabel('$V_{'+gate+'}/d_{'+gate+'}$ (V nm$^{-1}$)')
-        
-        plot = 'R'
-        ax.set_xlim(-.4,.4)
-        # ax.set_ylim(.0,.65)
-    
-        if False: 
-            plot = plot+'_zoom'
-            center_a = np.argmax(ascend)
-            center_d = np.argmax(descend)
-            width =25
-            x1,x2 = center_a-width,center_a+width
-            x1d,x2d = center_d-width,center_d+width
-            ymax = np.max(ascend[x1:x2]+.01)
-            ymin = np.min(ascend[x1:x2]-.03)
-            ax.set_ylim(ymin-.04,ymax)
-            ax.set_xlim(E_ascend[center_a]-.013,E_ascend[center_a]+.013)
-            order = 2
-            xfine = np.linspace(E_ascend[x1],E_ascend[x2],100)
-            coeffs_a = np.polyfit(E_ascend[x1:x2], ascend[x1:x2], order)   # linear fit
-            y_fit_a = np.polyval(coeffs_a, xfine)
-            dcoeffs_a = np.polyder(coeffs_a)
-            critical_points_a = np.roots(dcoeffs_a)
-            coeffs_d = np.polyfit(E_descend[x1d:x2d], descend[x1d:x2d], order)   # linear fit
-            xfine_d = np.linspace(E_descend[x1d],E_descend[x2d],100)
-            y_fit_d = np.polyval(coeffs_d, xfine_d)
-            dcoeffs_d = np.polyder(coeffs_d)
-            critical_points_d = np.roots(dcoeffs_d)
-            a,d = -1,-1
-            dV = round(np.abs(np.real(critical_points_d[d] - critical_points_a[a])*d_gate*1000),2)
-            ax.plot(xfine,y_fit_a,ms=0,zorder=5,linewidth=2,c=fitascend_color)
-            ax.plot(xfine_d,y_fit_d,ms=0,zorder=5,linewidth=2,c=fitdescend_color)
-            ax.axvline(critical_points_a[a],ms=0,color=fitascend_color,linestyle='-',linewidth=.75)
-            ax.axvline(critical_points_d[d],ms=0,color=fitdescend_color,linestyle='-',linewidth=.75)
-            ax.text(E_ascend[center_a]+.001,(ymax+ymin)/2-.05,str(dV)+'mV',fontsize=16)
-            ax.errorbar(E_ascend, ascend,yerr=std_ascend,color=acolor,marker='.',linestyle='',ms=3,label=r'$\rightarrow$',elinewidth=0)
-            ax.errorbar(E_descend, descend,yerr=std_descend,color=dcolor,marker='.',linestyle='',ms=3,label=r'$\leftarrow$',elinewidth=0)
-            ax.legend(loc='best')
-            # ax.legend(title='n={}'.format(order),loc='best')
-        else:
-            if sample.d_b == 7:
-                ascend = ascend+1.6
-                E_ascend = E_ascend-.018
-                acolor='r'
-                label='control sample (+1.6k$\Omega$)'
-            elif sample.d_b==11:
-                acolor='b'
-                label='CrI3 with dualcap Gr'
-            else:
-                acolor='g'
-                label='CrI3 with singlecap Gr (+1.3k$\Omega$)'
-                ascend = ascend+1.3
-                E_ascend = E_ascend-.003
+    data = np.loadtxt(file)
+    Vb,V_b_meas,I_b_meas,R_Gr,R_Gr_std,V_Gr = data[:,0],data[:,1],data[:,2],data[:,3],data[:,4],data[:,5]
+    diffs = np.diff(Vb)
+    change_indices = np.where(diffs < 0)[0]  # descending starts here
+    if len(change_indices)==0: change_indices = np.array([len(Vb)-1])
+    Vb_ascend, Vb_descend = Vb[:change_indices[0] + 1], Vb[change_indices[0]:]
+    E_ascend, E_descend = Vb_ascend/db, Vb_descend/db
+    ascend,descend = R_Gr[:change_indices[0]+1], R_Gr[change_indices[0]:]
+    std_ascend,std_descend = R_Gr_std[:change_indices[0]+1],R_Gr_std[change_indices[0]:]
 
-
-                
-            ax.errorbar(E_ascend, ascend,yerr=std_ascend,color=acolor,marker='.',linestyle='-',lw=3,ms=0,label=label,elinewidth=0)
-            # ax.errorbar(E_descend, descend,yerr=std_descend,color=dcolor,marker='.',linestyle='-',ms=4,label=r'$\leftarrow$',elinewidth=0)
-        ax.legend(loc='lower right',fontsize=10)
-        # ax.axvline(.02,c='grey',linestyle='--',lw=1,ms=0)
-        # ax.axvline(-.018,c='grey',linestyle='--',lw=1,ms=0)
-        ax.set_xlim(-.25,.25)
-        ax.set_ylim(1.4)
-        ax.set_xlabel("$V_b/d_b$ (V nm$^{-1})$")
-        # plt.savefig(file.replace('.txt','_{}_plot.png'.format(plot)),dpi=500)
+    if False: 
+        center_a = np.argmax(ascend)
+        center_d = np.argmax(descend)
+        width =25
+        x1,x2 = center_a-width,center_a+width
+        x1d,x2d = center_d-width,center_d+width
+        ymax = np.max(ascend[x1:x2]+.01)
+        ymin = np.min(ascend[x1:x2]-.03)
+        ax.set_ylim(ymin-.04,ymax)
+        ax.set_xlim(E_ascend[center_a]-.013,E_ascend[center_a]+.013)
+        xfine = np.linspace(E_ascend[x1],E_ascend[x2],100)
+        coeffs_a = np.polyfit(E_ascend[x1:x2], ascend[x1:x2], 2)   # linear fit
+        y_fit_a = np.polyval(coeffs_a, xfine)
+        dcoeffs_a = np.polyder(coeffs_a)
+        critical_points_a = np.roots(dcoeffs_a)
+        coeffs_d = np.polyfit(E_descend[x1d:x2d], descend[x1d:x2d], 2)   # linear fit
+        xfine_d = np.linspace(E_descend[x1d],E_descend[x2d],100)
+        y_fit_d = np.polyval(coeffs_d, xfine_d)
+        dcoeffs_d = np.polyder(coeffs_d)
+        critical_points_d = np.roots(dcoeffs_d)
+        a,d = -1,-1
+        dV = round(np.abs(np.real(critical_points_d[d] - critical_points_a[a])*db*1000),2)
+        ax.plot(xfine,y_fit_a,ms=0,zorder=5,linewidth=2,c=fitascend_color)
+        ax.plot(xfine_d,y_fit_d,ms=0,zorder=5,linewidth=2,c=fitdescend_color)
+        ax.axvline(critical_points_a[a],ms=0,color=fitascend_color,linestyle='-',linewidth=.75)
+        ax.axvline(critical_points_d[d],ms=0,color=fitdescend_color,linestyle='-',linewidth=.75)
+        ax.text(E_ascend[center_a]+.001,(ymax+ymin)/2-.05,str(dV)+'mV',fontsize=16)
+        ax.errorbar(E_ascend, ascend,yerr=std_ascend,color=acolor,marker='.',linestyle='',ms=3,label=r'$\rightarrow$',elinewidth=0)
+        ax.errorbar(E_descend, descend,yerr=std_descend,color=dcolor,marker='.',linestyle='',ms=3,label=r'$\leftarrow$',elinewidth=0)
+        ax.legend(loc='best')
+            
+    ax.errorbar(E_ascend, ascend,yerr=std_ascend,color=acolor,marker='.',linestyle='-',lw=2,ms=3,label=r'$\rightarrow$',elinewidth=0)
+    ax.errorbar(E_descend, descend,yerr=std_descend,color=dcolor,marker='.',linestyle='-',lw=2,ms=3,label=r'$\leftarrow$',elinewidth=0)
+    ax.legend(loc='center left',fontsize=12)
+    ax.set_xlim(-.28,.28)
+    # ax.set_ylim(0,1.35)
+    plt.savefig(file.replace('.txt','_R_plot.png'),dpi=500)
     # '''
     plt.show()
     # '''

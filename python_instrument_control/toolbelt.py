@@ -201,6 +201,35 @@ def lorentzian_linear_bg(x, A, x0, gamma, m, b):
     return lor + (m * x + b)
 
 
+
+def lorentzian_abs_linear_bg(x, A, x0, gamma, m, b):
+    """
+    Lorentzian peak with linear background.
+
+    Parameters
+    ----------
+    x : array-like
+        Input x values.
+    A : float
+        Amplitude of the Lorentzian peak.
+    x0 : float
+        Center position of the peak.
+    gamma : float
+        Full width at half maximum (FWHM).
+    m : float
+        Slope of the linear background.
+    b : float
+        Intercept of the linear background.
+
+    Returns
+    -------
+    array-like
+        Lorentzian + linear background evaluated at x.
+    """
+    lor = A * (0.5 * gamma)**2 / ((x - x0)**2 + (0.5 * gamma)**2)
+    return lor + (m * np.abs(x) + b)
+
+
 def lorentzian(x, A, x0, gamma, C):
     """
     Lorentzian peak function.
